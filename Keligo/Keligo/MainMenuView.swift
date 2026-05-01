@@ -1,0 +1,1109 @@
+import SwiftUI
+
+struct MainMenuView: View {
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var stats: StatsManager
+    @EnvironmentObject var achievements: AchievementManager
+    @EnvironmentObject var jetons: JetonManager
+    @StateObject private var chapters = ChapterManager.shared
+    @Environment(\.horizontalSizeClass) var sizeClass
+
+    private var isIPad: Bool { sizeClass == .regular }
+
+    @AppStorage("preferredMode") private var preferredMode = "daily"
+
+    @State private var showInfinite = false
+    @State private var showChapterSelect = false
+    @State private var showSpeed = false
+    @State private var showKids = false
+    @State private var showCategoryPicker = false
+    @State private var showOutOfLives = false
+    @State private var bonusClaimAnim = false
+    @State private var bonusJustClaimed = false
+    @State private var showBonusAdConfirm = false
+    @StateObject private var lives = LivesManager.shared
+    @StateObject private var iap = IAPManager.shared
+    @StateObject private var prompts = AppPromptManager.shared
+    @State private var showSettings = false
+    @State private var showStats = false
+    @State private var showWordStats = false
+    @State private var showAchievements = false
+    @State private var showFriendChallenge = false
+    @State private var showIAPStore = false
+
+    @State private var showLivesInfo = false
+    @State private var livesNow = Date()
+    @State private var showCalendar = false
+    @State private var showWeekly = false
+    @State private var showDavet = false
+    @State private var showHowToPlay = false
+    @State private var selectedCategory: String? = nil
+
+    // MARK: - Easter egg state
+    @State private var eggTapCount = 0
+    @State private var eggLastTap = Date.distantPast
+    @State private var showEggToast = false
+    @State private var eggShake: CGFloat = 0
+    @AppStorage("easterEggUnlocked") private var easterEggUnlocked = false
+
+    var t: AppTheme { settings.theme }
+    private let daily = DailyWordManager.shared
+    private let weekly = WeeklyChallengeManager.shared
+
+    var body: some View {
+        ZStack {
+            // Background + accent glow
+            t.background.ignoresSafeArea()
+            RadialGradient(
+                colors: [t.glowColor, .clear],
+                center: UnitPoint(x: 0.85, y: 0.05),
+                startRadius: 0,
+                endRadius: 380
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                topNavBar
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 28) {
+                        heroSection
+                        statsStrip
+                        if AdManager.shared.canShowRewarded(.jetonBonus) && !iap.isAdsRemoved {
+                            dailyBonusCard
+                        }
+                        modeSection
+                        Text("v1.0")
+                            .font(.caption2)
+                            .foregroundColor(t.secondaryText.opacity(0.35))
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 40)
+                }
+            }
+
+            // App prompt banner (premium upsell — düşük yoğunlukta)
+            if let kind = prompts.current {
+                VStack {
+                    Spacer().frame(height: 80)
+                    AppPromptBanner(
+                        kind: kind, theme: t,
+                        onCTA: {
+                            prompts.dismiss()
+                            showIAPStore = true
+                        },
+                        onDismiss: { prompts.dismiss() }
+                    )
+                    Spacer()
+                }
+                .zIndex(100)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: prompts.current)
+            }
+
+            // Achievement toast
+            if let toast = achievements.pendingToast {
+                VStack {
+                    AchievementToast(achievement: toast, theme: t)
+                        .padding(.top, 60)
+                    Spacer()
+                }
+                .zIndex(99)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: achievements.pendingToast?.id)
+            }
+
+            // Easter egg toast
+            if showEggToast {
+                EasterEggToast()
+                    .padding(.bottom, 120)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .zIndex(97)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showEggToast)
+            }
+
+            // Davet overlay
+            if showDavet {
+                DavetView(onBack: { withAnimation { showDavet = false } })
+                    .transition(.move(edge: .trailing)).zIndex(2)
+            }
+
+            // Streak milestone toast
+            if let milestone = stats.pendingMilestonToast {
+                VStack {
+                    Spacer()
+                    HStack(spacing: 12) {
+                        Text("🔥")
+                            .font(.system(size: 28))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(milestone.days) Günlük Seri!")
+                                .font(.headline.weight(.black))
+                                .foregroundColor(.white)
+                            Text("+\(milestone.jetons) jeton ödülün!")
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.orange.opacity(0.9))
+                        }
+                        Spacer()
+                        Button { withAnimation { stats.dismissMilestoneToast() } } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title3)
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                    }
+                    .padding(.horizontal, 20).padding(.vertical, 14)
+                    .background(
+                        LinearGradient(colors: [Color.orange, Color.red.opacity(0.8)],
+                                       startPoint: .leading, endPoint: .trailing),
+                        in: RoundedRectangle(cornerRadius: 18)
+                    )
+                    .shadow(color: .orange.opacity(0.4), radius: 12, y: 4)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 32)
+                }
+                .zIndex(98)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: milestone.days)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                        withAnimation { stats.dismissMilestoneToast() }
+                    }
+                }
+            }
+
+            // Full-screen overlays
+            if showInfinite {
+                GameContainerView(settings: settings, stats: stats, categoryFilter: selectedCategory,
+                                  onBack: { withAnimation(.easeInOut(duration: 0.3)) { showInfinite = false } })
+                    .transition(.move(edge: .trailing)).zIndex(1)
+            }
+            if showChapterSelect {
+                ChapterSelectView(onBack: { withAnimation(.easeInOut(duration: 0.3)) { showChapterSelect = false } })
+                    .transition(.move(edge: .trailing)).zIndex(1)
+            }
+            if showSpeed {
+                SpeedModeView(onBack: { withAnimation(.easeInOut(duration: 0.3)) { showSpeed = false } })
+                    .transition(.move(edge: .trailing)).zIndex(1)
+            }
+            if showKids {
+                GameContainerView(
+                    settings: settings, stats: stats,
+                    categoryFilter: nil, kidsMode: true,
+                    onBack: { withAnimation(.easeInOut) { showKids = false } }
+                )
+                .transition(.move(edge: .trailing)).zIndex(1)
+            }
+        }
+        .onAppear {
+            lives.recomputeRegen()
+            prompts.notifyChapterStateChanged()
+        }
+        .animation(.easeInOut(duration: 0.3), value: showInfinite)
+        .animation(.easeInOut(duration: 0.3), value: showChapterSelect)
+        .animation(.easeInOut(duration: 0.3), value: showSpeed)
+        .animation(.easeInOut(duration: 0.3), value: showKids)
+        .animation(.easeInOut(duration: 0.3), value: showWeekly)
+        .animation(.easeInOut(duration: 0.3), value: showDavet)
+        .sheet(isPresented: $showOutOfLives) {
+            OutOfLivesSheet()
+                .environmentObject(settings)
+                .environmentObject(jetons)
+        }
+        .alert(livesInfoTitle, isPresented: $showLivesInfo) {
+            Button("Jeton ile Doldur") { showOutOfLives = true }
+            Button("Tamam", role: .cancel) {}
+        } message: {
+            Text(livesInfoMessage)
+        }
+        .alert("Reklam izle, +\(JetonManager.rewardJetonAdBonus) jeton kazan", isPresented: $showBonusAdConfirm) {
+            Button("İzle") {
+                Task {
+                    let ok = await AdManager.shared.presentRewarded(.jetonBonus)
+                    if ok {
+                        JetonManager.shared.earn(JetonManager.rewardJetonAdBonus)
+                        withAnimation(.spring()) { bonusJustClaimed = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation { bonusJustClaimed = false }
+                        }
+                    }
+                }
+            }
+            Button("İptal", role: .cancel) {}
+        } message: {
+            Text("📺 Kısa bir reklam sonrası hesabına \(JetonManager.rewardJetonAdBonus) jeton eklenir. Günde sadece 1 kez verilir.")
+        }
+        .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showStats) { StatsView() }
+        .sheet(isPresented: $showWordStats) {
+            WordStatsView()
+                .environmentObject(settings)
+                .environmentObject(stats)
+        }
+        .sheet(isPresented: $showAchievements) { AchievementsView() }
+        .sheet(isPresented: $showHowToPlay) { HowToPlayView().environmentObject(settings) }
+        .sheet(isPresented: $showFriendChallenge) { FriendChallengeView() }
+        .sheet(isPresented: $showIAPStore) { IAPStoreView() }
+
+        .sheet(isPresented: $showCalendar) {
+            DailyCalendarView()
+                .environmentObject(settings)
+                .environmentObject(stats)
+                .environmentObject(jetons)
+        }
+        .sheet(isPresented: $showWeekly) {
+            WeeklyChallengeView()
+                .environmentObject(settings)
+                .environmentObject(stats)
+                .environmentObject(jetons)
+        }
+        .sheet(isPresented: $showCategoryPicker) {
+            CategoryPickerView(selected: $selectedCategory) {
+                showCategoryPicker = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(.easeInOut) { showInfinite = true }
+                }
+            }
+        }
+    }
+
+    // MARK: - Top nav
+
+    private var topNavBar: some View {
+        HStack {
+            navButton(icon: "chart.bar.fill") { showStats = true }
+            Spacer()
+            navButton(icon: "text.magnifyingglass") { showWordStats = true }
+            Spacer()
+            navButton(icon: "trophy.fill") { showAchievements = true }
+            Spacer()
+            navButton(icon: "questionmark.circle.fill") { showHowToPlay = true }
+            Spacer()
+            navButton(icon: "gearshape.fill") { showSettings = true }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 4)
+    }
+
+    private func navButton(icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(t.accentGradient)
+                .frame(width: 46, height: 46)
+                .background(t.cardMaterial, in: Circle())
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+
+    // MARK: - Hero
+
+    private var heroSection: some View {
+        VStack(spacing: 10) {
+            // Keligo logo — 5 harf kutusu
+            ZStack {
+                Circle()
+                    .fill(t.accent.opacity(0.15))
+                    .frame(width: 130, height: 130)
+                    .blur(radius: 28)
+                VStack(spacing: 8) {
+                    HStack(spacing: 6) {
+                        ForEach(["K","E","L"], id: \.self) { letter in
+                            HeroLetterTile(letter: letter, accent: t.accent)
+                        }
+                    }
+                    HStack(spacing: 6) {
+                        ForEach(["İ","G","O"], id: \.self) { letter in
+                            HeroLetterTile(letter: letter, accent: t.accent)
+                        }
+                    }
+                }
+                .shadow(color: t.accent.opacity(0.35), radius: 14, y: 4)
+                .modifier(ShakeEffect(animatableData: eggShake))
+                .onTapGesture { handleEggTap() }
+            }
+            .padding(.top, 12)
+
+            Text("Kelime Bulma Oyunu")
+                .font(.subheadline.weight(.medium))
+                .foregroundColor(t.secondaryText)
+
+            if stats.currentStreak > 1 {
+                HStack(spacing: 6) {
+                    Image(systemName: "flame.fill").foregroundColor(.orange)
+                    Text("\(stats.currentStreak) galibiyet serisi!")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(t.primaryText)
+                }
+                .padding(.horizontal, 16).padding(.vertical, 8)
+                .background(t.cardMaterial, in: Capsule())
+                .padding(.top, 4)
+            }
+
+            // Jeton + Can pill'leri yan yana
+            HStack(spacing: 10) {
+                // Jeton — tıklayınca mağazaya git
+                Button { showIAPStore = true } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(.yellow)
+                        Text("\(jetons.balance)")
+                            .font(.subheadline.weight(.bold))
+                            .foregroundColor(t.primaryText)
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(.yellow.opacity(0.7))
+                    }
+                    .padding(.horizontal, 12).padding(.vertical, 7)
+                    .background(Color.yellow.opacity(0.10), in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color.yellow.opacity(0.22), lineWidth: 1))
+                }
+                .buttonStyle(ScaleButtonStyle())
+
+                // Can — tıklayınca bilgi/dolum ekranı
+                Button {
+                    if lives.current == 0 && !lives.hasInfinite {
+                        showOutOfLives = true
+                    } else {
+                        showLivesInfo = true
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: lives.hasInfinite ? "infinity.circle.fill" : "heart.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.red)
+                        if lives.hasInfinite {
+                            Text("∞").font(.subheadline.weight(.bold))
+                                .foregroundColor(t.primaryText)
+                        } else {
+                            Text("\(lives.current)/\(LivesManager.maxLives)")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundColor(t.primaryText)
+                        }
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(.red.opacity(0.6))
+                    }
+                    .padding(.horizontal, 12).padding(.vertical, 7)
+                    .background(Color.red.opacity(0.10), in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color.red.opacity(0.22), lineWidth: 1))
+                }
+                .buttonStyle(ScaleButtonStyle())
+            }
+            .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+        .onAppear { lives.recomputeRegen() }
+    }
+
+    // MARK: - Mode cards
+
+    private var modeSection: some View {
+        Group {
+            if isIPad {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    modeSectionContent
+                }
+            } else {
+                VStack(spacing: 12) {
+                    modeSectionContent
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var modeSectionContent: some View {
+        GameModeCard(
+            icon: "infinity",
+            title: "Sonsuz Mod",
+            subtitle: selectedCategory.map { "Kategori: \($0)" } ?? "Tüm kategoriler",
+            gradient: [Color(red: 0.20, green: 0.45, blue: 1.00), Color(red: 0.45, green: 0.75, blue: 1.00)],
+            theme: t
+        ) {
+            lives.recomputeRegen()
+            if lives.current > 0 || lives.hasInfinite {
+                showCategoryPicker = true
+            } else {
+                showOutOfLives = true
+            }
+        }
+
+        // Günlük Kelime + Takvim — tek kart, takvim sheet'i içinde yönetilir
+        GameModeCard(
+            icon: "calendar",
+            title: "Günlük Kelime & Takvim",
+            subtitle: daily.hasPlayedToday ? "Bugün oynadın ✓ · Geçmişe bak" : "Her gün yeni kelime",
+            gradient: [Color(red: 1.00, green: 0.45, blue: 0.10), Color(red: 1.00, green: 0.75, blue: 0.15)],
+            badge: daily.hasPlayedToday ? nil : "YENİ",
+            theme: t
+        ) { showCalendar = true }
+
+            GameModeCard(
+                icon: "flag.checkered",
+                title: "Bölüm Modu",
+                subtitle: "\(chapters.chapters.filter { (chapters.stars[$0.id] ?? 0) > 0 }.count)/\(chapters.chapters.count) bölüm tamamlandı",
+                gradient: [Color(red: 0.65, green: 0.15, blue: 1.00), Color(red: 1.00, green: 0.38, blue: 0.82)],
+                theme: t
+            ) { showChapterSelect = true }
+
+            GameModeCard(
+                icon: "bolt.fill",
+                title: "Hız Modu",
+                subtitle: stats.speedHighScore > 0 ? "Rekor: \(stats.speedHighScore) kelime" : "60 saniyede kaç kelime?",
+                gradient: [Color(red: 1.00, green: 0.18, blue: 0.18), Color(red: 1.00, green: 0.58, blue: 0.10)],
+                theme: t
+            ) { showSpeed = true }
+
+            GameModeCard(
+                icon: "face.smiling.fill",
+                title: "Çocuk Modu",
+                subtitle: "Kısa kelimeler, bol ipucu",
+                gradient: [Color(red: 0.10, green: 0.75, blue: 0.40), Color(red: 0.20, green: 0.95, blue: 0.55)],
+                theme: t
+            ) {
+                lives.recomputeRegen()
+                if lives.current > 0 || lives.hasInfinite {
+                    showKids = true
+                } else {
+                    showOutOfLives = true
+                }
+            }
+
+            GameModeCard(
+                icon: "calendar.badge.exclamationmark",
+                title: "Haftalık Meydan Okuma",
+                subtitle: weekly.weekProgress() > 0
+                    ? "\(weekly.weekProgress())/7 tamamlandı"
+                    : "Bu hafta yeni!",
+                gradient: [Color(red: 0.10, green: 0.75, blue: 0.55), Color(red: 0.20, green: 0.95, blue: 0.70)],
+                badge: weekly.isWeekComplete() && !weekly.weekBonusClaimed() ? "ÖDÜL" : nil,
+                theme: t
+            ) { showWeekly = true }
+
+            GameModeCard(
+                icon: "person.2.fill",
+                title: "Arkadaşa Sor",
+                subtitle: "Kod paylaş, kelime tahmin ettir",
+                gradient: [Color(red: 0.20, green: 0.60, blue: 0.85), Color(red: 0.10, green: 0.85, blue: 0.75)],
+                theme: t
+            ) { showFriendChallenge = true }
+
+            GameModeCard(
+                icon: "bag.fill",
+                title: "Premium Mağaza",
+                subtitle: "Jeton, kelime paketi ve can al",
+                gradient: [Color(red: 0.90, green: 0.75, blue: 0.10), Color(red: 1.00, green: 0.55, blue: 0.10)],
+                theme: t
+            ) { showIAPStore = true }
+
+            GameModeCard(
+                icon: "person.badge.plus",
+                title: "Arkadaşını Davet Et",
+                subtitle: "Arkadaşını davet et, 50 jeton kazan!",
+                gradient: [Color(red: 0.55, green: 0.25, blue: 0.95), Color(red: 0.95, green: 0.35, blue: 0.65)],
+                theme: t
+            ) { withAnimation(.easeInOut) { showDavet = true } }
+    }
+
+    // MARK: - Lives info
+
+    private var livesInfoTitle: String {
+        if lives.hasInfinite { return "Sınırsız Can ❤️" }
+        if lives.isFull { return "Canların Dolu! ❤️❤️❤️❤️❤️" }
+        return "Can Bilgisi ❤️ \(lives.current)/\(LivesManager.maxLives)"
+    }
+
+    private var livesInfoMessage: String {
+        if lives.hasInfinite { return "Sınırsız can hakkın var — istediğin kadar oyna!" }
+        if lives.isFull { return "Tüm canların dolu. Oynamaya başla!" }
+        guard let next = lives.nextRegenAt else { return "Canların yenileniyor..." }
+        let remaining = max(0, next.timeIntervalSince(Date()))
+        let mins = Int(remaining) / 60
+        let secs = Int(remaining) % 60
+        let missing = LivesManager.maxLives - lives.current
+        let fullMins = Int(TimeInterval(missing) * LivesManager.regenIntervalSeconds) / 60
+        return "Sonraki can: \(mins):\(String(format: "%02d", secs)) içinde\nTüm dolum: ~\(fullMins) dakika\n\nJeton veya reklam ile hemen doldurabilirsin."
+    }
+
+    // MARK: - Easter egg
+
+    private func handleEggTap() {
+        SoundManager.shared.playButtonTap()
+        let now = Date()
+        // Reset if tapped too slowly (> 1.5 s gap)
+        if now.timeIntervalSince(eggLastTap) > 1.5 { eggTapCount = 0 }
+        eggLastTap = now
+        eggTapCount += 1
+
+        // Shake every 2 taps
+        if eggTapCount % 2 == 0 {
+            withAnimation(.linear(duration: 0.4)) { eggShake += 1 }
+        }
+
+        if eggTapCount >= 10 && !showEggToast {
+            eggTapCount = 0
+            if !easterEggUnlocked {
+                easterEggUnlocked = true
+                JetonManager.shared.earn(100)
+            }
+            withAnimation { showEggToast = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                withAnimation { showEggToast = false }
+            }
+        }
+    }
+
+    // MARK: - Quick Start
+
+    // MARK: - Daily bonus rewarded card
+
+    private var dailyBonusCard: some View {
+        Button {
+            showBonusAdConfirm = true
+        } label: {
+            HStack(spacing: 12) {
+                Text(bonusJustClaimed ? "✅" : "🎁")
+                    .font(.title2)
+                    .frame(width: 38, height: 38)
+                    .background(Color.green.opacity(0.18), in: Circle())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(bonusJustClaimed ? "+\(JetonManager.rewardJetonAdBonus) jeton kazandın!" : "Günlük Bonus")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundColor(t.primaryText)
+                    Text(bonusJustClaimed ? "Yarın tekrar gel" : "Reklam izle, +\(JetonManager.rewardJetonAdBonus) jeton kazan")
+                        .font(.caption)
+                        .foregroundColor(t.secondaryText)
+                }
+                Spacer()
+                if !bonusJustClaimed {
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.title3)
+                        .foregroundColor(.green)
+                }
+            }
+            .padding(14)
+            .background(
+                LinearGradient(
+                    colors: [Color.green.opacity(0.13), Color.green.opacity(0.05)],
+                    startPoint: .leading, endPoint: .trailing
+                ),
+                in: RoundedRectangle(cornerRadius: 16)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.green.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .disabled(bonusJustClaimed)
+    }
+
+    // MARK: - Stats strip
+
+    private var statsStrip: some View {
+        HStack(spacing: 10) {
+            miniStatCard(icon: "gamecontroller.fill", value: "\(stats.totalGames)", label: "Oyun")
+            miniStatCard(icon: "trophy.fill", value: "\(stats.wins)", label: "Galibiyet")
+            miniStatCard(icon: "flame.fill", value: "\(stats.bestStreak)", label: "En İyi Seri")
+        }
+    }
+
+    private func miniStatCard(icon: String, value: String, label: String) -> some View {
+        VStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundStyle(t.accentGradient)
+            Text(value)
+                .font(.title3.bold())
+                .foregroundColor(t.primaryText)
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(t.secondaryText)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(t.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+// MARK: - Hero Letter Tile
+
+private struct HeroLetterTile: View {
+    let letter: String
+    let accent: Color
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(
+                    LinearGradient(
+                        colors: [accent, accent.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 38, height: 42)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                )
+                .shadow(color: accent.opacity(0.5), radius: 8, y: 3)
+
+            Text(letter)
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundColor(.white)
+        }
+    }
+}
+
+// MARK: - Game mode card
+
+struct GameModeCard: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let gradient: [Color]
+    var badge: String? = nil
+    let theme: AppTheme
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(LinearGradient(colors: gradient, startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 54, height: 54)
+                        .shadow(color: gradient.first?.opacity(0.45) ?? .clear, radius: 10, y: 5)
+                    Image(systemName: icon)
+                        .font(.title2.weight(.semibold))
+                        .foregroundColor(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 8) {
+                        Text(title)
+                            .font(.headline.weight(.semibold))
+                            .foregroundColor(theme.primaryText)
+                        if let badge {
+                            Text(badge)
+                                .font(.system(size: 9, weight: .black))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 7).padding(.vertical, 2)
+                                .background(Color.red, in: Capsule())
+                        }
+                    }
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(theme.secondaryText)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(theme.secondaryText)
+            }
+            .padding(16)
+            .background(theme.cardMaterial, in: RoundedRectangle(cornerRadius: 20))
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+}
+
+// MARK: - Achievement toast
+
+struct AchievementToast: View {
+    let achievement: Achievement
+    let theme: AppTheme
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Text(achievement.icon).font(.title)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Başarım Açıldı!")
+                    .font(.caption.weight(.black))
+                    .foregroundColor(.yellow)
+                Text(achievement.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                Text(achievement.description)
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.yellow.opacity(0.35), lineWidth: 1)
+        )
+        .padding(.horizontal, 16)
+        .shadow(color: .black.opacity(0.35), radius: 24, y: 10)
+    }
+}
+
+// MARK: - Easter Egg Toast
+
+struct EasterEggToast: View {
+    var body: some View {
+        HStack(spacing: 14) {
+            Text("🎉").font(.largeTitle)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Gizli Hazine!")
+                    .font(.headline.weight(.black))
+                    .foregroundColor(.white)
+                Text("Keligo ikonuna 10 kez dokundun — 100 jeton kazandın!")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.85))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            LinearGradient(colors: [Color(red: 0.55, green: 0.10, blue: 0.90), Color(red: 0.90, green: 0.20, blue: 0.55)],
+                           startPoint: .leading, endPoint: .trailing),
+            in: RoundedRectangle(cornerRadius: 20)
+        )
+        .shadow(color: .purple.opacity(0.5), radius: 16, y: 6)
+        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Davet (Referral) View
+
+struct DavetView: View {
+    var onBack: () -> Void
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var jetons: JetonManager
+
+    @AppStorage("davetUsed") private var davetUsed = false
+    @AppStorage("davetUsedDate") private var davetUsedDate = ""
+    @State private var showShareSheet = false
+
+    var t: AppTheme { settings.theme }
+
+    private var todayString: String {
+        let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: Date())
+    }
+
+    private var canEarnToday: Bool { davetUsedDate != todayString }
+
+    var body: some View {
+        ZStack {
+            t.background.ignoresSafeArea()
+            RadialGradient(
+                colors: [Color(red: 0.55, green: 0.25, blue: 0.95).opacity(0.25), .clear],
+                center: .top, startRadius: 0, endRadius: 320
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Nav bar
+                HStack {
+                    Button { onBack() } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(t.accentGradient)
+                            .frame(width: 44, height: 44)
+                    }
+                    Spacer()
+                    Text("Arkadaşını Davet Et")
+                        .font(.headline)
+                        .foregroundColor(t.primaryText)
+                    Spacer()
+                    Color.clear.frame(width: 44, height: 44)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        // Hero
+                        VStack(spacing: 14) {
+                            Text("🎁")
+                                .font(.system(size: 72))
+                                .shadow(color: .purple.opacity(0.4), radius: 16)
+                                .padding(.top, 28)
+
+                            Text("Arkadaşını Davet Et,\nJeton Kazan!")
+                                .font(.title2.weight(.black))
+                                .foregroundColor(t.primaryText)
+                                .multilineTextAlignment(.center)
+
+                            Text("Her gün uygulamayı paylaşarak\n50 jeton kazanabilirsin.")
+                                .font(.subheadline)
+                                .foregroundColor(t.secondaryText)
+                                .multilineTextAlignment(.center)
+                        }
+
+                        // How it works
+                        VStack(spacing: 12) {
+                            DavetStepRow(icon: "square.and.arrow.up", color: .purple,
+                                         title: "Uygulamayı Paylaş",
+                                         desc: "Arkadaşlarına App Store linkini gönder")
+                            DavetStepRow(icon: "person.fill.checkmark", color: .blue,
+                                         title: "Arkadaşın İndirsin",
+                                         desc: "Her yeni oyuncu keligo dünyasını keşfeder")
+                            DavetStepRow(icon: "circle.fill", color: .yellow,
+                                         title: "Sen 50 Jeton Kazan",
+                                         desc: "Her gün bir kez jeton ödülünü al")
+                        }
+                        .padding(16)
+                        .background(t.surface, in: RoundedRectangle(cornerRadius: 18))
+                        .padding(.horizontal)
+
+                        // Daily reward status
+                        HStack(spacing: 10) {
+                            Image(systemName: canEarnToday ? "gift.fill" : "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundColor(canEarnToday ? .yellow : t.correct)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(canEarnToday ? "Bugünkü ödülün seni bekliyor" : "Bugün ödül aldın")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(t.primaryText)
+                                Text(canEarnToday ? "Paylaşınca 50 jeton kazanırsın" : "Yarın tekrar paylaşabilirsin")
+                                    .font(.caption)
+                                    .foregroundColor(t.secondaryText)
+                            }
+                            Spacer()
+                            Text("+50 🪙")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundColor(.yellow)
+                                .opacity(canEarnToday ? 1 : 0.4)
+                        }
+                        .padding(16)
+                        .background(t.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+                        .padding(.horizontal)
+
+                        // Share button
+                        Button {
+                            if canEarnToday {
+                                davetUsedDate = todayString
+                                davetUsed = true
+                                JetonManager.shared.earn(50)
+                            }
+                            presentShareSheet(shareItems())
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.headline)
+                                Text(canEarnToday ? "Paylaş ve 50 Jeton Kazan" : "Yine de Paylaş")
+                                    .font(.headline)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                LinearGradient(colors: [Color(red: 0.55, green: 0.25, blue: 0.95),
+                                                        Color(red: 0.95, green: 0.35, blue: 0.65)],
+                                               startPoint: .leading, endPoint: .trailing),
+                                in: RoundedRectangle(cornerRadius: 16)
+                            )
+                            .foregroundColor(.white)
+                            .shadow(color: .purple.opacity(0.45), radius: 12, y: 6)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        .padding(.horizontal)
+
+                        Spacer(minLength: 40)
+                    }
+                }
+            }
+        }
+    }
+
+    private func shareItems() -> [Any] {
+        let text = """
+🎮 Türkçe Kelime Bulma Oyunu — Keligo'yi dene!
+
+📅 Günlük kelimeler, 🏁 bölüm modu, ⚡️ hız modu ve çok daha fazlası!
+
+App Store'dan ücretsiz indir 👇
+https://apps.apple.com/app/keligo
+"""
+        return [text]
+    }
+}
+
+struct DavetStepRow: View {
+    let icon: String
+    let color: Color
+    let title: String
+    let desc: String
+    @EnvironmentObject var settings: SettingsViewModel
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(color)
+                .frame(width: 36, height: 36)
+                .background(color.opacity(0.15), in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(settings.theme.primaryText)
+                Text(desc)
+                    .font(.caption)
+                    .foregroundColor(settings.theme.secondaryText)
+            }
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Category picker
+
+struct CategoryPickerView: View {
+    @Binding var selected: String?
+    @EnvironmentObject var settings: SettingsViewModel
+    @Environment(\.dismiss) private var dismiss
+    var onStart: () -> Void
+
+    @StateObject private var iap = IAPManager.shared
+    @State private var showIAPStore = false
+
+    var t: AppTheme { settings.theme }
+    private var categories: [String] { ["Tümü"] + WordList.categories + WordList.premiumCategories }
+
+    private let categoryIcons: [String: String] = [
+        "Tümü": "🎲", "Hayvanlar": "🦁", "Meslekler": "💼",
+        "Yiyecekler": "🍜", "Şehirler": "🏙️", "Spor": "⚽️",
+        "Doğa": "🌿", "Teknoloji": "💻", "Müzik": "🎵",
+        "Bilim": "🔬", "Ülkeler": "🌍", "Mitoloji": "⚡️",
+        "Meyveler": "🍎", "Taşıtlar": "🚗", "Uzay": "🚀",
+        "Sanat": "🎨", "Tarih": "📜", "Bitkiler": "🌸",
+        "Sebzeler": "🥦", "Coğrafya": "🗺️", "Markalar": "🏷️",
+        "Günlük": "🗓️",
+        // Premium
+        "Sinema": "🎬", "Bilim+": "🔬", "Tarih+": "📜",
+        "Spor+": "🏆", "Müzik+": "🎼",
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                t.background.ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        ForEach(categories, id: \.self) { cat in
+                            let isPremium = WordList.premiumCategories.contains(cat)
+                            let isLocked = isPremium && !iap.isPackUnlocked(WordList.packId(for: cat) ?? "")
+                            let isSelected = cat == "Tümü" ? selected == nil : selected == cat
+
+                            Button {
+                                if isLocked {
+                                    showIAPStore = true
+                                } else {
+                                    selected = cat == "Tümü" ? nil : cat
+                                }
+                            } label: {
+                                VStack(spacing: 6) {
+                                    ZStack {
+                                        Text(categoryIcons[cat] ?? "📚")
+                                            .font(.title2)
+                                            .opacity(isLocked ? 0.45 : 1.0)
+                                        if isLocked {
+                                            Image(systemName: "lock.fill")
+                                                .font(.caption)
+                                                .foregroundColor(.white)
+                                                .padding(4)
+                                                .background(Color.black.opacity(0.55), in: Circle())
+                                                .offset(x: 14, y: -10)
+                                        }
+                                    }
+                                    HStack(spacing: 4) {
+                                        Text(cat)
+                                            .font(.subheadline.weight(.semibold))
+                                            .multilineTextAlignment(.center)
+                                        if isPremium {
+                                            Text("PRO")
+                                                .font(.system(size: 8, weight: .black))
+                                                .padding(.horizontal, 4).padding(.vertical, 1)
+                                                .background(Color.yellow.opacity(0.85), in: Capsule())
+                                                .foregroundColor(.black)
+                                        }
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(
+                                    isSelected
+                                        ? AnyShapeStyle(t.accentGradient)
+                                        : AnyShapeStyle(t.cardMaterial),
+                                    in: RoundedRectangle(cornerRadius: 16)
+                                )
+                                .foregroundColor(isSelected ? .white : (isLocked ? t.secondaryText : t.primaryText))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(
+                                            isSelected ? Color.clear :
+                                            (isPremium ? Color.yellow.opacity(0.4) : Color.white.opacity(0.08)),
+                                            lineWidth: 1
+                                        )
+                                )
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 110)
+                }
+                .sheet(isPresented: $showIAPStore) {
+                    IAPStoreView()
+                        .environmentObject(settings)
+                        .environmentObject(JetonManager.shared)
+                }
+
+                // Bottom gradient fade + start button
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        colors: [t.background.opacity(0), t.background],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                    .frame(height: 32)
+
+                    Button(action: onStart) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "play.fill")
+                            Text(selected != nil ? "\(selected!) ile Oyna" : "Tüm Kategorilerle Oyna")
+                        }
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(t.accentGradient, in: RoundedRectangle(cornerRadius: 16))
+                        .foregroundColor(.white)
+                        .shadow(color: t.accent.opacity(0.4), radius: 12, y: 6)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 34)
+                    .background(t.background)
+                }
+            }
+            .navigationTitle("Kategori Seç")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Kapat") { dismiss() }
+                        .foregroundColor(t.accent)
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    MainMenuView()
+        .environmentObject(SettingsViewModel())
+        .environmentObject(StatsManager())
+        .environmentObject(AchievementManager.shared)
+        .environmentObject(JetonManager.shared)
+}

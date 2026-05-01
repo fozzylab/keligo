@@ -1,0 +1,249 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A1628"/>
+      <stop offset="100%" style="stop-color:#12082E"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F8EF7"/>
+      <stop offset="100%" style="stop-color:#00D4FF"/>
+    </linearGradient>
+    <linearGradient id="green-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981"/>
+      <stop offset="100%" style="stop-color:#34D399"/>
+    </linearGradient>
+    <linearGradient id="orange-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B"/>
+      <stop offset="100%" style="stop-color:#FCD34D"/>
+    </linearGradient>
+    <linearGradient id="red-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EF4444"/>
+      <stop offset="100%" style="stop-color:#F87171"/>
+    </linearGradient>
+    <linearGradient id="purple-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6"/>
+      <stop offset="100%" style="stop-color:#A78BFA"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#bg)"/>
+
+  <!-- ── Title ── -->
+  <text x="60" y="58" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="28" font-weight="700" fill="#FFFFFF" opacity="0.9">Keligo — Design System</text>
+  <text x="60" y="82" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="14" fill="#FFFFFF" opacity="0.35">App Store ready · iOS 17+ · FozzyLabs</text>
+
+  <!-- divider -->
+  <rect x="60" y="96" width="1080" height="1" fill="#FFFFFF" opacity="0.1"/>
+
+  <!-- ══════════════════════════════════════
+       SECTION 1 — COLOR PALETTE
+  ══════════════════════════════════════ -->
+  <text x="60" y="138" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="13" font-weight="600" letter-spacing="2" fill="#FFFFFF" opacity="0.4">RENK PALETİ</text>
+
+  <!-- Swatch 1: Background -->
+  <rect x="60" y="152" width="90" height="90" rx="14" fill="#0D1B3E"/>
+  <text x="105" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Background</text>
+  <text x="105" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#0D1B3E</text>
+
+  <!-- Swatch 2: Surface -->
+  <rect x="165" y="152" width="90" height="90" rx="14" fill="#1E3A6E"/>
+  <text x="210" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Surface</text>
+  <text x="210" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#1E3A6E</text>
+
+  <!-- Swatch 3: Primary Accent -->
+  <rect x="270" y="152" width="90" height="90" rx="14" fill="url(#accent)"/>
+  <text x="315" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Accent</text>
+  <text x="315" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#4F8EF7→#00D4FF</text>
+
+  <!-- Swatch 4: Correct -->
+  <rect x="375" y="152" width="90" height="90" rx="14" fill="url(#green-g)"/>
+  <text x="420" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Correct</text>
+  <text x="420" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#10B981</text>
+
+  <!-- Swatch 5: Wrong -->
+  <rect x="480" y="152" width="90" height="90" rx="14" fill="url(#red-g)"/>
+  <text x="525" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Wrong</text>
+  <text x="525" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#EF4444</text>
+
+  <!-- Swatch 6: XP / Streak -->
+  <rect x="585" y="152" width="90" height="90" rx="14" fill="url(#orange-g)"/>
+  <text x="630" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Streak</text>
+  <text x="630" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#F59E0B</text>
+
+  <!-- Swatch 7: Premium -->
+  <rect x="690" y="152" width="90" height="90" rx="14" fill="url(#purple-g)"/>
+  <text x="735" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Premium</text>
+  <text x="735" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#8B5CF6</text>
+
+  <!-- Swatch 8: White Text -->
+  <rect x="795" y="152" width="90" height="90" rx="14" fill="#1E3A6E" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.15"/>
+  <text x="840" y="205" font-family="'Helvetica Neue',Arial,sans-serif" font-size="32" font-weight="700" text-anchor="middle" fill="#FFFFFF">Aa</text>
+  <text x="840" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Primary Text</text>
+  <text x="840" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#FFFFFF</text>
+
+  <!-- Swatch 9: Secondary Text -->
+  <rect x="900" y="152" width="90" height="90" rx="14" fill="#1E3A6E" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.15"/>
+  <text x="945" y="205" font-family="'Helvetica Neue',Arial,sans-serif" font-size="32" font-weight="700" text-anchor="middle" fill="#FFFFFF" opacity="0.55">Aa</text>
+  <text x="945" y="258" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11" text-anchor="middle" fill="#FFFFFF" opacity="0.5">Secondary</text>
+  <text x="945" y="272" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10" text-anchor="middle" fill="#FFFFFF" opacity="0.3">#FFFFFF 55%</text>
+
+  <!-- divider -->
+  <rect x="60" y="290" width="1080" height="1" fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- ══════════════════════════════════════
+       SECTION 2 — TYPOGRAPHY
+  ══════════════════════════════════════ -->
+  <text x="60" y="318" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="13" font-weight="600" letter-spacing="2" fill="#FFFFFF" opacity="0.4">TİPOGRAFİ</text>
+
+  <!-- Type specimens -->
+  <text x="60" y="355" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="40" font-weight="800" fill="#FFFFFF">Title — SF Pro Display Black 40pt</text>
+
+  <text x="60" y="392" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="24" font-weight="700" fill="#FFFFFF" opacity="0.9">Headline — SF Pro Display Bold 24pt</text>
+
+  <text x="60" y="420" font-family="'SF Pro Text','Helvetica Neue',Arial,sans-serif"
+        font-size="17" font-weight="400" fill="#FFFFFF" opacity="0.7">Body — SF Pro Text Regular 17pt</text>
+
+  <text x="60" y="443" font-family="'SF Pro Text','Helvetica Neue',Arial,sans-serif"
+        font-size="13" font-weight="400" fill="#FFFFFF" opacity="0.45">Caption — SF Pro Text Regular 13pt · Kategori etiketleri, ipuçları</text>
+
+  <!-- Keyboard key example -->
+  <rect x="600" y="318" width="52" height="56" rx="10" fill="#1E3A6E" stroke="#2A4A8A" stroke-width="1.5"/>
+  <text x="626" y="355" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="26" font-weight="700" text-anchor="middle" fill="#FFFFFF">A</text>
+
+  <rect x="662" y="318" width="52" height="56" rx="10" fill="url(#accent)"/>
+  <text x="688" y="355" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="26" font-weight="700" text-anchor="middle" fill="#FFFFFF">K</text>
+
+  <rect x="724" y="318" width="52" height="56" rx="10" fill="#122A50" stroke="#1A3560" stroke-width="1.5" opacity="0.5"/>
+  <text x="750" y="355" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="26" font-weight="700" text-anchor="middle" fill="#FFFFFF" opacity="0.3">M</text>
+
+  <text x="624" y="392" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11"
+        text-anchor="middle" fill="#FFFFFF" opacity="0.4">Normal</text>
+  <text x="688" y="392" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11"
+        text-anchor="middle" fill="url(#accent)" opacity="0.9">Doğru ✓</text>
+  <text x="750" y="392" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11"
+        text-anchor="middle" fill="#FFFFFF" opacity="0.35">Yanlış ✗</text>
+
+  <!-- divider -->
+  <rect x="60" y="462" width="1080" height="1" fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- ══════════════════════════════════════
+       SECTION 3 — COMPONENTS
+  ══════════════════════════════════════ -->
+  <text x="60" y="490" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="13" font-weight="600" letter-spacing="2" fill="#FFFFFF" opacity="0.4">KOMPONENTLEr</text>
+
+  <!-- Letter tile blank -->
+  <rect x="60" y="508" width="70" height="76" rx="14" fill="#1E3A6E" stroke="#2A4A8A" stroke-width="1.5"/>
+  <rect x="75" y="571" width="40" height="6" rx="3" fill="#4F8EF7" opacity="0.5"/>
+  <text x="95" y="560" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10"
+        text-anchor="middle" fill="#FFFFFF" opacity="0.3">Boş</text>
+
+  <!-- Letter tile revealed -->
+  <rect x="145" y="508" width="70" height="76" rx="14" fill="url(#accent)"/>
+  <text x="180" y="562" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="40" font-weight="800" text-anchor="middle" fill="#FFFFFF">E</text>
+  <text x="180" y="594" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10"
+        text-anchor="middle" fill="#FFFFFF" opacity="0.6">Açık</text>
+
+  <!-- Stat card -->
+  <rect x="240" y="504" width="160" height="88" rx="16" fill="#1E3A6E" stroke="#2A4A8A" stroke-width="1"/>
+  <text x="320" y="532" font-family="'Helvetica Neue',Arial,sans-serif" font-size="12"
+        text-anchor="middle" fill="#FFFFFF" opacity="0.5">Toplam Oyun</text>
+  <text x="320" y="565" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="32" font-weight="800" text-anchor="middle" fill="#FFFFFF">142</text>
+
+  <!-- Primary button -->
+  <rect x="420" y="508" width="180" height="52" rx="16" fill="url(#accent)"/>
+  <text x="510" y="539" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="18" font-weight="700" text-anchor="middle" fill="#FFFFFF">Oyna →</text>
+
+  <!-- Secondary button -->
+  <rect x="420" y="570" width="180" height="52" rx="16" fill="#1E3A6E" stroke="#2A4A8A" stroke-width="1.5"/>
+  <text x="510" y="601" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="18" font-weight="700" text-anchor="middle" fill="#FFFFFF" opacity="0.8">İpucu Al</text>
+
+  <!-- Streak badge -->
+  <rect x="622" y="508" width="130" height="52" rx="26" fill="#F59E0B" opacity="0.18"/>
+  <rect x="622" y="508" width="130" height="52" rx="26" fill="none" stroke="#F59E0B" stroke-width="1.5" opacity="0.5"/>
+  <text x="687" y="539" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="16" font-weight="700" text-anchor="middle" fill="#F59E0B">🔥 14 Seri</text>
+
+  <!-- Lives pill -->
+  <rect x="622" y="572" width="130" height="52" rx="26" fill="#EF4444" opacity="0.15"/>
+  <rect x="622" y="572" width="130" height="52" rx="26" fill="none" stroke="#EF4444" stroke-width="1.5" opacity="0.4"/>
+  <text x="687" y="603" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="15" font-weight="700" text-anchor="middle" fill="#EF4444">❤️❤️❤️❤️❤️</text>
+
+  <!-- Jeton pill -->
+  <rect x="770" y="508" width="130" height="52" rx="26" fill="#8B5CF6" opacity="0.18"/>
+  <rect x="770" y="508" width="130" height="52" rx="26" fill="none" stroke="#8B5CF6" stroke-width="1.5" opacity="0.5"/>
+  <text x="835" y="539" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif"
+        font-size="16" font-weight="700" text-anchor="middle" fill="#A78BFA">🪙 1.250</text>
+
+  <!-- divider -->
+  <rect x="60" y="648" width="1080" height="1" fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- ══════════════════════════════════════
+       SECTION 4 — EKSIK TASARIMLAR (TODO)
+  ══════════════════════════════════════ -->
+  <text x="60" y="676" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="13" font-weight="600" letter-spacing="2" fill="#FFFFFF" opacity="0.4">EKSİK TASARIMLAR — TODO</text>
+
+  <!-- Todo items -->
+  <g font-family="'Helvetica Neue',Arial,sans-serif" font-size="13">
+    <!-- Col 1 -->
+    <rect x="60" y="690" width="10" height="10" rx="2" fill="#EF4444"/>
+    <text x="80" y="700" fill="#FFFFFF" opacity="0.75">App Store Screenshots (6.7" + 6.1" + iPad)</text>
+
+    <rect x="60" y="714" width="10" height="10" rx="2" fill="#EF4444"/>
+    <text x="80" y="724" fill="#FFFFFF" opacity="0.75">App Store Preview Video (30 sn)</text>
+
+    <rect x="60" y="738" width="10" height="10" rx="2" fill="#F59E0B"/>
+    <text x="80" y="748" fill="#FFFFFF" opacity="0.75">Onboarding illüstrasyonları (5 sayfa)</text>
+
+    <rect x="60" y="762" width="10" height="10" rx="2" fill="#F59E0B"/>
+    <text x="80" y="772" fill="#FFFFFF" opacity="0.75">Başarım rozet ikonları (SVG)</text>
+
+    <rect x="60" y="786" width="10" height="10" rx="2" fill="#10B981"/>
+    <text x="80" y="796" fill="#FFFFFF" opacity="0.75">App Icon — 1024×1024 PNG (bu dosyadan export)</text>
+
+    <rect x="60" y="810" width="10" height="10" rx="2" fill="#10B981"/>
+    <text x="80" y="820" fill="#FFFFFF" opacity="0.75">Splash Screen — SwiftUI LaunchScreen.storyboard</text>
+
+    <!-- Col 2 -->
+    <rect x="420" y="690" width="10" height="10" rx="2" fill="#EF4444"/>
+    <text x="440" y="700" fill="#FFFFFF" opacity="0.75">Notification banner görseli</text>
+
+    <rect x="420" y="714" width="10" height="10" rx="2" fill="#EF4444"/>
+    <text x="440" y="724" fill="#FFFFFF" opacity="0.75">Widget görsel mock'u (App Store için)</text>
+
+    <rect x="420" y="738" width="10" height="10" rx="2" fill="#F59E0B"/>
+    <text x="440" y="748" fill="#FFFFFF" opacity="0.75">Ses efektleri (doğru/yanlış/kazanma/kaybetme)</text>
+
+    <rect x="420" y="762" width="10" height="10" rx="2" fill="#F59E0B"/>
+    <text x="440" y="772" fill="#FFFFFF" opacity="0.75">Uygulama içi banner'lar (IAP promosyon)</text>
+
+    <rect x="420" y="786" width="10" height="10" rx="2" fill="#10B981"/>
+    <text x="440" y="796" fill="#FFFFFF" opacity="0.75">Logo yatay PNG (şeffaf arka plan)</text>
+
+    <rect x="420" y="810" width="10" height="10" rx="2" fill="#10B981"/>
+    <text x="440" y="820" fill="#FFFFFF" opacity="0.75">Sosyal medya görseli (1200×630)</text>
+  </g>
+
+  <!-- Legend -->
+  <rect x="820" y="690" width="10" height="10" rx="2" fill="#EF4444"/>
+  <text x="838" y="700" font-family="'Helvetica Neue',Arial,sans-serif" font-size="12" fill="#FFFFFF" opacity="0.5">Kritik (App Store için zorunlu)</text>
+  <rect x="820" y="714" width="10" height="10" rx="2" fill="#F59E0B"/>
+  <text x="838" y="724" font-family="'Helvetica Neue',Arial,sans-serif" font-size="12" fill="#FFFFFF" opacity="0.5">Önemli (UX için gerekli)</text>
+  <rect x="820" y="738" width="10" height="10" rx="2" fill="#10B981"/>
+  <text x="838" y="748" font-family="'Helvetica Neue',Arial,sans-serif" font-size="12" fill="#FFFFFF" opacity="0.5">Tamamlandı / hazır</text>
+</svg>
