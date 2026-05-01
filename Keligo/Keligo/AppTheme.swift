@@ -204,7 +204,12 @@ enum AppTheme: String, CaseIterable, Identifiable {
     }
 
     var cardMaterial: Material {
-        isDark ? .ultraThinMaterial : .regularMaterial
+        isDark ? .ultraThinMaterial : .thinMaterial
+    }
+
+    /// Solid card background colour — use when Material creates contrast issues
+    var cardFill: Color {
+        isDark ? Color.white.opacity(0.09) : Color.white.opacity(0.88)
     }
 
     // MARK: - 2026: Ambient MeshGradient Backgrounds

@@ -198,7 +198,7 @@ struct FloatingDust: View {
     var body: some View {
         GeometryReader { geo in
             Canvas { context, _ in
-                for i in 0..<count {
+                for _ in 0..<count {
                     let x = CGFloat.random(in: 0...geo.size.width)
                     let y = CGFloat.random(in: 0...geo.size.height)
                     let size = CGFloat.random(in: 1...2.5)

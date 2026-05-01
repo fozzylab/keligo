@@ -12,36 +12,42 @@ struct GlassSurface: ViewModifier {
     
     func body(content: Content) -> some View {
         let enabled = settings.spatialUIEnabled && !settings.motionSafeMode
-        let mat = settings.theme.isDark ? Material.ultraThinMaterial : Material.regularMaterial
-        
+        let isDark = settings.theme.isDark
+
         content
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(mat)
-                    
+                        .fill(
+                            isDark
+                                ? AnyShapeStyle(Material.ultraThinMaterial)
+                                : AnyShapeStyle(Color.white.opacity(0.88))
+                        )
+
                     if enabled {
-                        // Inner sheen
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.18 * intensity),
-                                        Color.white.opacity(0.04 * intensity),
-                                        Color.white.opacity(0.0)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
+                        // Inner sheen — only meaningful on dark themes
+                        if isDark {
+                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(0.18 * intensity),
+                                            Color.white.opacity(0.04 * intensity),
+                                            Color.white.opacity(0.0)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
                                 )
-                            )
-                        
+                        }
+
                         if innerGlow {
                             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                                 .stroke(
                                     LinearGradient(
                                         colors: [
-                                            (borderGlow ?? Color.white).opacity(0.35 * intensity),
-                                            (borderGlow ?? Color.white).opacity(0.05 * intensity)
+                                            (borderGlow ?? Color.white).opacity(isDark ? 0.35 * intensity : 0.20 * intensity),
+                                            (borderGlow ?? Color.white).opacity(isDark ? 0.05 * intensity : 0.05 * intensity)
                                         ],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
@@ -55,10 +61,10 @@ struct GlassSurface: ViewModifier {
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(
-                        enabled
-                            ? Color.white.opacity(0.10 * intensity)
-                            : Color.white.opacity(0.06),
-                        lineWidth: 0.5
+                        isDark
+                            ? Color.white.opacity(enabled ? 0.10 * intensity : 0.06)
+                            : Color.black.opacity(0.07),
+                        lineWidth: isDark ? 0.5 : 0.8
                     )
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))

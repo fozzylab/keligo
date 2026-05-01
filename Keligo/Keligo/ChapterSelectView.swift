@@ -39,6 +39,7 @@ struct ChapterSelectView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 12)
 
+
                 // Chapter overview hero
                 let completed  = manager.chapters.filter { (manager.stars[$0.id] ?? 0) > 0 }.count
                 let totalStars = manager.chapters.reduce(0) { $0 + (manager.stars[$1.id] ?? 0) }
@@ -76,6 +77,7 @@ struct ChapterSelectView: View {
                     .padding(.bottom, 32)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
             if let chapter = selectedChapter {
                 ChapterGameView(
@@ -151,11 +153,12 @@ private struct ChapterHeroBar: View {
                 .frame(width: 44, height: 44)
             }
             .padding(.horizontal, 16).padding(.vertical, 14)
-            .background(theme.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(theme.cardStroke, lineWidth: 1)
             )
+            .shadow(color: theme.cardShadow.opacity(0.5), radius: 8, y: 4)
 
             // Motivasyon etiketi
             Text(motivationLabel)
