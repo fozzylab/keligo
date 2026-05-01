@@ -227,6 +227,8 @@ class StatsManager: ObservableObject {
     }
 
     func observeCloudChanges() {
+        #if !targetEnvironment(simulator)
+        guard iCloudEnabled else { return }
         NotificationCenter.default.addObserver(
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: NSUbiquitousKeyValueStore.default,
@@ -235,6 +237,7 @@ class StatsManager: ObservableObject {
             self?.loadFromiCloud()
         }
         NSUbiquitousKeyValueStore.default.synchronize()
+        #endif
     }
 
     // MARK: - Init
