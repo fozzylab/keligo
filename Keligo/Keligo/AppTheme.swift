@@ -203,19 +203,20 @@ enum AppTheme: String, CaseIterable, Identifiable {
         }
     }
 
-    // NOTE: Never use iOS Material for cards — Material uses the SYSTEM color scheme,
-    // not the app theme, causing white cards on dark app themes when device is in light mode.
-    // Always use cardFill (explicit color) instead.
+    // NOTE: Never use iOS Material for cards — Material respects the SYSTEM color scheme,
+    // not the app theme. Always use cardFill (explicit color) instead.
     var cardMaterial: Material { .ultraThinMaterial }   // Legacy; prefer cardFill
 
-    /// Primary card fill — explicit color so it's independent of system light/dark mode
+    /// Primary card fill — uses the theme's own `surface` color so each dark theme
+    /// gets its characteristic tinted-dark card instead of generic gray.
+    /// Light themes get a clean white card. Both are independent of system light/dark mode.
     var cardFill: Color {
-        isDark ? Color.white.opacity(0.13) : Color.white.opacity(0.90)
+        isDark ? surface : Color.white.opacity(0.90)
     }
 
-    /// Slightly more prominent card for selected/featured items
+    /// Slightly more elevated card (selected / featured items)
     var cardFillElevated: Color {
-        isDark ? Color.white.opacity(0.18) : Color.white.opacity(0.96)
+        isDark ? surface.opacity(0.90) : Color.white
     }
 
     // MARK: - 2026: Ambient MeshGradient Backgrounds

@@ -11,15 +11,17 @@ struct GlassSurface: ViewModifier {
     @EnvironmentObject var settings: SettingsViewModel
     
     func body(content: Content) -> some View {
-        let isDark = settings.theme.isDark
-        // Use explicit colors — never iOS Material which depends on the SYSTEM
-        // color scheme, not the app theme. This prevents white cards on dark themes
-        // when the device is in light system mode.
+        let theme  = settings.theme
+        let isDark = theme.isDark
+        // Use explicit theme colors — never iOS Material which follows SYSTEM light/dark mode
+        // and produces white cards on dark app themes when the device is in light system mode.
+        // Dark themes: use the theme's own `surface` color (already elevated above bg per theme).
+        // Light themes: white card.
         let baseFill: Color = isDark
-            ? Color.white.opacity(0.13 * intensity)
-            : Color.white.opacity(0.88)
+            ? theme.surface                   // e.g. midnight → dark blue-purple card
+            : Color.white.opacity(0.90)
         let strokeColor: Color = isDark
-            ? Color.white.opacity(0.14)
+            ? Color.white.opacity(0.12)
             : Color.black.opacity(0.07)
 
         content
