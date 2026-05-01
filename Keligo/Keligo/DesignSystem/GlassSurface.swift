@@ -13,11 +13,11 @@ struct GlassSurface: ViewModifier {
     func body(content: Content) -> some View {
         let theme  = settings.theme
         let isDark = theme.isDark
-        // Dark themes: cardFill (surface'dan biraz açık, okunabilir)
-        // Light themes: beyaz kart
-        let baseFill: Color = isDark
-            ? theme.cardFill
-            : Color.white.opacity(0.90)
+        // Always use theme.cardFill — adapts to system dark/light mode for every theme.
+        // Classic: Color(.secondarySystemBackground) adapts automatically.
+        // Other light themes (pastel, vintage): have their own explicit tints.
+        // Dark themes: explicit dark surface colors.
+        let baseFill: Color = theme.cardFill
         let strokeColor: Color = isDark
             ? Color.white.opacity(0.08)
             : Color.black.opacity(0.07)
@@ -146,7 +146,7 @@ struct FloatingOrb<Content: View>: View {
             .frame(width: size, height: size)
             .background(
                 Circle()
-                    .fill(isDark ? theme.cardFill : Color.white.opacity(0.90))
+                    .fill(theme.cardFill)
                     .overlay(
                         Circle()
                             .stroke(glowColor.opacity(isDark ? 0.12 : 0.25), lineWidth: 1)

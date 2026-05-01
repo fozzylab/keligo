@@ -55,21 +55,36 @@ class DailyDealManager: ObservableObject {
     private let kClaimed = "dailyDeal_claimed"
     
     private init() {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
+        let today = Self.todayString()
         let savedDay = ud.string(forKey: kDealDay) ?? ""
         if savedDay != today {
             // New day — rotate deal
             ud.set(today, forKey: kDealDay)
             ud.set(false, forKey: kClaimed)
             currentDeal = Self.randomDeal()
+            hasClaimed = false
         } else {
             currentDeal = Self.restoreDeal()
             hasClaimed = ud.bool(forKey: kClaimed)
         }
         hoursRemaining = Self.hoursUntilMidnight()
-        hasClaimed = ud.bool(forKey: kClaimed)
+    }
+
+    /// Call on foreground / onAppear to handle midnight rollover while app is running.
+    func refreshIfNeeded() {
+        let today = Self.todayString()
+        let savedDay = ud.string(forKey: kDealDay) ?? ""
+        guard savedDay != today else { return }
+        ud.set(today, forKey: kDealDay)
+        ud.set(false, forKey: kClaimed)
+        currentDeal = Self.restoreDeal()
+        hasClaimed = false
+        hoursRemaining = Self.hoursUntilMidnight()
+    }
+
+    private static func todayString() -> String {
+        let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: Date())
     }
     
     static func randomDeal() -> DealType {
@@ -90,12 +105,6 @@ class DailyDealManager: ObservableObject {
         let midnight = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now)!)
         let diff = calendar.dateComponents([.hour], from: now, to: midnight).hour ?? 0
         return max(0, diff)
-    }
-    
-    private func dayString() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
     }
     
     func claim() {

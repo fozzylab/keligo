@@ -25,6 +25,7 @@ struct MainMenuView: View {
     @StateObject private var lives = LivesManager.shared
     @StateObject private var iap = IAPManager.shared
     @StateObject private var prompts = AppPromptManager.shared
+    @StateObject private var deal = DailyDealManager.shared
     @State private var showSettings = false
     @State private var showStats = false
     @State private var showWordStats = false
@@ -36,6 +37,7 @@ struct MainMenuView: View {
 
     @State private var showLivesInfo = false
     @State private var livesNow = Date()
+    @State private var livesTimer: Timer? = nil
     @State private var showCalendar = false
     @State private var showWeekly = false
     @State private var showDavet = false
@@ -86,8 +88,10 @@ struct MainMenuView: View {
                         heroSection
                         statsStrip
                         
-                        // 2026: Daily Deal
-                        DailyDealCard()
+                        // 2026: Daily Deal — alındıktan veya süresi dolduktan sonra gizlenir
+                        if !deal.hasClaimed {
+                            DailyDealCard()
+                        }
                         
                         if AdManager.shared.canShowRewarded(.jetonBonus) && !iap.isAdsRemoved {
                             dailyBonusCard
@@ -201,15 +205,18 @@ struct MainMenuView: View {
                 GameContainerView(settings: settings, stats: stats, categoryFilter: selectedCategory,
                                   onBack: { withAnimation(.easeInOut(duration: 0.3)) { showInfinite = false } })
                     .transition(.move(edge: .trailing)).zIndex(1)
+                    .ignoresSafeArea()
             }
             if showChapterSelect {
                 ChapterSelectView(onBack: { withAnimation(.easeInOut(duration: 0.3)) { showChapterSelect = false } })
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.move(edge: .trailing)).zIndex(1)
+                    .ignoresSafeArea()
             }
             if showSpeed {
                 SpeedModeView(onBack: { withAnimation(.easeInOut(duration: 0.3)) { showSpeed = false } })
                     .transition(.move(edge: .trailing)).zIndex(1)
+                    .ignoresSafeArea()
             }
             if showKids {
                 GameContainerView(
@@ -218,16 +225,25 @@ struct MainMenuView: View {
                     onBack: { withAnimation(.easeInOut) { showKids = false } }
                 )
                 .transition(.move(edge: .trailing)).zIndex(1)
+                .ignoresSafeArea()
+            }
+            if showZen {
+                ZenModeView(settings: settings, stats: stats,
+                            onBack: { withAnimation(.easeInOut(duration: 0.3)) { showZen = false } })
+                    .transition(.move(edge: .trailing)).zIndex(1)
+                    .ignoresSafeArea()
             }
         }
         .onAppear {
             lives.recomputeRegen()
             prompts.notifyChapterStateChanged()
+            deal.refreshIfNeeded()   // gece yarısı geçtiyse kartı temizle
         }
         .animation(.easeInOut(duration: 0.3), value: showInfinite)
         .animation(.easeInOut(duration: 0.3), value: showChapterSelect)
         .animation(.easeInOut(duration: 0.3), value: showSpeed)
         .animation(.easeInOut(duration: 0.3), value: showKids)
+        .animation(.easeInOut(duration: 0.3), value: showZen)
         .animation(.easeInOut(duration: 0.3), value: showWeekly)
         .animation(.easeInOut(duration: 0.3), value: showDavet)
         .sheet(isPresented: $showOutOfLives) {
@@ -235,13 +251,15 @@ struct MainMenuView: View {
                 .environmentObject(settings)
                 .environmentObject(jetons)
         }
-        .alert(livesInfoTitle, isPresented: $showLivesInfo) {
-            if !lives.isFull && !lives.hasInfinite {
-                Button("Jeton ile Doldur") { showOutOfLives = true }
-            }
-            Button("Tamam", role: .cancel) {}
-        } message: {
-            Text(livesInfoMessage)
+        // Can bilgisi — timer ile canlı güncellenen sheet
+        .sheet(isPresented: $showLivesInfo) {
+            LivesInfoSheet(
+                lives: lives,
+                onRefill: { showOutOfLives = true },
+                onDismiss: { showLivesInfo = false }
+            )
+            .environmentObject(settings)
+            .environmentObject(jetons)
         }
         .alert("Reklam izle, +\(JetonManager.rewardJetonAdBonus) jeton kazan", isPresented: $showBonusAdConfirm) {
             Button("İzle") {
@@ -435,21 +453,14 @@ struct MainMenuView: View {
     // MARK: - Mode cards
 
     private var modeSection: some View {
-        Group {
-            if isIPad {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    modeSectionContent
-                }
-            } else {
-                VStack(spacing: 12) {
-                    modeSectionContent
-                }
-            }
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            modeSectionContent
         }
     }
 
     @ViewBuilder
     private var modeSectionContent: some View {
+        // ── Ana Oyun Modları (üst sıra) ──
         GameModeCard(
             icon: "infinity",
             title: "Sonsuz Mod",
@@ -465,111 +476,73 @@ struct MainMenuView: View {
             }
         }
 
-        // Günlük Kelime + Takvim — tek kart, takvim sheet'i içinde yönetilir
+        GameModeCard(
+            icon: "flag.checkered",
+            title: "Bölüm Modu",
+            subtitle: "\(chapters.chapters.filter { (chapters.stars[$0.id] ?? 0) > 0 }.count)/\(chapters.chapters.count) bölüm",
+            gradient: [Color(red: 0.65, green: 0.15, blue: 1.00), Color(red: 1.00, green: 0.38, blue: 0.82)],
+            theme: t
+        ) { showChapterSelect = true }
+
         GameModeCard(
             icon: "calendar",
-            title: "Günlük Kelime & Takvim",
-            subtitle: daily.hasPlayedToday ? "Bugün oynadın ✓ · Geçmişe bak" : "Her gün yeni kelime",
+            title: "Günlük Kelime",
+            subtitle: daily.hasPlayedToday ? "Bugün oynadın ✓" : "Her gün yeni kelime",
             gradient: [Color(red: 1.00, green: 0.45, blue: 0.10), Color(red: 1.00, green: 0.75, blue: 0.15)],
             badge: daily.hasPlayedToday ? nil : "YENİ",
             theme: t
         ) { showCalendar = true }
 
-            GameModeCard(
-                icon: "flag.checkered",
-                title: "Bölüm Modu",
-                subtitle: "\(chapters.chapters.filter { (chapters.stars[$0.id] ?? 0) > 0 }.count)/\(chapters.chapters.count) bölüm tamamlandı",
-                gradient: [Color(red: 0.65, green: 0.15, blue: 1.00), Color(red: 1.00, green: 0.38, blue: 0.82)],
-                theme: t
-            ) { showChapterSelect = true }
+        GameModeCard(
+            icon: "bolt.fill",
+            title: "Hız Modu",
+            subtitle: stats.speedHighScore > 0 ? "Rekor: \(stats.speedHighScore)" : "60 saniye",
+            gradient: [Color(red: 1.00, green: 0.18, blue: 0.18), Color(red: 1.00, green: 0.58, blue: 0.10)],
+            theme: t
+        ) { showSpeed = true }
 
-            GameModeCard(
-                icon: "bolt.fill",
-                title: "Hız Modu",
-                subtitle: stats.speedHighScore > 0 ? "Rekor: \(stats.speedHighScore) kelime" : "60 saniyede kaç kelime?",
-                gradient: [Color(red: 1.00, green: 0.18, blue: 0.18), Color(red: 1.00, green: 0.58, blue: 0.10)],
-                theme: t
-            ) { showSpeed = true }
-
-            GameModeCard(
-                icon: "face.smiling.fill",
-                title: "Çocuk Modu",
-                subtitle: "Kısa kelimeler, bol ipucu",
-                gradient: [Color(red: 0.10, green: 0.75, blue: 0.40), Color(red: 0.20, green: 0.95, blue: 0.55)],
-                theme: t
-            ) {
-                lives.recomputeRegen()
-                if lives.current > 0 || lives.hasInfinite {
-                    showKids = true
-                } else {
-                    showOutOfLives = true
-                }
+        // ── Özel Modlar (alt sıra) ──
+        GameModeCard(
+            icon: "face.smiling.fill",
+            title: "Çocuk Modu",
+            subtitle: "Kısa kelimeler",
+            gradient: [Color(red: 0.10, green: 0.75, blue: 0.40), Color(red: 0.20, green: 0.95, blue: 0.55)],
+            theme: t
+        ) {
+            lives.recomputeRegen()
+            if lives.current > 0 || lives.hasInfinite {
+                showKids = true
+            } else {
+                showOutOfLives = true
             }
-            
-            GameModeCard(
-                icon: "infinity.circle.fill",
-                title: "Zen Modu",
-                subtitle: "Reklamsız, sınırsız, huzurlu",
-                gradient: [Color(red: 0.40, green: 0.60, blue: 0.80), Color(red: 0.60, green: 0.80, blue: 0.90)],
-                theme: t
-            ) {
-                showZen = true
-            }
+        }
+        
+        GameModeCard(
+            icon: "infinity.circle.fill",
+            title: "Zen Modu",
+            subtitle: "Reklamsız, huzurlu",
+            gradient: [Color(red: 0.40, green: 0.60, blue: 0.80), Color(red: 0.60, green: 0.80, blue: 0.90)],
+            theme: t
+        ) {
+            showZen = true
+        }
 
-            GameModeCard(
-                icon: "calendar.badge.exclamationmark",
-                title: "Haftalık Meydan Okuma",
-                subtitle: weekly.weekProgress() > 0
-                    ? "\(weekly.weekProgress())/7 tamamlandı"
-                    : "Bu hafta yeni!",
-                gradient: [Color(red: 0.10, green: 0.75, blue: 0.55), Color(red: 0.20, green: 0.95, blue: 0.70)],
-                badge: weekly.isWeekComplete() && !weekly.weekBonusClaimed() ? "ÖDÜL" : nil,
-                theme: t
-            ) { showWeekly = true }
+        GameModeCard(
+            icon: "calendar.badge.exclamationmark",
+            title: "Haftalık",
+            subtitle: weekly.weekProgress() > 0 ? "\(weekly.weekProgress())/7" : "Yeni!",
+            gradient: [Color(red: 0.10, green: 0.75, blue: 0.55), Color(red: 0.20, green: 0.95, blue: 0.70)],
+            badge: weekly.isWeekComplete() && !weekly.weekBonusClaimed() ? "ÖDÜL" : nil,
+            theme: t
+        ) { showWeekly = true }
 
-            GameModeCard(
-                icon: "person.2.fill",
-                title: "Arkadaşa Sor",
-                subtitle: "Kod paylaş, kelime tahmin ettir",
-                gradient: [Color(red: 0.20, green: 0.60, blue: 0.85), Color(red: 0.10, green: 0.85, blue: 0.75)],
-                theme: t
-            ) { showFriendChallenge = true }
-
-            GameModeCard(
-                icon: "bag.fill",
-                title: "Premium Mağaza",
-                subtitle: "Jeton, kelime paketi ve can al",
-                gradient: [Color(red: 0.90, green: 0.75, blue: 0.10), Color(red: 1.00, green: 0.55, blue: 0.10)],
-                theme: t
-            ) { showIAPStore = true }
-
-            GameModeCard(
-                icon: "person.badge.plus",
-                title: "Arkadaşını Davet Et",
-                subtitle: "Arkadaşını davet et, 50 jeton kazan!",
-                gradient: [Color(red: 0.55, green: 0.25, blue: 0.95), Color(red: 0.95, green: 0.35, blue: 0.65)],
-                theme: t
-            ) { withAnimation(.easeInOut) { showDavet = true } }
-    }
-
-    // MARK: - Lives info
-
-    private var livesInfoTitle: String {
-        if lives.hasInfinite { return "Sınırsız Can ❤️" }
-        if lives.isFull { return "Canların Dolu! ❤️❤️❤️❤️❤️" }
-        return "Can Bilgisi ❤️ \(lives.current)/\(LivesManager.maxLives)"
-    }
-
-    private var livesInfoMessage: String {
-        if lives.hasInfinite { return "Sınırsız can hakkın var — istediğin kadar oyna!" }
-        if lives.isFull { return "Tüm canların dolu. Oynamaya başla!" }
-        guard let next = lives.nextRegenAt else { return "Canların yenileniyor..." }
-        let remaining = max(0, next.timeIntervalSince(Date()))
-        let mins = Int(remaining) / 60
-        let secs = Int(remaining) % 60
-        let missing = LivesManager.maxLives - lives.current
-        let fullMins = Int(TimeInterval(missing) * LivesManager.regenIntervalSeconds) / 60
-        return "Sonraki can: \(mins):\(String(format: "%02d", secs)) içinde\nTüm dolum: ~\(fullMins) dakika\n\nJeton veya reklam ile hemen doldurabilirsin."
+        GameModeCard(
+            icon: "person.2.fill",
+            title: "Arkadaşa Sor",
+            subtitle: "Kod paylaş",
+            gradient: [Color(red: 0.20, green: 0.60, blue: 0.85), Color(red: 0.10, green: 0.85, blue: 0.75)],
+            theme: t
+        ) { showFriendChallenge = true }
     }
 
     // MARK: - Easter egg
@@ -754,47 +727,45 @@ struct GameModeCard: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
+            VStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14)
                         .fill(LinearGradient(colors: gradient, startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 54, height: 54)
-                        .shadow(color: gradient.first?.opacity(theme.isDark ? 0.20 : 0.45) ?? .clear, radius: theme.isDark ? 6 : 10, y: theme.isDark ? 3 : 5)
+                        .frame(width: 48, height: 48)
+                        .shadow(color: gradient.first?.opacity(theme.isDark ? 0.15 : 0.35) ?? .clear, radius: theme.isDark ? 4 : 8, y: theme.isDark ? 2 : 4)
                     Image(systemName: icon)
-                        .font(.title2.weight(.semibold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(.white)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(title)
-                            .font(.headline.weight(.bold))
-                            .foregroundColor(theme.isDark ? .white : Color(.label))
-                            .tracking(-0.3)
-                        if let badge {
-                            Text(badge)
-                                .font(.system(size: 9, weight: .heavy))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 7).padding(.vertical, 2)
-                                .background(Color.red, in: Capsule())
-                        }
-                    }
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(theme.isDark ? .white.opacity(0.72) : Color(.secondaryLabel))
+                VStack(alignment: .center, spacing: 3) {
+                    Text(title)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundColor(theme.primaryText)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    
+                    if let badge {
+                        Text(badge)
+                            .font(.system(size: 8, weight: .heavy))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6).padding(.vertical, 1)
+                            .background(Color.red, in: Capsule())
+                    }
+                    
+                    Text(subtitle)
+                        .font(.caption2)
+                        .foregroundColor(theme.secondaryText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(theme.isDark ? .white.opacity(0.45) : Color(.tertiaryLabel))
             }
-            .padding(16)
-            .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 20))
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(theme.cardStroke, lineWidth: 1))
-            .shadow(color: theme.cardShadow, radius: 10, y: 5)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 8)
+            .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(theme.cardStroke, lineWidth: 1))
+            .shadow(color: theme.cardShadow, radius: 8, y: 4)
         }
         .buttonStyle(ScaleButtonStyle())
     }

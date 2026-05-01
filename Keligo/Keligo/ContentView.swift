@@ -250,7 +250,11 @@ struct GameBoardView<Overlay: View>: View {
     
     var body: some View {
         ZStack {
-            // 2026: Reactive generative ambient background
+            // Opaque base — prevents main menu from bleeding through the game view
+            settings.theme.background
+                .ignoresSafeArea()
+
+            // 2026: Reactive generative ambient background (overlay on opaque base)
             ReactiveGameBackground(vm: vm)
                 .animation(.easeInOut(duration: 1.2), value: vm.gameState)
 
