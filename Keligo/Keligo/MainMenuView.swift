@@ -57,19 +57,20 @@ struct MainMenuView: View {
     
     var body: some View {
         ZStack {
-            // 2026: Generative ambient background
+            // Theme background always shown first (ensures light themes stay light)
+            t.background.ignoresSafeArea()
+            RadialGradient(
+                colors: [t.glowColor, .clear],
+                center: UnitPoint(x: 0.85, y: 0.05),
+                startRadius: 0,
+                endRadius: 380
+            )
+            .ignoresSafeArea()
+
+            // 2026: Generative ambient overlay (on top of theme bg, not replacing it)
             if settings.spatialUIEnabled {
                 GenerativeBackground(mood: ai.suggestedAmbientMood, intensity: settings.ambientIntensity)
                     .ignoresSafeArea()
-            } else {
-                t.background.ignoresSafeArea()
-                RadialGradient(
-                    colors: [t.glowColor, .clear],
-                    center: UnitPoint(x: 0.85, y: 0.05),
-                    startRadius: 0,
-                    endRadius: 380
-                )
-                .ignoresSafeArea()
             }
             
             // Floating dust ambient layer (static, lightweight)
@@ -203,6 +204,7 @@ struct MainMenuView: View {
             }
             if showChapterSelect {
                 ChapterSelectView(onBack: { withAnimation(.easeInOut(duration: 0.3)) { showChapterSelect = false } })
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.move(edge: .trailing)).zIndex(1)
             }
             if showSpeed {
@@ -234,7 +236,9 @@ struct MainMenuView: View {
                 .environmentObject(jetons)
         }
         .alert(livesInfoTitle, isPresented: $showLivesInfo) {
-            Button("Jeton ile Doldur") { showOutOfLives = true }
+            if !lives.isFull && !lives.hasInfinite {
+                Button("Jeton ile Doldur") { showOutOfLives = true }
+            }
             Button("Tamam", role: .cancel) {}
         } message: {
             Text(livesInfoMessage)

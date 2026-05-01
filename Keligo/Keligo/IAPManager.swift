@@ -72,6 +72,7 @@ class IAPManager: ObservableObject {
     @Published var products: [Product] = []
     @Published var purchasedProductIDs: Set<String> = []
     @Published var isPurchasing = false
+    @Published var isLoadingProducts = false
     @Published var errorMessage: String? = nil
 
     var isAdsRemoved: Bool {
@@ -119,13 +120,17 @@ class IAPManager: ObservableObject {
     }
 
     func loadProducts() async {
+        guard !isLoadingProducts else { return }
+        isLoadingProducts = true
+        errorMessage = nil
         do {
             let ids = IAPProduct.allCases.map { $0.rawValue }
-            products = try await Product.products(for: ids)
-                .sorted { $0.price < $1.price }
+            let fetched = try await Product.products(for: ids)
+            products = fetched.sorted { $0.price < $1.price }
         } catch {
-            errorMessage = "Ürünler yüklenemedi: \(error.localizedDescription)"
+            errorMessage = "Ürünler yüklenemedi. İnternet bağlantınızı kontrol edin."
         }
+        isLoadingProducts = false
     }
 
     func purchase(_ product: Product) async {
@@ -258,21 +263,39 @@ struct IAPStoreView: View {
                         }
                         .padding(.top, 8)
 
-                        if iap.isPurchasing {
-                            ProgressView()
+                        if iap.isLoadingProducts {
+                            VStack(spacing: 12) {
+                                ProgressView()
+                                    .scaleEffect(1.3)
+                                Text("Ürünler yükleniyor…")
+                                    .font(.caption)
+                                    .foregroundColor(t.secondaryText)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(40)
+                        } else if iap.isPurchasing {
+                            ProgressView("Satın alma işleniyor…")
                                 .padding()
                         } else if iap.products.isEmpty {
-                            VStack(spacing: 10) {
-                                Image(systemName: "wifi.slash")
-                                    .font(.title2)
-                                    .foregroundColor(t.secondaryText)
+                            VStack(spacing: 16) {
+                                Image(systemName: "cart.badge.questionmark")
+                                    .font(.system(size: 44))
+                                    .foregroundColor(t.secondaryText.opacity(0.6))
                                 Text("Ürünler yüklenemedi")
+                                    .font(.headline.weight(.semibold))
+                                    .foregroundColor(t.primaryText)
+                                Text("İnternet bağlantınızı kontrol edip tekrar deneyin.")
                                     .font(.subheadline)
                                     .foregroundColor(t.secondaryText)
-                                Button("Tekrar Dene") {
-                                    Task { await iap.loadProducts() }
+                                    .multilineTextAlignment(.center)
+                                Button(action: { Task { await iap.loadProducts() } }) {
+                                    Label("Tekrar Dene", systemImage: "arrow.clockwise")
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 24).padding(.vertical, 12)
+                                        .background(t.accent, in: Capsule())
                                 }
-                                .foregroundColor(t.accent)
+                                .buttonStyle(ScaleButtonStyle())
                             }
                             .padding(32)
                         } else {
@@ -372,6 +395,12 @@ struct IAPStoreView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Kapat") { dismiss() }.foregroundColor(t.accent)
+                }
+            }
+            .task {
+                // Reload products every time the sheet opens — ensures fresh data on iPad
+                if iap.products.isEmpty && !iap.isLoadingProducts {
+                    await iap.loadProducts()
                 }
             }
         }

@@ -10,182 +10,209 @@ struct ChapterSelectView: View {
 
     var t: AppTheme { settings.theme }
 
+    // Computed stats
+    private var completed: Int  { manager.chapters.filter { (manager.stars[$0.id] ?? 0) > 0 }.count }
+    private var totalStars: Int { manager.chapters.reduce(0) { $0 + (manager.stars[$1.id] ?? 0) } }
+    private var maxStars: Int   { manager.chapters.count * 3 }
+
     var body: some View {
-        ZStack {
-            t.background.ignoresSafeArea()
-            RadialGradient(
-                colors: [t.glowColor, .clear],
-                center: .topTrailing, startRadius: 0, endRadius: 320
-            ).ignoresSafeArea()
+        // Use the background as the root fill — overlay puts content at the top
+        t.background
+            .ignoresSafeArea()
+            .overlay(alignment: .top) {
+                VStack(spacing: 0) {
+                    // ── Hero banner ──────────────────────────────────────────
+                    ChapterHeroBanner(
+                        completed: completed,
+                        total: manager.chapters.count,
+                        totalStars: totalStars,
+                        maxStars: maxStars,
+                        theme: t,
+                        onBack: onBack
+                    )
 
-            VStack(spacing: 0) {
-                // Top bar
-                HStack {
-                    Button(action: onBack) {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .symbolRenderingMode(.hierarchical)
-                            .font(.title2)
-                            .foregroundStyle(t.accentGradient)
-                    }
-                    .buttonStyle(ScaleButtonStyle())
-                    Spacer()
-                    Text("Bölüm Modu")
-                        .font(.headline.weight(.bold))
-                        .foregroundColor(t.primaryText)
-                    Spacer()
-                    Color.clear.frame(width: 32)
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+                    // ── Motivation label ─────────────────────────────────────
+                    Text(motivationLabel)
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(t.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
+                        .padding(.bottom, 6)
 
-
-                // Chapter overview hero
-                let completed  = manager.chapters.filter { (manager.stars[$0.id] ?? 0) > 0 }.count
-                let totalStars = manager.chapters.reduce(0) { $0 + (manager.stars[$1.id] ?? 0) }
-                let maxStars   = manager.chapters.count * 3
-
-                ChapterHeroBar(
-                    completed: completed,
-                    total: manager.chapters.count,
-                    totalStars: totalStars,
-                    maxStars: maxStars,
-                    theme: t
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
-
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 14) {
-                        ForEach(manager.chapters) { chapter in
-                            ChapterCard(
-                                chapter: chapter,
-                                stars: manager.stars[chapter.id] ?? 0,
-                                unlocked: manager.isUnlocked(chapter),
-                                theme: t
-                            )
-                            .onTapGesture {
-                                if manager.isUnlocked(chapter) {
-                                    withAnimation(.spring(response: 0.3)) {
-                                        selectedChapter = chapter
+                    // ── Chapter list ─────────────────────────────────────────
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 12) {
+                            ForEach(manager.chapters) { chapter in
+                                ChapterCard(
+                                    chapter: chapter,
+                                    stars: manager.stars[chapter.id] ?? 0,
+                                    unlocked: manager.isUnlocked(chapter),
+                                    theme: t
+                                )
+                                .onTapGesture {
+                                    if manager.isUnlocked(chapter) {
+                                        withAnimation(.spring(response: 0.3)) {
+                                            selectedChapter = chapter
+                                        }
                                     }
                                 }
                             }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 8)
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 32)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
-            if let chapter = selectedChapter {
-                ChapterGameView(
-                    chapter: chapter,
-                    settings: settings,
-                    stats: stats,
-                    onBack: { withAnimation(.easeInOut(duration: 0.3)) { selectedChapter = nil } }
-                )
-                .transition(.move(edge: .trailing))
-                .zIndex(1)
+            .overlay {
+                if let chapter = selectedChapter {
+                    ChapterGameView(
+                        chapter: chapter,
+                        settings: settings,
+                        stats: stats,
+                        onBack: { withAnimation(.easeInOut(duration: 0.3)) { selectedChapter = nil } }
+                    )
+                    .transition(.move(edge: .trailing))
+                    .zIndex(1)
+                }
             }
-        }
-        .animation(.easeInOut(duration: 0.3), value: selectedChapter?.id)
+            .animation(.easeInOut(duration: 0.3), value: selectedChapter?.id)
+    }
+
+    private var motivationLabel: String {
+        if completed == 0 { return "İlk bölümü aç ve başla! 🎯" }
+        if completed < 5  { return "Harika gidiyorsun, devam et! 🔥" }
+        if completed < manager.chapters.count { return "Şampiyon yolundasın! 👑" }
+        return "Tüm bölümler tamamlandı! 🏆"
     }
 }
 
-// MARK: - Chapter Hero Bar
+// MARK: - Chapter Hero Banner
 
-private struct ChapterHeroBar: View {
+private struct ChapterHeroBanner: View {
     let completed: Int
     let total: Int
     let totalStars: Int
     let maxStars: Int
     let theme: AppTheme
+    let onBack: () -> Void
 
-    private var completion: Double {
-        total == 0 ? 0 : Double(completed) / Double(total)
-    }
     private var starProgress: Double {
         maxStars == 0 ? 0 : Double(totalStars) / Double(maxStars)
     }
-    private var motivationLabel: String {
-        if completed == 0  { return "İlk bölümü aç ve başla! 🎯" }
-        if completed < 5   { return "Harika gidiyorsun, devam et! 🔥" }
-        if completed < total { return "Şampiyon yolundasın! 👑" }
-        return "Tüm bölümler tamamlandı! 🏆"
+    private var completionPct: Int {
+        total == 0 ? 0 : Int((Double(completed) / Double(total)) * 100)
     }
 
     var body: some View {
-        VStack(spacing: 10) {
-            // Stats row + progress ring
-            HStack(spacing: 0) {
-                // ⭐ Stars
-                statPill(icon: "star.fill", color: .yellow,
-                         value: "\(totalStars)/\(maxStars)", label: "Yıldız")
-                divider()
-                // ✓ Bölümler
-                statPill(icon: "checkmark.circle.fill", color: theme.accent,
-                         value: "\(completed)/\(total)", label: "Bölüm")
-                divider()
-                // 🏆 Yüzde
-                statPill(icon: "percent", color: .green,
-                         value: "\(Int(completion * 100))%", label: "Tamamlandı")
-
-                // Progress ring — right side
-                Spacer(minLength: 12)
-                ZStack {
-                    Circle()
-                        .stroke(theme.secondaryText.opacity(0.15), lineWidth: 5)
-                    Circle()
-                        .trim(from: 0, to: starProgress)
-                        .stroke(
-                            LinearGradient(colors: [.yellow, theme.accent],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing),
-                            style: StrokeStyle(lineWidth: 5, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: totalStars)
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(.yellow)
-                }
-                .frame(width: 44, height: 44)
-            }
-            .padding(.horizontal, 16).padding(.vertical, 14)
-            .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .strokeBorder(theme.cardStroke, lineWidth: 1)
+        ZStack(alignment: .bottom) {
+            // Gradient background
+            LinearGradient(
+                colors: [theme.accent, theme.accent.opacity(0.65)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
-            .shadow(color: theme.cardShadow.opacity(0.5), radius: 8, y: 4)
+            .ignoresSafeArea(edges: .top)
 
-            // Motivasyon etiketi
-            Text(motivationLabel)
-                .font(.caption.weight(.medium))
-                .foregroundColor(theme.secondaryText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 4)
-        }
-    }
+            // Decorative circles
+            Circle()
+                .fill(Color.white.opacity(0.07))
+                .frame(width: 180)
+                .offset(x: 100, y: -30)
+            Circle()
+                .fill(Color.white.opacity(0.05))
+                .frame(width: 120)
+                .offset(x: -80, y: 20)
 
-    @ViewBuilder
-    private func statPill(icon: String, color: Color, value: String, label: String) -> some View {
-        VStack(spacing: 3) {
-            HStack(spacing: 3) {
-                Image(systemName: icon).font(.system(size: 10)).foregroundColor(color)
-                Text(value).font(.subheadline.weight(.black)).foregroundColor(theme.primaryText)
+            VStack(spacing: 0) {
+                // Back button row
+                HStack {
+                    Button(action: onBack) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.subheadline.weight(.semibold))
+                            Text("Geri")
+                                .font(.subheadline.weight(.medium))
+                        }
+                        .foregroundColor(.white.opacity(0.85))
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+
+                // Icon + title
+                HStack(alignment: .center, spacing: 18) {
+                    // Big icon
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.18))
+                            .frame(width: 68, height: 68)
+                        Image(systemName: "books.vertical.fill")
+                            .font(.system(size: 30, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Bölüm Modu")
+                            .font(.title2.weight(.black))
+                            .foregroundColor(.white)
+                        Text("Kategoriden kategoriye ilerle")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.78))
+                    }
+
+                    Spacer()
+
+                    // Progress ring
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.25), lineWidth: 5)
+                        Circle()
+                            .trim(from: 0, to: starProgress)
+                            .stroke(Color.white, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                            .animation(.spring(response: 0.7, dampingFraction: 0.8), value: totalStars)
+                        Text("\(completionPct)%")
+                            .font(.system(size: 10, weight: .black))
+                            .foregroundColor(.white)
+                    }
+                    .frame(width: 52, height: 52)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 14)
+                .padding(.bottom, 18)
+
+                // Stats row
+                HStack(spacing: 0) {
+                    statPill(value: "\(totalStars)", unit: "/\(maxStars)", label: "Yıldız", icon: "star.fill", color: .yellow)
+                    Rectangle().fill(Color.white.opacity(0.25)).frame(width: 1, height: 28)
+                    statPill(value: "\(completed)", unit: "/\(total)", label: "Bölüm", icon: "checkmark.circle.fill", color: .white)
+                    Rectangle().fill(Color.white.opacity(0.25)).frame(width: 1, height: 28)
+                    statPill(value: "\(completionPct)", unit: "%", label: "Tamamlandı", icon: "chart.bar.fill", color: .white.opacity(0.9))
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .background(Color.black.opacity(0.12))
             }
-            Text(label).font(.caption2).foregroundColor(theme.secondaryText)
         }
         .frame(maxWidth: .infinity)
     }
 
-    @ViewBuilder
-    private func divider() -> some View {
-        Rectangle()
-            .fill(theme.secondaryText.opacity(0.18))
-            .frame(width: 1, height: 36)
+    private func statPill(value: String, unit: String, label: String, icon: String, color: Color) -> some View {
+        VStack(spacing: 3) {
+            HStack(spacing: 2) {
+                Image(systemName: icon).font(.system(size: 9)).foregroundColor(color)
+                HStack(spacing: 0) {
+                    Text(value).font(.subheadline.weight(.black)).foregroundColor(.white)
+                    Text(unit).font(.caption2.weight(.semibold)).foregroundColor(.white.opacity(0.7))
+                }
+            }
+            Text(label).font(.caption2).foregroundColor(.white.opacity(0.75))
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -258,7 +285,9 @@ struct ChapterCard: View {
             }
         }
         .padding(16)
-        .background(theme.cardMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(theme.cardStroke, lineWidth: 0.8))
+        .shadow(color: theme.cardShadow.opacity(0.45), radius: 8, y: 4)
         .opacity(unlocked ? 1 : 0.6)
         .buttonStyle(ScaleButtonStyle())
     }

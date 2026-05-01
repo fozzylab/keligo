@@ -9,29 +9,29 @@ enum AmbientMood: String, CaseIterable {
     var meshColors: [Color] {
         switch self {
         case .calm:
-            return [.teal.opacity(0.15), .blue.opacity(0.08), .black.opacity(0.5),
-                    .mint.opacity(0.08), .teal.opacity(0.05), .blue.opacity(0.10),
-                    .black.opacity(0.5), .mint.opacity(0.05), .teal.opacity(0.08)]
+            return [.teal.opacity(0.12), .blue.opacity(0.06), .teal.opacity(0.04),
+                    .mint.opacity(0.06), .teal.opacity(0.04), .blue.opacity(0.08),
+                    .blue.opacity(0.04), .mint.opacity(0.04), .teal.opacity(0.06)]
         case .focused:
-            return [.indigo.opacity(0.18), .purple.opacity(0.10), .black.opacity(0.5),
-                    .blue.opacity(0.10), .indigo.opacity(0.08), .purple.opacity(0.12),
-                    .black.opacity(0.5), .blue.opacity(0.08), .indigo.opacity(0.10)]
+            return [.indigo.opacity(0.14), .purple.opacity(0.08), .indigo.opacity(0.04),
+                    .blue.opacity(0.08), .indigo.opacity(0.06), .purple.opacity(0.10),
+                    .purple.opacity(0.04), .blue.opacity(0.06), .indigo.opacity(0.08)]
         case .urgent:
-            return [.red.opacity(0.20), .orange.opacity(0.12), .black.opacity(0.5),
-                    .orange.opacity(0.10), .red.opacity(0.08), .pink.opacity(0.15),
-                    .black.opacity(0.5), .orange.opacity(0.08), .red.opacity(0.12)]
+            return [.red.opacity(0.14), .orange.opacity(0.09), .red.opacity(0.04),
+                    .orange.opacity(0.08), .red.opacity(0.06), .pink.opacity(0.10),
+                    .pink.opacity(0.04), .orange.opacity(0.06), .red.opacity(0.08)]
         case .celebratory:
-            return [.yellow.opacity(0.18), .orange.opacity(0.10), .black.opacity(0.4),
-                    .green.opacity(0.10), .yellow.opacity(0.08), .cyan.opacity(0.12),
-                    .black.opacity(0.4), .green.opacity(0.08), .yellow.opacity(0.10)]
+            return [.yellow.opacity(0.14), .orange.opacity(0.08), .yellow.opacity(0.04),
+                    .green.opacity(0.08), .yellow.opacity(0.06), .cyan.opacity(0.09),
+                    .cyan.opacity(0.04), .green.opacity(0.06), .yellow.opacity(0.08)]
         case .mysterious:
-            return [.purple.opacity(0.18), .indigo.opacity(0.10), .black.opacity(0.5),
-                    .pink.opacity(0.08), .purple.opacity(0.05), .indigo.opacity(0.12),
-                    .black.opacity(0.5), .pink.opacity(0.05), .purple.opacity(0.10)]
+            return [.purple.opacity(0.14), .indigo.opacity(0.08), .purple.opacity(0.04),
+                    .pink.opacity(0.06), .purple.opacity(0.04), .indigo.opacity(0.09),
+                    .indigo.opacity(0.04), .pink.opacity(0.04), .purple.opacity(0.08)]
         case .zen:
-            return [.green.opacity(0.12), .teal.opacity(0.08), .black.opacity(0.4),
-                    .mint.opacity(0.08), .green.opacity(0.05), .teal.opacity(0.10),
-                    .black.opacity(0.4), .mint.opacity(0.05), .green.opacity(0.08)]
+            return [.green.opacity(0.10), .teal.opacity(0.06), .green.opacity(0.03),
+                    .mint.opacity(0.06), .green.opacity(0.04), .teal.opacity(0.08),
+                    .teal.opacity(0.03), .mint.opacity(0.04), .green.opacity(0.06)]
         }
     }
     
@@ -90,12 +90,12 @@ struct GenerativeBackground: View {
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
                 
-                // Layer 3: Vignette for depth (lighter)
+                // Layer 3: Very subtle vignette — only on dark themes
                 RadialGradient(
-                    colors: [.clear, .black.opacity(0.28 * intensity)],
+                    colors: [.clear, .black.opacity(0.10 * intensity)],
                     center: .center,
-                    startRadius: geo.size.width * 0.35,
-                    endRadius: geo.size.width * 0.95
+                    startRadius: geo.size.width * 0.45,
+                    endRadius: geo.size.width * 1.1
                 )
                 .ignoresSafeArea()
                 .allowsHitTesting(false)

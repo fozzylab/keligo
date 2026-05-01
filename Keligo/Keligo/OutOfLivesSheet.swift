@@ -134,7 +134,8 @@ struct OutOfLivesSheet: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(t.cardMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .background(t.cardFill, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(t.cardStroke, lineWidth: 0.8))
     }
 
     private var optionsList: some View {
@@ -276,7 +277,8 @@ struct OutOfLivesSheet: View {
                     .foregroundColor(primary ? .white : color)
             }
             .padding(14)
-            .background(t.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .background(t.cardFill, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(t.cardStroke, lineWidth: 0.8))
             .opacity(enabled ? 1.0 : 0.45)
         }
         .buttonStyle(ScaleButtonStyle())
