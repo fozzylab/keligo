@@ -23,8 +23,22 @@ final class LivesManager: ObservableObject {
     private let kLastTickMono  = "lives_lastTickMonotonic"
     private let kForwardRatch  = "lives_forwardRatchet"
     private let kICloudAnchor  = "lives_iCloudAnchor"
+    private let kRefillCount   = "lives_refillCountToday"
+    private let kRefillDay     = "lives_refillDay"
     private func kAdRefillsToday(_ day: String) -> String {
         "lives_adRefillsToday_\(day)"
+    }
+    
+    /// Escalating cost for life refills: 1st=50, 2nd=75, 3rd+=100
+    var currentRefillCost: Int {
+        let today = dayString()
+        let savedDay = UserDefaults.standard.string(forKey: kRefillDay) ?? ""
+        let count = (savedDay == today) ? UserDefaults.standard.integer(forKey: kRefillCount) : 0
+        switch count {
+        case 0: return JetonManager.costRefillOne
+        case 1: return 75
+        default: return 100
+        }
     }
 
     // MARK: - State (raw)
@@ -85,14 +99,34 @@ final class LivesManager: ObservableObject {
         snapshotTick()
     }
 
-    /// 50 jeton ile +1 can. Başarısızsa false.
+    /// Jeton ile +1 can. Maliyet günde yükselir: 50 → 75 → 100
     @discardableResult
     func buyOne() -> Bool {
         recomputeRegen()
         guard current < Self.maxLives else { return false }
-        guard JetonManager.shared.spend(JetonManager.costRefillOne) else { return false }
+        let cost = currentRefillCost
+        guard JetonManager.shared.spend(cost) else { return false }
+        incrementRefillCount()
         addOne(internal: true)
         return true
+    }
+    
+    private func incrementRefillCount() {
+        let today = dayString()
+        let savedDay = UserDefaults.standard.string(forKey: kRefillDay) ?? ""
+        if savedDay == today {
+            let current = UserDefaults.standard.integer(forKey: kRefillCount)
+            UserDefaults.standard.set(current + 1, forKey: kRefillCount)
+        } else {
+            UserDefaults.standard.set(today, forKey: kRefillDay)
+            UserDefaults.standard.set(1, forKey: kRefillCount)
+        }
+    }
+    
+    private func dayString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
     }
 
     /// 200 jeton ile tam dolum. Başarısızsa false.

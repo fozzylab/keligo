@@ -12,22 +12,23 @@ class JetonManager: ObservableObject {
         balance = UserDefaults.standard.integer(forKey: "jetonBalance")
     }
 
-    // MARK: - Reward amounts
-    static let rewardWin         = 15  // (was 10) Lives oyunu yavaşlattığı için tempo telafisi
-    static let rewardDaily       = 25
-    static let rewardStreak      = 50   // every 5-win streak milestone
-    static let rewardAd          = 100
-    static let rewardJetonAdBonus = 25  // 1/gün ana menüden rewarded ad ile
+    // MARK: - Reward amounts (rebalanced — less inflation)
+    static let rewardWin         = 15
+    static let rewardDaily       = 20
+    static let rewardStreak      = 40   // every 5-win streak milestone
+    static let rewardAd          = 80
+    static let rewardJetonAdBonus = 15  // 1/gün ana menüden rewarded ad ile
 
     // MARK: - Costs
     static let costVowel            = 200
     static let costLetter           = 100
     static let costSkip             = 50
-    static let costUndo             = 75   // (was 100) — daha sık kullanılsın
-    static let costStreakProtection = 75   // (was 50) — yüksek değer
-    static let costRefillOne        = 50   // 1 can refill
-    static let costRefillAll        = 200  // tam dolum (5 can = ~50% indirim)
-    static let costHint             = 50   // kelime ipucu — kısa açıklayıcı cümle
+    static let costUndo             = 75
+    static let costStreakProtection = 200  // rebalance: was 75
+    static let costRefillOne        = 50   // base, see LivesManager for escalation
+    static let costRefillAll        = 250  // was 200 — removes single-refill advantage
+    static let costHint             = 50
+    static let costContinueAfterLoss = 100 // new: keep playing after max wrong guesses
 
     // MARK: - Actions
 

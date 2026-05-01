@@ -16,6 +16,7 @@ struct MainMenuView: View {
     @State private var showChapterSelect = false
     @State private var showSpeed = false
     @State private var showKids = false
+    @State private var showZen = false
     @State private var showCategoryPicker = false
     @State private var showOutOfLives = false
     @State private var bonusClaimAnim = false
@@ -30,6 +31,8 @@ struct MainMenuView: View {
     @State private var showAchievements = false
     @State private var showFriendChallenge = false
     @State private var showIAPStore = false
+    @State private var showBattlePass = false
+    @State private var showStarterPack = false
 
     @State private var showLivesInfo = false
     @State private var livesNow = Date()
@@ -50,17 +53,30 @@ struct MainMenuView: View {
     private let daily = DailyWordManager.shared
     private let weekly = WeeklyChallengeManager.shared
 
+    @StateObject private var ai = AIPersonalizationEngine.shared
+    
     var body: some View {
         ZStack {
-            // Background + accent glow
-            t.background.ignoresSafeArea()
-            RadialGradient(
-                colors: [t.glowColor, .clear],
-                center: UnitPoint(x: 0.85, y: 0.05),
-                startRadius: 0,
-                endRadius: 380
-            )
-            .ignoresSafeArea()
+            // 2026: Generative ambient background
+            if settings.spatialUIEnabled {
+                GenerativeBackground(mood: ai.suggestedAmbientMood, intensity: settings.ambientIntensity)
+                    .ignoresSafeArea()
+            } else {
+                t.background.ignoresSafeArea()
+                RadialGradient(
+                    colors: [t.glowColor, .clear],
+                    center: UnitPoint(x: 0.85, y: 0.05),
+                    startRadius: 0,
+                    endRadius: 380
+                )
+                .ignoresSafeArea()
+            }
+            
+            // Floating dust ambient layer (static, lightweight)
+            if settings.spatialUIEnabled && settings.microInteractionLevel != .minimal {
+                FloatingDust(color: t.accent, count: 8)
+                    .ignoresSafeArea()
+            }
 
             VStack(spacing: 0) {
                 topNavBar
@@ -68,9 +84,17 @@ struct MainMenuView: View {
                     VStack(spacing: 28) {
                         heroSection
                         statsStrip
+                        
+                        // 2026: Daily Deal
+                        DailyDealCard()
+                        
                         if AdManager.shared.canShowRewarded(.jetonBonus) && !iap.isAdsRemoved {
                             dailyBonusCard
                         }
+                        
+                        // 2026: Battle Pass quick CTA
+                        battlePassCTA
+                        
                         modeSection
                         Text("v1.0")
                             .font(.caption2)
@@ -78,6 +102,7 @@ struct MainMenuView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
+                    .drawingGroup()
                 }
             }
 
@@ -242,6 +267,8 @@ struct MainMenuView: View {
         .sheet(isPresented: $showHowToPlay) { HowToPlayView().environmentObject(settings) }
         .sheet(isPresented: $showFriendChallenge) { FriendChallengeView() }
         .sheet(isPresented: $showIAPStore) { IAPStoreView() }
+        .sheet(isPresented: $showBattlePass) { BattlePassView() }
+        .sheet(isPresented: $showStarterPack) { StarterPackView() }
 
         .sheet(isPresented: $showCalendar) {
             DailyCalendarView()
@@ -299,25 +326,29 @@ struct MainMenuView: View {
 
     private var heroSection: some View {
         VStack(spacing: 10) {
-            // Keligo logo — 5 harf kutusu
+            // Keligo logo — floating 3D tiles with spatial depth
             ZStack {
                 Circle()
-                    .fill(t.accent.opacity(0.15))
-                    .frame(width: 130, height: 130)
-                    .blur(radius: 28)
-                VStack(spacing: 8) {
-                    HStack(spacing: 6) {
+                    .fill(t.accent.opacity(0.12))
+                    .frame(width: 150, height: 150)
+                    .blur(radius: 35)
+                    .breathe(intensity: 1.0, speed: 4.0)
+                
+                VStack(spacing: 10) {
+                    HStack(spacing: 8) {
                         ForEach(["K","E","L"], id: \.self) { letter in
                             HeroLetterTile(letter: letter, accent: t.accent)
+                                .spatialDepth(8, perspective: 0.3)
                         }
                     }
-                    HStack(spacing: 6) {
+                    HStack(spacing: 8) {
                         ForEach(["İ","G","O"], id: \.self) { letter in
                             HeroLetterTile(letter: letter, accent: t.accent)
+                                .spatialDepth(6, perspective: 0.3)
                         }
                     }
                 }
-                .shadow(color: t.accent.opacity(0.35), radius: 14, y: 4)
+                .ambientGlow(t.accent, intensity: 0.4, radius: 20)
                 .modifier(ShakeEffect(animatableData: eggShake))
                 .onTapGesture { handleEggTap() }
             }
@@ -335,8 +366,9 @@ struct MainMenuView: View {
                         .foregroundColor(t.primaryText)
                 }
                 .padding(.horizontal, 16).padding(.vertical, 8)
-                .background(t.cardMaterial, in: Capsule())
+                .glassSurface(cornerRadius: 20, intensity: 0.8, borderGlow: .orange, innerGlow: true)
                 .padding(.top, 4)
+                .spatialDepth(4)
             }
 
             // Jeton + Can pill'leri yan yana
@@ -468,6 +500,16 @@ struct MainMenuView: View {
                 } else {
                     showOutOfLives = true
                 }
+            }
+            
+            GameModeCard(
+                icon: "infinity.circle.fill",
+                title: "Zen Modu",
+                subtitle: "Reklamsız, sınırsız, huzurlu",
+                gradient: [Color(red: 0.40, green: 0.60, blue: 0.80), Color(red: 0.60, green: 0.80, blue: 0.90)],
+                theme: t
+            ) {
+                showZen = true
             }
 
             GameModeCard(
@@ -603,27 +645,63 @@ struct MainMenuView: View {
 
     private var statsStrip: some View {
         HStack(spacing: 10) {
-            miniStatCard(icon: "gamecontroller.fill", value: "\(stats.totalGames)", label: "Oyun")
-            miniStatCard(icon: "trophy.fill", value: "\(stats.wins)", label: "Galibiyet")
-            miniStatCard(icon: "flame.fill", value: "\(stats.bestStreak)", label: "En İyi Seri")
+            miniStatCard(icon: "gamecontroller.fill", value: stats.totalGames, label: "Oyun")
+            miniStatCard(icon: "trophy.fill", value: stats.wins, label: "Galibiyet")
+            miniStatCard(icon: "flame.fill", value: stats.bestStreak, label: "En İyi Seri")
         }
     }
 
-    private func miniStatCard(icon: String, value: String, label: String) -> some View {
+    private func miniStatCard(icon: String, value: Int, label: String) -> some View {
         VStack(spacing: 5) {
             Image(systemName: icon)
                 .font(.caption)
                 .foregroundStyle(t.accentGradient)
-            Text(value)
-                .font(.title3.bold())
-                .foregroundColor(t.primaryText)
+            AnimatedCounter(value: value, font: .title3.bold(), color: t.primaryText)
             Text(label)
                 .font(.caption2)
                 .foregroundColor(t.secondaryText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(t.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .glassSurface(cornerRadius: 16, intensity: 0.7, borderGlow: t.accent, innerGlow: true)
+        .spatialDepth(3)
+    }
+    
+    // MARK: - Battle Pass CTA
+    
+    private var battlePassCTA: some View {
+        Button {
+            showBattlePass = true
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(LinearGradient(colors: [.purple, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 44, height: 44)
+                    Image(systemName: "crown.fill")
+                        .font(.title3)
+                        .foregroundColor(.yellow)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Sezonluk Ödüller")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundColor(t.primaryText)
+                    Text("Oyna, XP kazan, ödülleri topla!")
+                        .font(.caption)
+                        .foregroundColor(t.secondaryText)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(t.secondaryText)
+            }
+            .padding(14)
+            .glassSurface(cornerRadius: 16, intensity: 0.7, borderGlow: .purple, innerGlow: true)
+        }
+        .buttonStyle(ScaleButtonStyle())
     }
 }
 
@@ -668,6 +746,8 @@ struct GameModeCard: View {
     let theme: AppTheme
     let action: () -> Void
 
+    @EnvironmentObject var settings: SettingsViewModel
+    
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
@@ -681,14 +761,15 @@ struct GameModeCard: View {
                         .foregroundColor(.white)
                 }
 
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(title)
-                            .font(.headline.weight(.semibold))
-                            .foregroundColor(theme.primaryText)
+                            .font(.headline.weight(.bold))
+                            .foregroundColor(theme.isDark ? .white : Color(.label))
+                            .tracking(-0.3)
                         if let badge {
                             Text(badge)
-                                .font(.system(size: 9, weight: .black))
+                                .font(.system(size: 9, weight: .heavy))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 7).padding(.vertical, 2)
                                 .background(Color.red, in: Capsule())
@@ -696,17 +777,19 @@ struct GameModeCard: View {
                     }
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundColor(theme.secondaryText)
+                        .foregroundColor(theme.isDark ? .white.opacity(0.72) : Color(.secondaryLabel))
+                        .lineLimit(1)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(theme.secondaryText)
+                    .foregroundColor(theme.isDark ? .white.opacity(0.45) : Color(.tertiaryLabel))
             }
             .padding(16)
-            .background(theme.cardMaterial, in: RoundedRectangle(cornerRadius: 20))
+            .glassSurface(cornerRadius: 20, intensity: 0.9, borderGlow: gradient.first, innerGlow: true)
+            .shadow(color: theme.cardShadow, radius: 10, y: 5)
         }
         .buttonStyle(ScaleButtonStyle())
     }

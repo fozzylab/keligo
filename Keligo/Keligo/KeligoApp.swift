@@ -7,7 +7,11 @@ struct KeligoApp: App {
     @StateObject private var achievements = AchievementManager.shared
     @StateObject private var jetons       = JetonManager.shared
     @StateObject private var iap          = IAPManager.shared
+    @StateObject private var ai           = AIPersonalizationEngine.shared
+    @StateObject private var vip          = VIPManager.shared
+    @StateObject private var season       = SeasonManager.shared
 
+    @Environment(\.scenePhase) private var scenePhase
     @State private var pendingChallengeCode: String? = nil
     @State private var showChallengeFromURL = false
 
@@ -19,6 +23,9 @@ struct KeligoApp: App {
                 .environmentObject(achievements)
                 .environmentObject(jetons)
                 .environmentObject(iap)
+                .environmentObject(ai)
+                .environmentObject(vip)
+                .environmentObject(season)
                 .onAppear {
                     GameCenterManager.shared.authenticate()
                     NotificationManager.shared.checkStatus { status in
@@ -45,6 +52,11 @@ struct KeligoApp: App {
                     }
                     showChallengeFromURL = true
                 }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        LivesManager.shared.recomputeRegen()
+                    }
+                }
                 .sheet(isPresented: $showChallengeFromURL, onDismiss: { pendingChallengeCode = nil }) {
                     if let code = pendingChallengeCode {
                         DeepLinkChallengeView(code: code)
@@ -52,6 +64,9 @@ struct KeligoApp: App {
                             .environmentObject(stats)
                             .environmentObject(achievements)
                             .environmentObject(jetons)
+                            .environmentObject(ai)
+                            .environmentObject(vip)
+                            .environmentObject(season)
                     }
                 }
         }

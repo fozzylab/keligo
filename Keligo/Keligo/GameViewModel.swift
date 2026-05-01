@@ -213,6 +213,15 @@ class GameViewModel: ObservableObject {
         !guessHistory.isEmpty && gameState == .playing
     }
 
+    // MARK: - Continue After Loss (2026 monetization)
+    
+    func continueAfterLoss() {
+        guard gameState == .lost, wrongGuesses > 0 else { return }
+        wrongGuesses -= 1
+        gameState = .playing
+        SoundManager.shared.playHint()
+    }
+    
     // MARK: - Rewarded ad helpers
 
     var canWatchRewardedAd: Bool {

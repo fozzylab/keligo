@@ -79,13 +79,67 @@ struct SettingsView: View {
                             settingsRow(icon: "speaker.wave.2.fill", title: "Ses Efektleri") {
                                 Toggle("", isOn: $settings.soundEnabled).labelsHidden()
                             }
+                            if settings.soundEnabled {
+                                Divider().background(t.secondaryText.opacity(0.3))
+                                settingsRow(icon: "speaker.wave.3.fill", title: "Ses Seviyesi") {
+                                    Slider(value: $settings.soundVolume, in: 0.1...1.0, step: 0.1)
+                                        .frame(width: 120)
+                                        .tint(t.accent)
+                                        .onChange(of: settings.soundVolume) { _, v in
+                                            SoundManager.shared.globalVolume = Float(v)
+                                        }
+                                }
+                            }
                             Divider().background(t.secondaryText.opacity(0.3))
                             settingsRow(icon: "iphone.radiowaves.left.and.right", title: "Titreşim") {
                                 Toggle("", isOn: $settings.hapticEnabled).labelsHidden()
                             }
+                            if settings.hapticEnabled {
+                                Divider().background(t.secondaryText.opacity(0.3))
+                                settingsRow(icon: "waveform", title: "Titreşim Yoğunluğu") {
+                                    Menu {
+                                        ForEach(HapticRichness.allCases) { r in
+                                            Button(r.displayName) { settings.hapticRichness = r }
+                                        }
+                                    } label: {
+                                        Text(settings.hapticRichness.displayName)
+                                            .font(.subheadline).foregroundColor(t.accent)
+                                    }
+                                }
+                            }
                             Divider().background(t.secondaryText.opacity(0.3))
-                            settingsRow(icon: "bell.fill", title: "Günlük Hatırlatıcı (09:00)") {
+                            settingsRow(icon: "bell.fill", title: "Günlük Hatırlatıcı") {
                                 Toggle("", isOn: $settings.dailyNotification).labelsHidden()
+                            }
+                            if settings.dailyNotification {
+                                Divider().background(t.secondaryText.opacity(0.3))
+                                settingsRow(icon: "clock.fill", title: "Hatırlatıcı Saati") {
+                                    DatePicker(
+                                        "",
+                                        selection: Binding(
+                                            get: {
+                                                var c = Calendar.current.dateComponents([.hour, .minute], from: Date())
+                                                c.hour = settings.notificationHour
+                                                c.minute = settings.notificationMinute
+                                                return Calendar.current.date(from: c) ?? Date()
+                                            },
+                                            set: { date in
+                                                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+                                                settings.notificationHour   = c.hour   ?? 9
+                                                settings.notificationMinute = c.minute ?? 0
+                                                if settings.dailyNotification {
+                                                    NotificationManager.shared.scheduleDailyReminder(
+                                                        hour: settings.notificationHour,
+                                                        minute: settings.notificationMinute
+                                                    )
+                                                }
+                                            }
+                                        ),
+                                        displayedComponents: .hourAndMinute
+                                    )
+                                    .labelsHidden()
+                                    .tint(t.accent)
+                                }
                             }
                         }
                         .background(t.surface).cornerRadius(12).padding(.horizontal)
@@ -95,6 +149,82 @@ struct SettingsView: View {
                         VStack(spacing: 0) {
                             settingsRow(icon: "xmark.circle.fill", title: "Yanlış Harfleri Göster") {
                                 Toggle("", isOn: $settings.showWrongLetters).labelsHidden()
+                            }
+                        }
+                        .background(t.surface).cornerRadius(12).padding(.horizontal)
+
+                        // 2026: SPATIAL UI
+                        sectionHeader("🪐 Spatial UI")
+                        VStack(spacing: 0) {
+                            settingsRow(icon: "cube.transparent", title: "Spatial UI") {
+                                Toggle("", isOn: $settings.spatialUIEnabled).labelsHidden()
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "wind", title: "Ambient Yoğunluğu") {
+                                Slider(value: $settings.ambientIntensity, in: 0.1...1.0, step: 0.1)
+                                    .frame(width: 120)
+                                    .tint(t.accent)
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "bolt.shield", title: "Mikro-İnteraksiyon") {
+                                Menu {
+                                    ForEach(MicroInteractionLevel.allCases) { level in
+                                        Button(level.displayName) { settings.microInteractionLevel = level }
+                                    }
+                                } label: {
+                                    Text(settings.microInteractionLevel.displayName)
+                                        .font(.subheadline)
+                                        .foregroundColor(t.accent)
+                                }
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "eye.slash", title: "Hareket Güvenli Modu") {
+                                Toggle("", isOn: $settings.motionSafeMode).labelsHidden()
+                            }
+                        }
+                        .background(t.surface).cornerRadius(12).padding(.horizontal)
+
+                        // 2026: KİŞİSELLEŞTİRME
+                        sectionHeader("🧠 Kişiselleştirme")
+                        VStack(spacing: 0) {
+                            settingsRow(icon: "brain.head.profile", title: "AI Asistan") {
+                                Toggle("", isOn: $settings.aiAssistantEnabled).labelsHidden()
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "eye", title: "Renk Filtresi") {
+                                Menu {
+                                    ForEach(ColorVisionFilter.allCases) { filter in
+                                        Button(filter.displayName) { settings.colorVisionFilter = filter }
+                                    }
+                                } label: {
+                                    Text(settings.colorVisionFilter.displayName)
+                                        .font(.subheadline)
+                                        .foregroundColor(t.accent)
+                                }
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "waveform", title: "Haptic Zenginliği") {
+                                Menu {
+                                    ForEach(HapticRichness.allCases) { richness in
+                                        Button(richness.displayName) { settings.hapticRichness = richness }
+                                    }
+                                } label: {
+                                    Text(settings.hapticRichness.displayName)
+                                        .font(.subheadline)
+                                        .foregroundColor(t.accent)
+                                }
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "mic.fill", title: "Sesli Kontrol") {
+                                Toggle("", isOn: $settings.voiceControlEnabled).labelsHidden()
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "moon.fill", title: "Odak Modu (Focus)") {
+                                Toggle("", isOn: $settings.focusModeEnabled).labelsHidden()
+                            }
+                            Divider().background(t.secondaryText.opacity(0.3))
+                            settingsRow(icon: "livephoto", title: "Live Activity") {
+                                Toggle("", isOn: $settings.dynamicIslandLiveActivity).labelsHidden()
                             }
                         }
                         .background(t.surface).cornerRadius(12).padding(.horizontal)

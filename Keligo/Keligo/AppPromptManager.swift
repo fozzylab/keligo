@@ -11,12 +11,20 @@ final class AppPromptManager: ObservableObject {
         case losingStreak       // 3 ardışık kayıp → Premium upsell
         case allChaptersDone    // Tüm bölümler bitti → premium pack CTA
         case heavyHintUser      // Çok jeton harcayan kullanıcı → bundle CTA
+        case lowOnLives         // 1 can kaldı → life refill CTA
+        case lowOnJetons        // Jeton < 100 → jeton pack CTA
+        case streakAtRisk       // 4+ seri → streak protection CTA
+        case firstPurchaseOffer // İlk satın alma teklifi
 
         var cooldownDays: Int {
             switch self {
             case .losingStreak:    return 7
             case .allChaptersDone: return 30
             case .heavyHintUser:   return 14
+            case .lowOnLives:      return 3
+            case .lowOnJetons:     return 5
+            case .streakAtRisk:    return 7
+            case .firstPurchaseOffer: return 999 // Once only
             }
         }
 
@@ -25,6 +33,10 @@ final class AppPromptManager: ObservableObject {
             case .losingStreak:    return "Tıkanma yaşıyorsun? 💪"
             case .allChaptersDone: return "Tüm bölümleri bitirdin! 🎉"
             case .heavyHintUser:   return "İpucu kullanırken jetonun mu eridi?"
+            case .lowOnLives:      return "Son Canın Kaldı! ❤️"
+            case .lowOnJetons:     return "Jetonların Azalıyor 🪙"
+            case .streakAtRisk:    return "Serin Tehlikede! 🔥"
+            case .firstPurchaseOffer: return "Yeni Oyuncu Özel! 🎁"
             }
         }
 
@@ -36,10 +48,23 @@ final class AppPromptManager: ObservableObject {
                 return "Premium kelime paketleriyle bilim, tarih, spor ve müzik dünyasına dal."
             case .heavyHintUser:
                 return "5.000 jeton + sınırsız can + tüm paketler = Premium Paket. Tek seferlik %50 tasarruf."
+            case .lowOnLives:
+                return "Canların tükenmek üzere. Mağazadan anında doldur veya reklam izle."
+            case .lowOnJetons:
+                return "Jeton paketi al veya reklam izleyerek hızlıca jeton kazan."
+            case .streakAtRisk:
+                return "Seri korumayı unutma! Bir sonraki kayıpta tüm serin sıfırlanacak."
+            case .firstPurchaseOffer:
+                return "Sadece bugün: Başlangıç Paketi — 1.000 jeton + özel tema sadece ₺9.99!"
             }
         }
 
-        var ctaText: String { "Mağazayı Aç" }
+        var ctaText: String {
+            switch self {
+            case .firstPurchaseOffer: return "Hemen Al"
+            default: return "Mağazayı Aç"
+            }
+        }
     }
 
     // MARK: - State
@@ -77,6 +102,30 @@ final class AppPromptManager: ObservableObject {
         }
     }
 
+    /// Düşük can kontrolü
+    func notifyLowLives(currentLives: Int) {
+        guard currentLives == 1, eligible(.lowOnLives), !IAPManager.shared.isUnlimitedLives else { return }
+        show(.lowOnLives)
+    }
+    
+    /// Düşük jeton kontrolü
+    func notifyLowJetons(balance: Int) {
+        guard balance < 100, eligible(.lowOnJetons) else { return }
+        show(.lowOnJetons)
+    }
+    
+    /// Seri risk kontrolü
+    func notifyStreakAtRisk(streak: Int) {
+        guard streak >= 4, eligible(.streakAtRisk) else { return }
+        show(.streakAtRisk)
+    }
+    
+    /// İlk satın alma teklifi
+    func notifyFirstPurchaseEligible(gamesPlayed: Int) {
+        guard gamesPlayed >= 3, eligible(.firstPurchaseOffer) else { return }
+        show(.firstPurchaseOffer)
+    }
+    
     /// Jeton harcama sonrası — eğer kullanıcı az sürede çok harcadıysa (7 gün içinde 1000+) tetikle.
     func notifyHintSpent(amount: Int) {
         let key = "prompt_jetonSpent7d"

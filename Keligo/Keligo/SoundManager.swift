@@ -5,8 +5,10 @@ class SoundManager {
     static let shared = SoundManager()
     private init() { preload() }
 
-    var soundEnabled  = true
-    var hapticEnabled = true
+    var soundEnabled   = true
+    var hapticEnabled  = true
+    /// 0.0–1.0 arası global ses çarpanı (ayarlardan kontrol edilir)
+    var globalVolume: Float = 1.0
 
     // MARK: - Players
 
@@ -38,7 +40,7 @@ class SoundManager {
     private func play(_ key: String, volume: Float = 1.0) {
         guard soundEnabled else { return }
         guard let player = players[key] else { return }
-        player.volume = volume
+        player.volume = volume * globalVolume
         if player.isPlaying { player.currentTime = 0 }
         player.play()
     }
@@ -75,10 +77,8 @@ class SoundManager {
         impact(.light)
     }
 
-    func playLevelComplete() {
-        play("win")
-        notify(.success)
-    }
+    /// Bölüm tamamlama sesi — `playWin` ile aynı ama ayrı adlandırılmış.
+    func playLevelComplete() { playWin() }
 
     func playUnlock() {
         play("hint")

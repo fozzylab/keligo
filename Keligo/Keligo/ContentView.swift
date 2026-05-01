@@ -226,6 +226,13 @@ struct GameBoardView<Overlay: View>: View {
     @State private var showInsufficientJetonAlert = false  // jeton yetersiz uyarısı
     @State private var now = Date()  // lives countdown timer tick
     private let regenTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    // 2026: Continue after loss
+    @State private var showContinueAfterLoss = false
+    @State private var hasUsedContinue = false
+    
+    // 2026: Word Lore sheet
+    @State private var showWordLore = false
 
     var isIPad: Bool { sizeClass == .regular }
 
@@ -239,20 +246,17 @@ struct GameBoardView<Overlay: View>: View {
         return vm.displayWord.filter({ $0 == "_" }).count == 1
     }
 
+    @StateObject private var ai = AIPersonalizationEngine.shared
+    
     var body: some View {
         ZStack {
-            theme.background.ignoresSafeArea()
-            RadialGradient(
-                colors: [theme.glowColor, .clear],
-                center: .topTrailing,
-                startRadius: 0,
-                endRadius: isIPad ? 500 : 350
-            )
-            .ignoresSafeArea()
+            // 2026: Reactive generative ambient background
+            ReactiveGameBackground(vm: vm)
+                .animation(.easeInOut(duration: 1.2), value: vm.gameState)
 
-            // Near-miss glow overlay (last life) — subtle background only
+            // Near-miss glow overlay (last life) — lightweight pulse only
             if isLastChance && nearMissPulse {
-                Color.red.opacity(0.07)
+                Color.red.opacity(0.10)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
             }
@@ -263,7 +267,45 @@ struct GameBoardView<Overlay: View>: View {
                 iPhoneLayout
             }
 
-            if vm.gameState != .playing {
+            // 2026: Continue after loss overlay (shown before game over)
+            if vm.gameState == .lost && showContinueAfterLoss && !hasUsedContinue {
+                ContinueAfterLossView(
+                    theme: theme,
+                    canAffordJetons: jetons.canAfford(JetonManager.costContinueAfterLoss)
+                ) {
+                    // Watch ad
+                    if AdManager.shared.canShowRewarded(.letter) {
+                        Task {
+                            let ok = await AdManager.shared.presentRewarded(.letter)
+                            if ok {
+                                vm.continueAfterLoss()
+                                hasUsedContinue = true
+                                showContinueAfterLoss = false
+                            }
+                        }
+                    } else {
+                        showRewardedCapAlert = true
+                    }
+                } onSpendJetons: {
+                    if jetons.spend(JetonManager.costContinueAfterLoss) {
+                        vm.continueAfterLoss()
+                        hasUsedContinue = true
+                        showContinueAfterLoss = false
+                        withAnimation(.spring()) {
+                            rewardToastText = "❤️ Oyun kurtarıldı!"
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
+                            withAnimation { rewardToastText = nil }
+                        }
+                    } else {
+                        showInsufficientJetonAlert = true
+                    }
+                } onDecline: {
+                    showContinueAfterLoss = false
+                }
+            }
+
+            if vm.gameState != .playing && !(vm.gameState == .lost && showContinueAfterLoss && !hasUsedContinue) {
                 gameOverOverlay()
                 if vm.gameState == .won { ConfettiView() }
             }
@@ -300,6 +342,9 @@ struct GameBoardView<Overlay: View>: View {
         .sheet(isPresented: $showWordReport) {
             WordReportSheet(word: vm.currentWord, category: vm.category)
                 .environmentObject(settings)
+        }
+        .sheet(isPresented: $showWordLore) {
+            WordLoreSheet(word: vm.currentWord, category: vm.category, theme: theme)
         }
         .alert("Reklam izlendi!", isPresented: $showRewardedAdSimulation) {
             Button("Tamam") {
@@ -338,18 +383,25 @@ struct GameBoardView<Overlay: View>: View {
         }
         .onChange(of: vm.wrongGuesses) {
             withAnimation(.linear(duration: 0.5)) { shakeCount += 1 }
+            // 2026: Rich cinematic haptics
+            if settings.hapticEnabled {
+                CinematicHaptics.shared.play(isLastChance ? .lastChance : .wrong)
+            }
             // Last-chance pulse
             if isLastChance {
-                if settings.hapticEnabled {
-                    let g = UIImpactFeedbackGenerator(style: .heavy)
-                    g.impactOccurred()
-                }
                 withAnimation(.easeInOut(duration: 0.4).repeatCount(3, autoreverses: true)) {
                     nearMissPulse = true
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                     nearMissPulse = false
                 }
+            }
+        }
+        .onChange(of: vm.guessedLetters) { old, new in
+            // 2026: AI gesture heatmap tracking
+            let diff = new.subtracting(old)
+            if let letter = diff.first {
+                ai.recordLetterTap(letter)
             }
         }
         .onChange(of: vm.displayWord) {
@@ -363,9 +415,36 @@ struct GameBoardView<Overlay: View>: View {
             let indices = Set(vm.displayWord.enumerated().compactMap { $0.element == letter ? $0.offset : nil })
             bouncingIndices.formUnion(indices)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { bouncingIndices.subtract(indices) }
+            // Doğru harf haptic'i
+            if settings.hapticEnabled {
+                CinematicHaptics.shared.play(.correct)
+            }
         }
         .onChange(of: vm.gameState) { _, state in
+            // Reset continue flag on new game
+            if state == .playing {
+                showContinueAfterLoss = false
+                hasUsedContinue = false
+                return
+            }
+            
+            // Show continue prompt on loss (before game over)
+            if state == .lost && !hasUsedContinue {
+                showContinueAfterLoss = true
+                return
+            }
+            
             guard state != .playing else { return }
+            
+            // 2026: AI session recording
+            ai.recordGame(
+                word: vm.currentWord,
+                won: state == .won,
+                wrongGuesses: vm.wrongGuesses,
+                duration: 0, // Could be tracked with a timer
+                category: vm.category
+            )
+            
             achievements.check(
                 stats: vm.stats,
                 chapters: ChapterManager.shared,
@@ -382,6 +461,18 @@ struct GameBoardView<Overlay: View>: View {
             }
             // Prompt manager — ardışık kayıp tetiği
             AppPromptManager.shared.notifyGameEnded(won: state == .won)
+            
+            // 2026: Cinematic haptics on game end
+            if settings.hapticEnabled {
+                CinematicHaptics.shared.play(state == .won ? .win : .loss)
+            }
+            
+            // 2026: Show Word Lore on win
+            if state == .won {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    showWordLore = true
+                }
+            }
         }
     }
 
@@ -393,7 +484,7 @@ struct GameBoardView<Overlay: View>: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(spacing: 0) {
                     categoryBadge
-                    KeligoDrawing(wrongGuesses: vm.wrongGuesses, maxWrong: vm.maxWrongGuesses, theme: theme)
+                    SpectralHangmanView(wrongGuesses: vm.wrongGuesses, maxWrong: vm.maxWrongGuesses, theme: theme, isLastChance: isLastChance)
                     wrongDots
                     wordDisplay
                     wordHintCard
@@ -658,34 +749,23 @@ struct GameBoardView<Overlay: View>: View {
     }
 
     private var wordLetterTiles: some View {
-        let letterFontSize: CGFloat = isIPad ? 34 : 26
-        let tileMinWidth: CGFloat  = isIPad ? 32 : 24
-        let underlineWidth: CGFloat = isIPad ? 32 : 24
-
-        return HStack(spacing: 0) {
+        HStack(spacing: 0) {
             ForEach(Array(vm.displayWord.enumerated()), id: \.offset) { idx, char in
                 if char == " " {
                     Rectangle()
                         .fill(Color.clear)
                         .frame(width: 20, height: 40)
                 } else {
-                    VStack(spacing: 5) {
-                        Text(char == "_" ? " " : String(char))
-                            .font(.system(size: letterFontSize, weight: .bold, design: .rounded))
-                            .foregroundColor(char == "_"
-                                ? theme.primaryText.opacity(0.25)
-                                : theme.primaryText)
-                            .frame(minWidth: tileMinWidth)
-                            .scaleEffect(bouncingIndices.contains(idx) ? 1.35 : 1.0)
-                            .animation(.spring(response: 0.2, dampingFraction: 0.4),
-                                       value: bouncingIndices.contains(idx))
-                        RoundedRectangle(cornerRadius: 2)
-                            .frame(width: underlineWidth, height: 2.5)
-                            .foregroundColor(char == "_"
-                                ? theme.primaryText.opacity(0.25)
-                                : theme.correct.opacity(0.85))
-                    }
-                    .padding(.horizontal, 4)
+                    CrystalLetterTile(
+                        letter: char,
+                        isRevealed: char != "_",
+                        isSpace: false,
+                        theme: theme,
+                        accent: theme.correct,
+                        isBouncing: bouncingIndices.contains(idx),
+                        index: idx
+                    )
+                    .padding(.horizontal, 3)
                 }
             }
         }
@@ -837,7 +917,11 @@ struct GameBoardView<Overlay: View>: View {
                 ForEach(turkishRows, id: \.self) { row in
                     HStack(spacing: 5) {
                         ForEach(row, id: \.self) { letter in
-                            KeyButton(letter: letter, vm: vm, theme: theme)
+                            if settings.spatialUIEnabled {
+                                FloatingKeyOrb(letter: letter, vm: vm, theme: theme)
+                            } else {
+                                KeyButton(letter: letter, vm: vm, theme: theme)
+                            }
                         }
                     }
                 }
@@ -1063,7 +1147,12 @@ struct KeyButton: View {
     private var isCorrect: Bool { isGuessed && vm.currentWord.contains(letter) }
 
     var body: some View {
-        Button { vm.guess(letter) } label: {
+        Button {
+            if settings.hapticEnabled && !isGuessed {
+                CinematicHaptics.shared.play(.keyPress)
+            }
+            vm.guess(letter)
+        } label: {
             keyFace.frame(width: isIPad ? 44 : 36, height: isIPad ? 44 : 46)
         }
         .disabled(isGuessed || vm.gameState != .playing)

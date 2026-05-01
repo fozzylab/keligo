@@ -44,9 +44,7 @@ enum Difficulty: String, CaseIterable, Identifiable {
 }
 
 enum AppTheme: String, CaseIterable, Identifiable {
-    // Free / unlock-able
     case classic, ocean, forest, sunset, midnight
-    // Premium (themePackPremium IAP)
     case neon, galaxy, pastel, vintage, halloween, chalk
 
     var id: String { rawValue }
@@ -93,11 +91,9 @@ enum AppTheme: String, CaseIterable, Identifiable {
     var isDark: Bool {
         switch self {
         case .classic, .pastel, .vintage: return false
-        default: return true  // includes chalk (dark chalkboard)
+        default: return true
         }
     }
-
-    // MARK: - Base colors
 
     var background: Color {
         switch self {
@@ -111,7 +107,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .pastel:     return Color(red: 0.98, green: 0.96, blue: 0.99)
         case .vintage:    return Color(red: 0.96, green: 0.92, blue: 0.84)
         case .halloween:  return Color(red: 0.08, green: 0.04, blue: 0.02)
-        case .chalk:      return Color(red: 0.12, green: 0.20, blue: 0.14)  // dark chalkboard green
+        case .chalk:      return Color(red: 0.12, green: 0.20, blue: 0.14)
         }
     }
 
@@ -127,22 +123,32 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .pastel:     return Color(red: 0.94, green: 0.90, blue: 0.96)
         case .vintage:    return Color(red: 0.90, green: 0.84, blue: 0.72)
         case .halloween:  return Color(red: 0.20, green: 0.10, blue: 0.04)
-        case .chalk:      return Color(red: 0.20, green: 0.30, blue: 0.22)  // raised chalkboard panel
+        case .chalk:      return Color(red: 0.20, green: 0.30, blue: 0.22)
         }
     }
 
     var primaryText: Color {
         switch self {
-        case .chalk: return Color(red: 0.94, green: 0.94, blue: 0.90)  // chalk white (slightly warm)
+        case .chalk: return Color(red: 0.94, green: 0.94, blue: 0.90)
         default:     return isDark ? .white : Color(.label)
         }
     }
 
     var secondaryText: Color {
         switch self {
-        case .chalk: return Color(red: 0.94, green: 0.94, blue: 0.90).opacity(0.60)
-        default:     return isDark ? Color.white.opacity(0.55) : Color(.secondaryLabel)
+        case .chalk: return Color(red: 0.94, green: 0.94, blue: 0.90).opacity(0.72)
+        default:     return isDark ? Color.white.opacity(0.72) : Color(.secondaryLabel)
         }
+    }
+
+    /// Kart kenarlık rengi — dark temalar için ince beyaz, light'ta ince siyah
+    var cardStroke: Color {
+        isDark ? .white.opacity(0.13) : .black.opacity(0.07)
+    }
+
+    /// Kart gölgesi
+    var cardShadow: Color {
+        isDark ? .black.opacity(0.45) : .black.opacity(0.12)
     }
 
     var accent: Color {
@@ -157,7 +163,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .pastel:     return Color(red: 1.00, green: 0.55, blue: 0.78)
         case .vintage:    return Color(red: 0.78, green: 0.42, blue: 0.20)
         case .halloween:  return Color(red: 1.00, green: 0.50, blue: 0.10)
-        case .chalk:      return Color(red: 1.00, green: 0.94, blue: 0.65)  // yellow chalk accent
+        case .chalk:      return Color(red: 1.00, green: 0.94, blue: 0.65)
         }
     }
 
@@ -166,7 +172,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .neon:       return Color(red: 0.20, green: 1.00, blue: 0.55)
         case .pastel:     return Color(red: 0.45, green: 0.85, blue: 0.55)
         case .halloween:  return Color(red: 0.50, green: 0.95, blue: 0.30)
-        case .chalk:      return Color(red: 0.65, green: 0.95, blue: 0.65)  // green chalk
+        case .chalk:      return Color(red: 0.65, green: 0.95, blue: 0.65)
         default:          return Color(red: 0.18, green: 0.78, blue: 0.35)
         }
     }
@@ -174,12 +180,10 @@ enum AppTheme: String, CaseIterable, Identifiable {
         switch self {
         case .pastel:     return Color(red: 0.95, green: 0.45, blue: 0.55)
         case .halloween:  return Color(red: 0.95, green: 0.18, blue: 0.10)
-        case .chalk:      return Color(red: 0.95, green: 0.50, blue: 0.50)  // pink/red chalk
+        case .chalk:      return Color(red: 0.95, green: 0.50, blue: 0.50)
         default:          return Color(red: 0.95, green: 0.25, blue: 0.25)
         }
     }
-
-    // MARK: - Gradient helpers
 
     var glowColor: Color { accent.opacity(isDark ? 0.35 : 0.20) }
 
@@ -202,9 +206,85 @@ enum AppTheme: String, CaseIterable, Identifiable {
     var cardMaterial: Material {
         isDark ? .ultraThinMaterial : .regularMaterial
     }
-}
 
-// MARK: - Keyboard Style
+    // MARK: - 2026: Ambient MeshGradient Backgrounds
+    
+    @ViewBuilder
+    func ambientBackground(for category: String? = nil) -> some View {
+        if #available(iOS 18.0, *) {
+            MeshGradient(
+                width: 3, height: 3,
+                points: meshPoints(for: category),
+                colors: meshColors(for: category)
+            )
+            .ignoresSafeArea()
+            .overlay(background.opacity(0.3).ignoresSafeArea())
+        } else {
+            background.ignoresSafeArea()
+        }
+    }
+    
+    private func meshPoints(for category: String?) -> [SIMD2<Float>] {
+        // Animated organic mesh points
+        let base: [SIMD2<Float>] = [
+            .init(x: 0.0, y: 0.0), .init(x: 0.5, y: 0.0), .init(x: 1.0, y: 0.0),
+            .init(x: 0.0, y: 0.5), .init(x: Float.random(in: 0.3...0.7), y: Float.random(in: 0.3...0.7)), .init(x: 1.0, y: 0.5),
+            .init(x: 0.0, y: 1.0), .init(x: 0.5, y: 1.0), .init(x: 1.0, y: 1.0)
+        ]
+        return base
+    }
+    
+    private func meshColors(for category: String?) -> [Color] {
+        switch category {
+        case "Uzay", "Bilim", "Teknoloji":
+            return [.purple.opacity(0.4), .indigo.opacity(0.3), .black,
+                    .blue.opacity(0.3), .purple.opacity(0.2), .indigo.opacity(0.4),
+                    .black, .blue.opacity(0.2), .purple.opacity(0.3)]
+        case "Hayvanlar", "Doğa", "Bitkiler":
+            return [.green.opacity(0.3), .teal.opacity(0.2), .black,
+                    .mint.opacity(0.2), .green.opacity(0.15), .teal.opacity(0.3),
+                    .black, .mint.opacity(0.15), .green.opacity(0.25)]
+        case "Spor":
+            return [.orange.opacity(0.3), .red.opacity(0.2), .black,
+                    .yellow.opacity(0.2), .orange.opacity(0.15), .red.opacity(0.3),
+                    .black, .yellow.opacity(0.15), .orange.opacity(0.25)]
+        case "Tarih", "Mitoloji":
+            return [.brown.opacity(0.3), .orange.opacity(0.2), .black,
+                    .yellow.opacity(0.15), .brown.opacity(0.2), .orange.opacity(0.25),
+                    .black, .yellow.opacity(0.1), .brown.opacity(0.2)]
+        default:
+            return [accent.opacity(0.2), accent.opacity(0.1), background,
+                    accent.opacity(0.15), background.opacity(0.5), accent.opacity(0.25),
+                    background, accent.opacity(0.1), accent.opacity(0.2)]
+        }
+    }
+    
+    // MARK: - 2026 Spatial Helpers
+    
+    var spatialShadow: Color {
+        isDark ? Color.black.opacity(0.45) : Color.black.opacity(0.18)
+    }
+    
+    var glassHighlight: Color {
+        isDark ? Color.white.opacity(0.15) : Color.white.opacity(0.55)
+    }
+    
+    var glassBorder: Color {
+        isDark ? accent.opacity(0.25) : accent.opacity(0.18)
+    }
+    
+    var ambientMood: AmbientMood {
+        switch self {
+        case .ocean, .midnight, .galaxy: return .focused
+        case .sunset: return .urgent
+        case .neon: return .celebratory
+        case .forest, .classic: return .calm
+        case .pastel: return .zen
+        case .vintage, .chalk: return .mysterious
+        case .halloween: return .urgent
+        }
+    }
+}
 
 enum KeyboardStyle: String, CaseIterable, Identifiable {
     case glass    = "glass"

@@ -39,7 +39,13 @@ class NotificationManager {
 
     // MARK: - Schedule
 
+    /// Varsayılan saat (09:00) ile bildirim planla
     func scheduleDailyReminder() {
+        scheduleDailyReminder(hour: 9, minute: 0)
+    }
+
+    /// Özel saat/dakika ile bildirim planla
+    func scheduleDailyReminder(hour: Int, minute: Int) {
         cancelDailyReminder()
 
         // Save today as last scheduled date
@@ -71,7 +77,7 @@ class NotificationManager {
         content.badge = 1
 
         var dc = DateComponents()
-        dc.hour = 9; dc.minute = 0
+        dc.hour = hour; dc.minute = minute
         let trigger = UNCalendarNotificationTrigger(dateMatching: dc, repeats: true)
         let request = UNNotificationRequest(identifier: dailyID, content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)

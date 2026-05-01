@@ -39,56 +39,18 @@ struct ChapterSelectView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 12)
 
-                // Chapter overview stats
+                // Chapter overview hero
                 let completed  = manager.chapters.filter { (manager.stars[$0.id] ?? 0) > 0 }.count
                 let totalStars = manager.chapters.reduce(0) { $0 + (manager.stars[$1.id] ?? 0) }
                 let maxStars   = manager.chapters.count * 3
 
-                HStack(spacing: 16) {
-                    VStack(spacing: 4) {
-                        Text("\(completed)/\(manager.chapters.count)")
-                            .font(.title3.weight(.black))
-                            .foregroundColor(t.primaryText)
-                        Text("Tamamlanan")
-                            .font(.caption2)
-                            .foregroundColor(t.secondaryText)
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    Rectangle()
-                        .fill(t.secondaryText.opacity(0.2))
-                        .frame(width: 1, height: 36)
-
-                    VStack(spacing: 4) {
-                        HStack(spacing: 2) {
-                            Text("\(totalStars)")
-                                .font(.title3.weight(.black))
-                                .foregroundColor(.yellow)
-                            Text("/ \(maxStars)")
-                                .font(.caption.weight(.semibold))
-                                .foregroundColor(t.secondaryText)
-                        }
-                        Text("Toplam Yıldız")
-                            .font(.caption2)
-                            .foregroundColor(t.secondaryText)
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    Rectangle()
-                        .fill(t.secondaryText.opacity(0.2))
-                        .frame(width: 1, height: 36)
-
-                    VStack(spacing: 4) {
-                        Text(completed == manager.chapters.count ? "✅" : "🔓")
-                            .font(.title3)
-                        Text(completed == manager.chapters.count ? "Tümü Bitti!" : "Devam Et")
-                            .font(.caption2)
-                            .foregroundColor(t.secondaryText)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .padding(.horizontal, 24).padding(.vertical, 14)
-                .background(t.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+                ChapterHeroBar(
+                    completed: completed,
+                    total: manager.chapters.count,
+                    totalStars: totalStars,
+                    maxStars: maxStars,
+                    theme: t
+                )
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
 
@@ -129,6 +91,102 @@ struct ChapterSelectView: View {
         .animation(.easeInOut(duration: 0.3), value: selectedChapter?.id)
     }
 }
+
+// MARK: - Chapter Hero Bar
+
+private struct ChapterHeroBar: View {
+    let completed: Int
+    let total: Int
+    let totalStars: Int
+    let maxStars: Int
+    let theme: AppTheme
+
+    private var completion: Double {
+        total == 0 ? 0 : Double(completed) / Double(total)
+    }
+    private var starProgress: Double {
+        maxStars == 0 ? 0 : Double(totalStars) / Double(maxStars)
+    }
+    private var motivationLabel: String {
+        if completed == 0  { return "İlk bölümü aç ve başla! 🎯" }
+        if completed < 5   { return "Harika gidiyorsun, devam et! 🔥" }
+        if completed < total { return "Şampiyon yolundasın! 👑" }
+        return "Tüm bölümler tamamlandı! 🏆"
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            // Stats row + progress ring
+            HStack(spacing: 0) {
+                // ⭐ Stars
+                statPill(icon: "star.fill", color: .yellow,
+                         value: "\(totalStars)/\(maxStars)", label: "Yıldız")
+                divider()
+                // ✓ Bölümler
+                statPill(icon: "checkmark.circle.fill", color: theme.accent,
+                         value: "\(completed)/\(total)", label: "Bölüm")
+                divider()
+                // 🏆 Yüzde
+                statPill(icon: "percent", color: .green,
+                         value: "\(Int(completion * 100))%", label: "Tamamlandı")
+
+                // Progress ring — right side
+                Spacer(minLength: 12)
+                ZStack {
+                    Circle()
+                        .stroke(theme.secondaryText.opacity(0.15), lineWidth: 5)
+                    Circle()
+                        .trim(from: 0, to: starProgress)
+                        .stroke(
+                            LinearGradient(colors: [.yellow, theme.accent],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing),
+                            style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: totalStars)
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.yellow)
+                }
+                .frame(width: 44, height: 44)
+            }
+            .padding(.horizontal, 16).padding(.vertical, 14)
+            .background(theme.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(theme.cardStroke, lineWidth: 1)
+            )
+
+            // Motivasyon etiketi
+            Text(motivationLabel)
+                .font(.caption.weight(.medium))
+                .foregroundColor(theme.secondaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 4)
+        }
+    }
+
+    @ViewBuilder
+    private func statPill(icon: String, color: Color, value: String, label: String) -> some View {
+        VStack(spacing: 3) {
+            HStack(spacing: 3) {
+                Image(systemName: icon).font(.system(size: 10)).foregroundColor(color)
+                Text(value).font(.subheadline.weight(.black)).foregroundColor(theme.primaryText)
+            }
+            Text(label).font(.caption2).foregroundColor(theme.secondaryText)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private func divider() -> some View {
+        Rectangle()
+            .fill(theme.secondaryText.opacity(0.18))
+            .frame(width: 1, height: 36)
+    }
+}
+
+// MARK: - Chapter Card
 
 struct ChapterCard: View {
     let chapter: Chapter

@@ -59,9 +59,13 @@ struct AppPromptBanner: View {
 
     private var emoji: String {
         switch kind {
-        case .losingStreak:    return "💪"
-        case .allChaptersDone: return "🏆"
-        case .heavyHintUser:   return "💎"
+        case .losingStreak:       return "💪"
+        case .allChaptersDone:    return "🏆"
+        case .heavyHintUser:      return "💎"
+        case .lowOnLives:         return "❤️"
+        case .lowOnJetons:        return "🪙"
+        case .streakAtRisk:       return "🔥"
+        case .firstPurchaseOffer: return "🎁"
         }
     }
 
@@ -73,6 +77,14 @@ struct AppPromptBanner: View {
             return [Color(red: 0.95, green: 0.65, blue: 0.10), Color(red: 1.00, green: 0.40, blue: 0.20)]
         case .heavyHintUser:
             return [Color(red: 0.20, green: 0.50, blue: 0.95), Color(red: 0.45, green: 0.80, blue: 1.00)]
+        case .lowOnLives:
+            return [Color(red: 0.95, green: 0.20, blue: 0.30), Color(red: 1.00, green: 0.50, blue: 0.40)]
+        case .lowOnJetons:
+            return [Color(red: 0.90, green: 0.75, blue: 0.10), Color(red: 1.00, green: 0.55, blue: 0.10)]
+        case .streakAtRisk:
+            return [Color(red: 1.00, green: 0.40, blue: 0.10), Color(red: 0.95, green: 0.20, blue: 0.50)]
+        case .firstPurchaseOffer:
+            return [Color(red: 0.20, green: 0.80, blue: 0.40), Color(red: 0.40, green: 0.95, blue: 0.60)]
         }
     }
 }
