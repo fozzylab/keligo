@@ -233,7 +233,6 @@ struct FloatingKeyOrb: View {
     private var isGuessed: Bool { vm.guessedLetters.contains(letter) }
     private var isWrong: Bool { isGuessed && !vm.currentWord.contains(letter) }
     private var isCorrect: Bool { isGuessed && vm.currentWord.contains(letter) }
-    private var isVowel: Bool { "AEIİOÖUÜ".contains(letter) }
     private var isSpatial: Bool { settings.spatialUIEnabled && !settings.motionSafeMode }
     
     private var keySize: CGFloat {
@@ -250,17 +249,17 @@ struct FloatingKeyOrb: View {
         } label: {
             ZStack {
                 // Orb body
-                RoundedRectangle(cornerRadius: isVowel && isSpatial ? keySize/2 : 11, style: .continuous)
+                RoundedRectangle(cornerRadius: 11, style: .continuous)
                     .fill(orbFill)
                     .overlay(
-                        RoundedRectangle(cornerRadius: isVowel && isSpatial ? keySize/2 : 11, style: .continuous)
+                        RoundedRectangle(cornerRadius: 11, style: .continuous)
                             .stroke(orbStroke, lineWidth: isSpatial ? 1.0 : 0.75)
                     )
                     .shadow(color: orbShadowColor, radius: orbShadowRadius, x: 0, y: orbShadowY)
                 
                 // Inner sheen
                 if isSpatial && !isGuessed {
-                    RoundedRectangle(cornerRadius: isVowel && isSpatial ? keySize/2 : 11, style: .continuous)
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [Color.white.opacity(0.18), Color.white.opacity(0.0)],
@@ -289,13 +288,7 @@ struct FloatingKeyOrb: View {
                         .ambientGlow(isCorrect ? theme.correct : .clear, intensity: 0.5, radius: 8)
                 }
                 
-                // Cold zone highlight (AI guidance)
-                if settings.aiAssistantEnabled && !isGuessed && vm.gameState == .playing {
-                    if AIPersonalizationEngine.shared.coldZoneLetters.contains(letter) {
-                        RoundedRectangle(cornerRadius: isVowel && isSpatial ? keySize/2 : 11, style: .continuous)
-                            .stroke(Color.yellow.opacity(0.25), lineWidth: 1.5)
-                    }
-                }
+                // (AI cold-zone highlight removed — caused visual inconsistency)
             }
             .frame(width: keySize, height: keySize + (isSpatial ? 4 : 0))
         }
@@ -343,7 +336,7 @@ struct FloatingKeyOrb: View {
         if isWrong { return AnyShapeStyle(theme.wrong.opacity(0.12)) }
         
         if isSpatial {
-            return AnyShapeStyle(Material.ultraThinMaterial)
+            return AnyShapeStyle(theme.cardFill)
         }
         
         switch settings.keyboardStyle {

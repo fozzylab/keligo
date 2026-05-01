@@ -563,19 +563,22 @@ struct GameBoardView<Overlay: View>: View {
     // MARK: - Top bar
 
     private var topBar: some View {
-        HStack {
+        ZStack {
+            // Gerçek ortalama: mod etiketi ZStack içinde tam ortada
+            Text(modeLabel)
+                .font(.caption.weight(.bold))
+                .foregroundColor(theme.secondaryText)
+                .padding(.horizontal, 12).padding(.vertical, 5)
+                .background(theme.cardFill, in: Capsule())
+                .frame(maxWidth: .infinity)
+
+            HStack {
             Button(action: onBack) {
                 Image(systemName: "chevron.left.circle.fill")
                     .symbolRenderingMode(.hierarchical)
                     .font(.title2)
                     .foregroundStyle(theme.accentGradient)
             }
-            Spacer()
-            Text(modeLabel)
-                .font(.caption.weight(.bold))
-                .foregroundColor(theme.secondaryText)
-                .padding(.horizontal, 12).padding(.vertical, 5)
-                .background(theme.cardFill, in: Capsule())
             Spacer()
             HStack(spacing: 6) {
                 // Lives pill (can sayısı + yenilenme sayacı)
@@ -617,8 +620,9 @@ struct GameBoardView<Overlay: View>: View {
                         .foregroundStyle(theme.accentGradient)
                 }
             }
-        }
-        .padding(.horizontal, 20)
+            }  // HStack kapanışı
+            .padding(.horizontal, 20)
+        }  // ZStack kapanışı
         .padding(.top, 12)
         .padding(.bottom, 8)
     }
@@ -826,56 +830,9 @@ struct GameBoardView<Overlay: View>: View {
     // MARK: - Jeton action buttons
 
     private var jetonActionsRow: some View {
-        HStack(spacing: 7) {
-            // ── Sol grup: jeton harcama butonları ──
-            JetonActionButton(
-                icon: "character.textbox",
-                title: "Sesli Harf",
-                cost: JetonManager.costVowel,
-                canAct: vm.hasUnrevealedVowels && vm.gameState == .playing,
-                canAfford: jetons.canAfford(JetonManager.costVowel),
-                theme: theme,
-                onInsufficientFunds: { showInsufficientJetonAlert = true }
-            ) { vm.buyVowel() }
-
-            JetonActionButton(
-                icon: "lightbulb",
-                title: "Harf Al",
-                cost: JetonManager.costLetter,
-                canAct: vm.gameState == .playing,
-                canAfford: jetons.canAfford(JetonManager.costLetter),
-                theme: theme,
-                onInsufficientFunds: { showInsufficientJetonAlert = true }
-            ) { vm.buyLetter() }
-
-            if vm.canSkip {
-                JetonActionButton(
-                    icon: "forward.fill",
-                    title: "Pas",
-                    cost: JetonManager.costSkip,
-                    canAct: vm.gameState == .playing,
-                    canAfford: jetons.canAfford(JetonManager.costSkip),
-                    theme: theme,
-                    onInsufficientFunds: { showInsufficientJetonAlert = true }
-                ) { vm.skipWord() }
-            }
-
-            // Geri Al — always in layout (opacity hides it) so width stays stable
-            JetonActionButton(
-                icon: "arrow.uturn.backward",
-                title: "Geri Al",
-                cost: JetonManager.costUndo,
-                canAct: vm.canUndo && vm.gameState == .playing,
-                canAfford: jetons.canAfford(JetonManager.costUndo),
-                theme: theme,
-                onInsufficientFunds: { showInsufficientJetonAlert = true }
-            ) { vm.undo() }
-            .opacity(vm.canUndo ? 1 : 0)
-            .allowsHitTesting(vm.canUndo)
-
-            Spacer()
-
-            // ── Sağ: Jeton Kazan (rewarded ad) — her zaman sağda, boşluğa gömülmez ──
+        // Tüm butonlar eşit genişlikte, buton sayısına göre otomatik sığar.
+        HStack(spacing: 8) {
+            // 1. Jeton Kazan — her zaman sol başta
             if vm.canWatchRewardedAd {
                 JetonActionButton(
                     icon: "play.rectangle.fill",
@@ -893,6 +850,54 @@ struct GameBoardView<Overlay: View>: View {
                         showRewardedCapAlert = true
                     }
                 }
+            }
+
+            // 2. Sesli Harf
+            JetonActionButton(
+                icon: "character.textbox",
+                title: "Sesli Harf",
+                cost: JetonManager.costVowel,
+                canAct: vm.hasUnrevealedVowels && vm.gameState == .playing,
+                canAfford: jetons.canAfford(JetonManager.costVowel),
+                theme: theme,
+                onInsufficientFunds: { showInsufficientJetonAlert = true }
+            ) { vm.buyVowel() }
+
+            // 3. Harf Al
+            JetonActionButton(
+                icon: "lightbulb",
+                title: "Harf Al",
+                cost: JetonManager.costLetter,
+                canAct: vm.gameState == .playing,
+                canAfford: jetons.canAfford(JetonManager.costLetter),
+                theme: theme,
+                onInsufficientFunds: { showInsufficientJetonAlert = true }
+            ) { vm.buyLetter() }
+
+            // 4. Pas — sadece mümkünse göster
+            if vm.canSkip {
+                JetonActionButton(
+                    icon: "forward.fill",
+                    title: "Pas",
+                    cost: JetonManager.costSkip,
+                    canAct: vm.gameState == .playing,
+                    canAfford: jetons.canAfford(JetonManager.costSkip),
+                    theme: theme,
+                    onInsufficientFunds: { showInsufficientJetonAlert = true }
+                ) { vm.skipWord() }
+            }
+
+            // 5. Geri Al — sadece mümkünse göster
+            if vm.canUndo {
+                JetonActionButton(
+                    icon: "arrow.uturn.backward",
+                    title: "Geri Al",
+                    cost: JetonManager.costUndo,
+                    canAct: vm.gameState == .playing,
+                    canAfford: jetons.canAfford(JetonManager.costUndo),
+                    theme: theme,
+                    onInsufficientFunds: { showInsufficientJetonAlert = true }
+                ) { vm.undo() }
             }
         }
         .padding(.horizontal, 16)
@@ -1273,39 +1278,34 @@ struct JetonActionButton: View {
             guard canAct else { return }
             if canAfford { action() } else { onInsufficientFunds() }
         } label: {
-            HStack(spacing: 4) {
+            VStack(spacing: 3) {
                 Image(systemName: icon)
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundColor(cost == 0 ? accentColor : (canAct ? theme.primaryText : theme.secondaryText))
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title)
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(cost == 0 ? accentColor : (canAct ? theme.primaryText : theme.secondaryText))
-                    if cost > 0 {
-                        HStack(spacing: 2) {
-                            Image(systemName: "circle.fill")
-                                .font(.system(size: 6))
-                                .foregroundColor(.yellow)
-                            Text("\(cost)")
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundColor(canAfford ? .yellow : .orange)
-                        }
-                    } else {
-                        Text("İzle")
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundColor(accentColor.opacity(0.85))
+                Text(title)
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(cost == 0 ? accentColor : (canAct ? theme.primaryText : theme.secondaryText))
+                    .lineLimit(1).minimumScaleFactor(0.7)
+                if cost > 0 {
+                    HStack(spacing: 2) {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 5, weight: .bold))
+                            .foregroundColor(.yellow)
+                        Text("\(cost)")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundColor(canAfford ? .yellow : .orange)
                     }
                 }
             }
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 10).padding(.vertical, 6)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
             .background(
-                cost == 0 ? AnyShapeStyle(accentColor.opacity(0.12)) : AnyShapeStyle(theme.cardFill),
+                cost == 0 ? AnyShapeStyle(accentColor.opacity(0.14)) : AnyShapeStyle(theme.cardFill),
                 in: RoundedRectangle(cornerRadius: 10)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(cost == 0 ? accentColor.opacity(0.25) : Color.clear, lineWidth: 1)
+                    .stroke(cost == 0 ? accentColor.opacity(0.30) : theme.cardStroke, lineWidth: 1)
             )
             .opacity(canAct ? 1.0 : 0.38)
         }

@@ -99,6 +99,23 @@ struct OutOfLivesSheet: View {
         }
     }
 
+    // MARK: - Helpers
+
+    /// Sarı jeton rozeti — tüm call site'larda tutarlı
+    private func jetonBadge(_ amount: Int, primary: Bool = false) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: "circle.fill")
+                .font(.system(size: 7, weight: .bold))
+                .foregroundColor(.yellow)
+            Text("\(amount)")
+                .font(.caption.weight(.black))
+                .foregroundColor(.yellow)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 5)
+        .background(primary ? Color.yellow.opacity(0.22) : Color.yellow.opacity(0.14), in: Capsule())
+        .overlay(Capsule().stroke(Color.yellow.opacity(0.30), lineWidth: primary ? 1 : 0))
+    }
+
     // MARK: - Sections
 
     private var header: some View {
@@ -142,26 +159,28 @@ struct OutOfLivesSheet: View {
         VStack(spacing: 10) {
             // Reklam izle
             optionRow(
-                icon: "play.rectangle.fill",
-                color: .purple,
+                icon: "play.rectangle.fill", color: .purple,
                 title: "Reklam İzle",
                 subtitle: ad.canShowRewarded(.life)
-                    ? "📺 Kısa video → +1 can • Bugünkü hak: \(ad.remaining(.life))/\(AdManager.RewardKind.life.dailyCap)"
+                    ? "Kısa video → +1 can • Hak: \(ad.remaining(.life))/\(AdManager.RewardKind.life.dailyCap)"
                     : "Bugünkü hak doldu — yarın tekrar gel",
-                badge: "+1 ❤️",
+                badgeContent: {
+                    Text("+1 ❤️")
+                        .font(.caption.weight(.black))
+                        .foregroundColor(.purple)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(Color.purple.opacity(0.18), in: Capsule())
+                },
                 enabled: ad.canShowRewarded(.life) && !rewardedShowing,
                 primary: false
-            ) {
-                showAdConfirm = true
-            }
+            ) { showAdConfirm = true }
 
-            // 50 jeton ile +1
+            // 1 can al
             optionRow(
-                icon: "heart.circle.fill",
-                color: .pink,
+                icon: "heart.circle.fill", color: .pink,
                 title: "1 Can Al",
-                subtitle: "Bakiye: \(jetons.balance) 🪙",
-                badge: "\(JetonManager.costRefillOne) 🪙",
+                subtitle: "Bakiye: \(jetons.balance) jeton",
+                badgeContent: { jetonBadge(JetonManager.costRefillOne) },
                 enabled: jetons.canAfford(JetonManager.costRefillOne),
                 primary: false
             ) {
@@ -171,13 +190,12 @@ struct OutOfLivesSheet: View {
                 }
             }
 
-            // 200 jeton ile tam dolum
+            // Tam dolum
             optionRow(
-                icon: "heart.fill",
-                color: .red,
+                icon: "heart.fill", color: .red,
                 title: "Tam Dolum",
                 subtitle: "5 can — %50 indirim",
-                badge: "\(JetonManager.costRefillAll) 🪙",
+                badgeContent: { jetonBadge(JetonManager.costRefillAll, primary: true) },
                 enabled: jetons.canAfford(JetonManager.costRefillAll),
                 primary: true
             ) {
@@ -234,10 +252,10 @@ struct OutOfLivesSheet: View {
     // MARK: - Helpers
 
     @ViewBuilder
-    private func optionRow(
+    private func optionRow<Badge: View>(
         icon: String, color: Color,
         title: String, subtitle: String,
-        badge: String,
+        @ViewBuilder badgeContent: () -> Badge,
         enabled: Bool, primary: Bool,
         action: @escaping () -> Void
     ) -> some View {
@@ -265,16 +283,7 @@ struct OutOfLivesSheet: View {
 
                 Spacer()
 
-                Text(badge)
-                    .font(.caption.weight(.black))
-                    .padding(.horizontal, 10).padding(.vertical, 5)
-                    .background(
-                        primary
-                            ? AnyShapeStyle(color)
-                            : AnyShapeStyle(color.opacity(0.18)),
-                        in: Capsule()
-                    )
-                    .foregroundColor(primary ? .white : color)
+                badgeContent()
             }
             .padding(14)
             .background(t.cardFill, in: RoundedRectangle(cornerRadius: 16))
