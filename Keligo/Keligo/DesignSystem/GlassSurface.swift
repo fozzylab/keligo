@@ -11,61 +11,58 @@ struct GlassSurface: ViewModifier {
     @EnvironmentObject var settings: SettingsViewModel
     
     func body(content: Content) -> some View {
-        let enabled = settings.spatialUIEnabled && !settings.motionSafeMode
         let isDark = settings.theme.isDark
+        // Use explicit colors — never iOS Material which depends on the SYSTEM
+        // color scheme, not the app theme. This prevents white cards on dark themes
+        // when the device is in light system mode.
+        let baseFill: Color = isDark
+            ? Color.white.opacity(0.13 * intensity)
+            : Color.white.opacity(0.88)
+        let strokeColor: Color = isDark
+            ? Color.white.opacity(0.14)
+            : Color.black.opacity(0.07)
 
         content
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(
-                            isDark
-                                ? AnyShapeStyle(Material.ultraThinMaterial)
-                                : AnyShapeStyle(Color.white.opacity(0.88))
-                        )
+                        .fill(baseFill)
 
-                    if enabled {
-                        // Inner sheen — only meaningful on dark themes
-                        if isDark {
-                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white.opacity(0.18 * intensity),
-                                            Color.white.opacity(0.04 * intensity),
-                                            Color.white.opacity(0.0)
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
+                    // Subtle top sheen on dark cards
+                    if isDark {
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.10 * intensity),
+                                        Color.white.opacity(0.0)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .center
                                 )
-                        }
+                            )
+                    }
 
-                        if innerGlow {
-                            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            (borderGlow ?? Color.white).opacity(isDark ? 0.35 * intensity : 0.20 * intensity),
-                                            (borderGlow ?? Color.white).opacity(isDark ? 0.05 * intensity : 0.05 * intensity)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1.2
-                                )
-                        }
+                    // Accent inner glow
+                    if innerGlow {
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        (borderGlow ?? Color.white).opacity(isDark ? 0.28 * intensity : 0.18 * intensity),
+                                        (borderGlow ?? Color.white).opacity(0.0)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1.0
+                            )
                     }
                 }
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        isDark
-                            ? Color.white.opacity(enabled ? 0.10 * intensity : 0.06)
-                            : Color.black.opacity(0.07),
-                        lineWidth: isDark ? 0.5 : 0.8
-                    )
+                    .strokeBorder(strokeColor, lineWidth: isDark ? 0.6 : 0.8)
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }

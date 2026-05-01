@@ -571,7 +571,7 @@ struct GameBoardView<Overlay: View>: View {
                 .font(.caption.weight(.bold))
                 .foregroundColor(theme.secondaryText)
                 .padding(.horizontal, 12).padding(.vertical, 5)
-                .background(theme.cardMaterial, in: Capsule())
+                .background(theme.cardFill, in: Capsule())
             Spacer()
             HStack(spacing: 6) {
                 // Lives pill (can sayısı + yenilenme sayacı)
@@ -635,7 +635,7 @@ struct GameBoardView<Overlay: View>: View {
                     .foregroundColor(theme.secondaryText)
             }
             .padding(.horizontal, 12).padding(.vertical, 5)
-            .background(theme.cardMaterial, in: Capsule())
+            .background(theme.cardFill, in: Capsule())
 
             // Flag button — report word error
             Button {
@@ -645,7 +645,7 @@ struct GameBoardView<Overlay: View>: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(theme.secondaryText.opacity(0.6))
                     .padding(6)
-                    .background(theme.cardMaterial, in: Circle())
+                    .background(theme.cardFill, in: Circle())
             }
             .buttonStyle(ScaleButtonStyle())
         }
@@ -717,14 +717,14 @@ struct GameBoardView<Overlay: View>: View {
                     .background(
                         jetons.canAfford(JetonManager.costHint)
                             ? AnyShapeStyle(Color.yellow.opacity(0.20))
-                            : AnyShapeStyle(theme.cardMaterial),
+                            : AnyShapeStyle(theme.cardFill),
                         in: Capsule()
                     )
                 }
                 .foregroundColor(jetons.canAfford(JetonManager.costHint)
                     ? theme.primaryText : theme.secondaryText)
                 .padding(.horizontal, 14).padding(.vertical, 9)
-                .background(theme.cardMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 12))
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(
                     Color.yellow.opacity(jetons.canAfford(JetonManager.costHint) ? 0.30 : 0.10),
                     lineWidth: 1))
@@ -793,7 +793,7 @@ struct GameBoardView<Overlay: View>: View {
                         .font(.caption.weight(.bold))
                         .foregroundColor(theme.secondaryText)
                         .padding(.horizontal, 8).padding(.vertical, 6)
-                        .background(theme.cardMaterial, in: Capsule())
+                        .background(theme.cardFill, in: Capsule())
                 }
             }
             Button { vm.useHint() } label: {
@@ -806,7 +806,7 @@ struct GameBoardView<Overlay: View>: View {
                 .background(
                     vm.hintsRemaining > 0 && vm.gameState == .playing
                         ? AnyShapeStyle(theme.accent.opacity(0.2))
-                        : AnyShapeStyle(theme.cardMaterial),
+                        : AnyShapeStyle(theme.cardFill),
                     in: Capsule()
                 )
                 .foregroundColor(vm.hintsRemaining > 0 && vm.gameState == .playing
@@ -938,7 +938,7 @@ struct GameBoardView<Overlay: View>: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(settings.keyboardStyle == .minimal
                       ? AnyShapeStyle(Color.clear)
-                      : AnyShapeStyle(Material.ultraThinMaterial))
+                      : AnyShapeStyle(theme.cardFill))
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(LinearGradient(
                     colors: [
@@ -1115,7 +1115,7 @@ struct InfiniteGameOverView: View {
         Image(systemName: icon)
             .font(.headline)
             .padding(14)
-            .background(.ultraThinMaterial)
+            .background(settings.theme.cardFill)
             .foregroundColor(tint)
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
@@ -1211,7 +1211,7 @@ struct KeyButton: View {
 
         switch settings.keyboardStyle {
         case .glass:
-            return AnyShapeStyle(theme.cardMaterial)
+            return AnyShapeStyle(theme.cardFill)
         case .flat:
             return AnyShapeStyle(theme.surface)
         case .minimal:
@@ -1294,7 +1294,7 @@ struct JetonActionButton: View {
             .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 10).padding(.vertical, 6)
             .background(
-                cost == 0 ? AnyShapeStyle(accentColor.opacity(0.12)) : AnyShapeStyle(theme.cardMaterial),
+                cost == 0 ? AnyShapeStyle(accentColor.opacity(0.12)) : AnyShapeStyle(theme.cardFill),
                 in: RoundedRectangle(cornerRadius: 10)
             )
             .overlay(

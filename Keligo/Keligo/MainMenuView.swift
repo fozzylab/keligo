@@ -321,7 +321,7 @@ struct MainMenuView: View {
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(t.accentGradient)
                 .frame(width: 46, height: 46)
-                .background(t.cardMaterial, in: Circle())
+                .background(t.cardFill, in: Circle())
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -822,7 +822,7 @@ struct AchievementToast: View {
             Spacer()
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 18))
         .overlay(
             RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.yellow.opacity(0.35), lineWidth: 1)
@@ -964,7 +964,7 @@ struct DavetView: View {
                                 .opacity(canEarnToday ? 1 : 0.4)
                         }
                         .padding(16)
-                        .background(t.cardMaterial, in: RoundedRectangle(cornerRadius: 16))
+                        .background(t.cardFill, in: RoundedRectangle(cornerRadius: 16))
                         .padding(.horizontal)
 
                         // Share button
@@ -1123,7 +1123,7 @@ struct CategoryPickerView: View {
                                 .background(
                                     isSelected
                                         ? AnyShapeStyle(t.accentGradient)
-                                        : AnyShapeStyle(t.cardMaterial),
+                                        : AnyShapeStyle(t.cardFill),
                                     in: RoundedRectangle(cornerRadius: 16)
                                 )
                                 .foregroundColor(isSelected ? .white : (isLocked ? t.secondaryText : t.primaryText))
