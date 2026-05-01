@@ -88,16 +88,29 @@ enum AppTheme: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Dark mod: tema tipi VEYA system dark mode.
+    /// Böylece classic tema bile system dark mode'da koyu kartlar gösterir.
     var isDark: Bool {
+        let systemDark = UITraitCollection.current.userInterfaceStyle == .dark
         switch self {
-        case .classic, .pastel, .vintage: return false
-        default: return true
+        case .classic:
+            // Classic: system dark mode'a uyum sağlar
+            return systemDark
+        case .pastel, .vintage:
+            // Pastel & Vintage: her zaman light
+            return false
+        default:
+            // Diğer tüm temalar (ocean, forest, sunset, midnight, neon, galaxy, halloween, chalk)
+            // her zaman dark
+            return true
         }
     }
 
     var background: Color {
         switch self {
-        case .classic:    return Color(.systemBackground)
+        case .classic:
+            // Classic: system dark mode'da hafif mavi-siyah, light'ta system default
+            return isDark ? Color(red: 0.05, green: 0.05, blue: 0.08) : Color(.systemBackground)
         case .ocean:      return Color(red: 0.03, green: 0.07, blue: 0.20)
         case .forest:     return Color(red: 0.02, green: 0.11, blue: 0.05)
         case .sunset:     return Color(red: 0.14, green: 0.04, blue: 0.02)
@@ -111,22 +124,24 @@ enum AppTheme: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Kart yüzey rengi — dark temalarda background'dan BELİRGİN şekilde daha açık,
+    /// ama hâlâ koyu/koyu-gri tonlarda. Beyaza asla yaklaşmaz.
     var surface: Color {
         switch self {
         case .classic:    return Color(.secondarySystemBackground)
-        case .ocean:      return Color(red: 0.08, green: 0.22, blue: 0.42)
-        case .forest:     return Color(red: 0.08, green: 0.24, blue: 0.12)
-        case .sunset:     return Color(red: 0.30, green: 0.12, blue: 0.06)
-        case .midnight:   return Color(red: 0.10, green: 0.10, blue: 0.24)
-        case .neon:       return Color(red: 0.14, green: 0.06, blue: 0.28)
-        case .galaxy:     return Color(red: 0.12, green: 0.10, blue: 0.34)
+        case .ocean:      return Color(red: 0.12, green: 0.22, blue: 0.42)
+        case .forest:     return Color(red: 0.12, green: 0.26, blue: 0.16)
+        case .sunset:     return Color(red: 0.35, green: 0.16, blue: 0.08)
+        case .midnight:   return Color(red: 0.14, green: 0.14, blue: 0.28)
+        case .neon:       return Color(red: 0.18, green: 0.10, blue: 0.32)
+        case .galaxy:     return Color(red: 0.16, green: 0.14, blue: 0.36)
         case .pastel:     return Color(red: 0.94, green: 0.90, blue: 0.96)
         case .vintage:    return Color(red: 0.90, green: 0.84, blue: 0.72)
-        case .halloween:  return Color(red: 0.20, green: 0.10, blue: 0.04)
-        case .chalk:      return Color(red: 0.20, green: 0.30, blue: 0.22)
+        case .halloween:  return Color(red: 0.24, green: 0.12, blue: 0.05)
+        case .chalk:      return Color(red: 0.22, green: 0.32, blue: 0.24)
         }
     }
-
+    
     var primaryText: Color {
         switch self {
         case .chalk: return Color(red: 0.94, green: 0.94, blue: 0.90)
@@ -207,16 +222,48 @@ enum AppTheme: String, CaseIterable, Identifiable {
     // not the app theme. Always use cardFill (explicit color) instead.
     var cardMaterial: Material { .ultraThinMaterial }   // Legacy; prefer cardFill
 
-    /// Primary card fill — uses the theme's own `surface` color so each dark theme
-    /// gets its characteristic tinted-dark card instead of generic gray.
+    /// Primary card fill — dark modda her tema için özel koyu renk.
+    /// Arka plandan BELİRGİN şekilde ayrılır ama asla beyaz/parlak değildir.
     /// Light themes get a clean white card. Both are independent of system light/dark mode.
     var cardFill: Color {
-        isDark ? surface : Color.white.opacity(0.90)
+        if isDark {
+            switch self {
+            case .classic:    return Color(red: 0.14, green: 0.14, blue: 0.16)
+            case .ocean:      return Color(red: 0.10, green: 0.20, blue: 0.38)
+            case .forest:     return Color(red: 0.10, green: 0.22, blue: 0.14)
+            case .sunset:     return Color(red: 0.32, green: 0.14, blue: 0.06)
+            case .midnight:   return Color(red: 0.12, green: 0.12, blue: 0.26)
+            case .neon:       return Color(red: 0.16, green: 0.08, blue: 0.30)
+            case .galaxy:     return Color(red: 0.14, green: 0.12, blue: 0.34)
+            case .pastel:     return Color(red: 0.94, green: 0.90, blue: 0.96)
+            case .vintage:    return Color(red: 0.90, green: 0.84, blue: 0.72)
+            case .halloween:  return Color(red: 0.22, green: 0.10, blue: 0.04)
+            case .chalk:      return Color(red: 0.20, green: 0.30, blue: 0.22)
+            }
+        } else {
+            return Color.white.opacity(0.90)
+        }
     }
 
     /// Slightly more elevated card (selected / featured items)
     var cardFillElevated: Color {
-        isDark ? surface.opacity(0.90) : Color.white
+        if isDark {
+            switch self {
+            case .classic:    return Color(red: 0.18, green: 0.18, blue: 0.20)
+            case .ocean:      return Color(red: 0.14, green: 0.26, blue: 0.44)
+            case .forest:     return Color(red: 0.14, green: 0.28, blue: 0.18)
+            case .sunset:     return Color(red: 0.38, green: 0.18, blue: 0.08)
+            case .midnight:   return Color(red: 0.16, green: 0.16, blue: 0.30)
+            case .neon:       return Color(red: 0.20, green: 0.12, blue: 0.34)
+            case .galaxy:     return Color(red: 0.18, green: 0.16, blue: 0.38)
+            case .pastel:     return Color(red: 0.96, green: 0.92, blue: 0.98)
+            case .vintage:    return Color(red: 0.92, green: 0.86, blue: 0.76)
+            case .halloween:  return Color(red: 0.28, green: 0.14, blue: 0.06)
+            case .chalk:      return Color(red: 0.24, green: 0.34, blue: 0.26)
+            }
+        } else {
+            return Color.white
+        }
     }
 
     // MARK: - 2026: Ambient MeshGradient Backgrounds

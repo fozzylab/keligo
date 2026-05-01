@@ -13,15 +13,13 @@ struct GlassSurface: ViewModifier {
     func body(content: Content) -> some View {
         let theme  = settings.theme
         let isDark = theme.isDark
-        // Use explicit theme colors — never iOS Material which follows SYSTEM light/dark mode
-        // and produces white cards on dark app themes when the device is in light system mode.
-        // Dark themes: use the theme's own `surface` color (already elevated above bg per theme).
-        // Light themes: white card.
+        // Dark themes: cardFill (surface'dan biraz açık, okunabilir)
+        // Light themes: beyaz kart
         let baseFill: Color = isDark
-            ? theme.surface                   // e.g. midnight → dark blue-purple card
+            ? theme.cardFill
             : Color.white.opacity(0.90)
         let strokeColor: Color = isDark
-            ? Color.white.opacity(0.12)
+            ? Color.white.opacity(0.08)
             : Color.black.opacity(0.07)
 
         content
@@ -30,13 +28,13 @@ struct GlassSurface: ViewModifier {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .fill(baseFill)
 
-                    // Subtle top sheen on dark cards
+                    // Çok hafif üst ışıltı (dark'ta neredeyse yok)
                     if isDark {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(0.10 * intensity),
+                                        Color.white.opacity(0.02 * intensity),
                                         Color.white.opacity(0.0)
                                     ],
                                     startPoint: .top,
@@ -45,13 +43,13 @@ struct GlassSurface: ViewModifier {
                             )
                     }
 
-                    // Accent inner glow
+                    // Accent iç kenarlık (dark'ta çok az parlayan)
                     if innerGlow {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        (borderGlow ?? Color.white).opacity(isDark ? 0.28 * intensity : 0.18 * intensity),
+                                        (borderGlow ?? Color.white).opacity(isDark ? 0.08 * intensity : 0.18 * intensity),
                                         (borderGlow ?? Color.white).opacity(0.0)
                                     ],
                                     startPoint: .topLeading,
@@ -64,7 +62,7 @@ struct GlassSurface: ViewModifier {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(strokeColor, lineWidth: isDark ? 0.6 : 0.8)
+                    .strokeBorder(strokeColor, lineWidth: isDark ? 0.5 : 0.8)
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
@@ -132,6 +130,8 @@ struct FloatingOrb<Content: View>: View {
     let glowColor: Color
     let content: Content
     
+    @EnvironmentObject var settings: SettingsViewModel
+    
     init(size: CGFloat, depth: CGFloat = 6, glowColor: Color = .white, @ViewBuilder content: () -> Content) {
         self.size = size
         self.depth = depth
@@ -140,16 +140,18 @@ struct FloatingOrb<Content: View>: View {
     }
     
     var body: some View {
+        let theme = settings.theme
+        let isDark = theme.isDark
         content
             .frame(width: size, height: size)
             .background(
                 Circle()
-                    .fill(Material.ultraThinMaterial)
+                    .fill(isDark ? theme.cardFill : Color.white.opacity(0.90))
                     .overlay(
                         Circle()
-                            .stroke(glowColor.opacity(0.25), lineWidth: 1)
+                            .stroke(glowColor.opacity(isDark ? 0.12 : 0.25), lineWidth: 1)
                     )
-                    .shadow(color: glowColor.opacity(0.20), radius: 8, x: 0, y: 4)
+                    .shadow(color: isDark ? .black.opacity(0.45) : glowColor.opacity(0.20), radius: 8, x: 0, y: 4)
             )
             .clipShape(Circle())
             .spatialDepth(depth, perspective: 0.4)

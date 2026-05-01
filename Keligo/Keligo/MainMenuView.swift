@@ -370,9 +370,9 @@ struct MainMenuView: View {
                         .foregroundColor(t.primaryText)
                 }
                 .padding(.horizontal, 16).padding(.vertical, 8)
-                .glassSurface(cornerRadius: 20, intensity: 0.8, borderGlow: .orange, innerGlow: true)
+                .background(t.cardFill, in: Capsule())
+                .overlay(Capsule().stroke(Color.orange.opacity(t.isDark ? 0.12 : 0.25), lineWidth: 1))
                 .padding(.top, 4)
-                .spatialDepth(4)
             }
 
             // Jeton + Can pill'leri yan yana
@@ -391,8 +391,8 @@ struct MainMenuView: View {
                             .foregroundColor(.yellow.opacity(0.7))
                     }
                     .padding(.horizontal, 12).padding(.vertical, 7)
-                    .background(Color.yellow.opacity(0.10), in: Capsule())
-                    .overlay(Capsule().strokeBorder(Color.yellow.opacity(0.22), lineWidth: 1))
+                    .background(t.cardFill, in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color.yellow.opacity(t.isDark ? 0.10 : 0.20), lineWidth: 1))
                 }
                 .buttonStyle(ScaleButtonStyle())
 
@@ -421,8 +421,8 @@ struct MainMenuView: View {
                             .foregroundColor(.red.opacity(0.6))
                     }
                     .padding(.horizontal, 12).padding(.vertical, 7)
-                    .background(Color.red.opacity(0.10), in: Capsule())
-                    .overlay(Capsule().strokeBorder(Color.red.opacity(0.22), lineWidth: 1))
+                    .background(t.cardFill, in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color.red.opacity(t.isDark ? 0.10 : 0.20), lineWidth: 1))
                 }
                 .buttonStyle(ScaleButtonStyle())
             }
@@ -612,7 +612,7 @@ struct MainMenuView: View {
                 Text(bonusJustClaimed ? "✅" : "🎁")
                     .font(.title2)
                     .frame(width: 38, height: 38)
-                    .background(Color.green.opacity(0.18), in: Circle())
+                    .background(Color.green.opacity(t.isDark ? 0.10 : 0.18), in: Circle())
                 VStack(alignment: .leading, spacing: 2) {
                     Text(bonusJustClaimed ? "+\(JetonManager.rewardJetonAdBonus) jeton kazandın!" : "Günlük Bonus")
                         .font(.subheadline.weight(.bold))
@@ -631,14 +631,14 @@ struct MainMenuView: View {
             .padding(14)
             .background(
                 LinearGradient(
-                    colors: [Color.green.opacity(0.13), Color.green.opacity(0.05)],
+                    colors: [Color.green.opacity(t.isDark ? 0.07 : 0.13), Color.green.opacity(t.isDark ? 0.02 : 0.05)],
                     startPoint: .leading, endPoint: .trailing
                 ),
                 in: RoundedRectangle(cornerRadius: 16)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                    .stroke(Color.green.opacity(t.isDark ? 0.15 : 0.30), lineWidth: 1)
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -667,8 +667,8 @@ struct MainMenuView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .glassSurface(cornerRadius: 16, intensity: 0.7, borderGlow: t.accent, innerGlow: true)
-        .spatialDepth(3)
+        .background(t.cardFill, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(t.cardStroke, lineWidth: 1))
     }
     
     // MARK: - Battle Pass CTA
@@ -759,7 +759,7 @@ struct GameModeCard: View {
                     RoundedRectangle(cornerRadius: 14)
                         .fill(LinearGradient(colors: gradient, startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: 54, height: 54)
-                        .shadow(color: gradient.first?.opacity(0.45) ?? .clear, radius: 10, y: 5)
+                        .shadow(color: gradient.first?.opacity(theme.isDark ? 0.20 : 0.45) ?? .clear, radius: theme.isDark ? 6 : 10, y: theme.isDark ? 3 : 5)
                     Image(systemName: icon)
                         .font(.title2.weight(.semibold))
                         .foregroundColor(.white)
@@ -792,7 +792,8 @@ struct GameModeCard: View {
                     .foregroundColor(theme.isDark ? .white.opacity(0.45) : Color(.tertiaryLabel))
             }
             .padding(16)
-            .glassSurface(cornerRadius: 20, intensity: 0.9, borderGlow: gradient.first, innerGlow: true)
+            .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 20))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(theme.cardStroke, lineWidth: 1))
             .shadow(color: theme.cardShadow, radius: 10, y: 5)
         }
         .buttonStyle(ScaleButtonStyle())
@@ -825,7 +826,7 @@ struct AchievementToast: View {
         .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 18))
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.yellow.opacity(0.35), lineWidth: 1)
+                .stroke(Color.yellow.opacity(theme.isDark ? 0.15 : 0.35), lineWidth: 1)
         )
         .padding(.horizontal, 16)
         .shadow(color: .black.opacity(0.35), radius: 24, y: 10)
