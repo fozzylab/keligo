@@ -16,7 +16,6 @@ struct MainMenuView: View {
     @State private var showChapterSelect = false
     @State private var showSpeed = false
     @State private var showKids = false
-    @State private var showZen = false
     @State private var showCategoryPicker = false
     @State private var showOutOfLives = false
     @State private var bonusClaimAnim = false
@@ -205,18 +204,15 @@ struct MainMenuView: View {
                 GameContainerView(settings: settings, stats: stats, categoryFilter: selectedCategory,
                                   onBack: { withAnimation(.easeInOut(duration: 0.3)) { showInfinite = false } })
                     .transition(.move(edge: .trailing)).zIndex(1)
-                    .ignoresSafeArea()
             }
             if showChapterSelect {
                 ChapterSelectView(onBack: { withAnimation(.easeInOut(duration: 0.3)) { showChapterSelect = false } })
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.move(edge: .trailing)).zIndex(1)
-                    .ignoresSafeArea()
             }
             if showSpeed {
                 SpeedModeView(onBack: { withAnimation(.easeInOut(duration: 0.3)) { showSpeed = false } })
                     .transition(.move(edge: .trailing)).zIndex(1)
-                    .ignoresSafeArea()
             }
             if showKids {
                 GameContainerView(
@@ -225,13 +221,6 @@ struct MainMenuView: View {
                     onBack: { withAnimation(.easeInOut) { showKids = false } }
                 )
                 .transition(.move(edge: .trailing)).zIndex(1)
-                .ignoresSafeArea()
-            }
-            if showZen {
-                ZenModeView(settings: settings, stats: stats,
-                            onBack: { withAnimation(.easeInOut(duration: 0.3)) { showZen = false } })
-                    .transition(.move(edge: .trailing)).zIndex(1)
-                    .ignoresSafeArea()
             }
         }
         .onAppear {
@@ -243,7 +232,6 @@ struct MainMenuView: View {
         .animation(.easeInOut(duration: 0.3), value: showChapterSelect)
         .animation(.easeInOut(duration: 0.3), value: showSpeed)
         .animation(.easeInOut(duration: 0.3), value: showKids)
-        .animation(.easeInOut(duration: 0.3), value: showZen)
         .animation(.easeInOut(duration: 0.3), value: showWeekly)
         .animation(.easeInOut(duration: 0.3), value: showDavet)
         .sheet(isPresented: $showOutOfLives) {
@@ -517,16 +505,6 @@ struct MainMenuView: View {
             }
         }
         
-        GameModeCard(
-            icon: "infinity.circle.fill",
-            title: "Zen Modu",
-            subtitle: "Reklamsız, huzurlu",
-            gradient: [Color(red: 0.40, green: 0.60, blue: 0.80), Color(red: 0.60, green: 0.80, blue: 0.90)],
-            theme: t
-        ) {
-            showZen = true
-        }
-
         GameModeCard(
             icon: "calendar.badge.exclamationmark",
             title: "Haftalık",

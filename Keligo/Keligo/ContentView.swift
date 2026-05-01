@@ -710,12 +710,13 @@ struct GameBoardView<Overlay: View>: View {
                     Text("İpucu Al")
                         .font(.subheadline.weight(.semibold))
                     Spacer()
-                    HStack(spacing: 3) {
+                    HStack(spacing: 2) {
                         Image(systemName: "circle.fill")
                             .font(.system(size: 7))
                             .foregroundColor(.yellow)
-                        Text("\(JetonManager.costHint) 🪙")
+                        Text("\(JetonManager.costHint)")
                             .font(.caption.weight(.bold))
+                            .foregroundColor(.yellow)
                     }
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(
@@ -826,6 +827,7 @@ struct GameBoardView<Overlay: View>: View {
 
     private var jetonActionsRow: some View {
         HStack(spacing: 7) {
+            // ── Sol grup: jeton harcama butonları ──
             JetonActionButton(
                 icon: "character.textbox",
                 title: "Sesli Harf",
@@ -871,16 +873,18 @@ struct GameBoardView<Overlay: View>: View {
             .opacity(vm.canUndo ? 1 : 0)
             .allowsHitTesting(vm.canUndo)
 
-            // Rewarded ad button — same visual size as JetonActionButton
+            Spacer()
+
+            // ── Sağ: Jeton Kazan (rewarded ad) — her zaman sağda, boşluğa gömülmez ──
             if vm.canWatchRewardedAd {
                 JetonActionButton(
                     icon: "play.rectangle.fill",
-                    title: "Reklam",
+                    title: "Jeton Kazan",
                     cost: 0,
                     canAct: true,
                     canAfford: true,
                     theme: theme,
-                    accentColor: .purple,
+                    accentColor: .yellow,
                     onInsufficientFunds: {}
                 ) {
                     if AdManager.shared.canShowRewarded(.letter) {
@@ -890,8 +894,6 @@ struct GameBoardView<Overlay: View>: View {
                     }
                 }
             }
-
-            Spacer()
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 6)
@@ -1283,15 +1285,15 @@ struct JetonActionButton: View {
                         HStack(spacing: 2) {
                             Image(systemName: "circle.fill")
                                 .font(.system(size: 6))
-                                .foregroundColor(canAfford ? .yellow : .red.opacity(0.8))
+                                .foregroundColor(.yellow)
                             Text("\(cost)")
                                 .font(.system(size: 9, weight: .semibold))
-                                .foregroundColor(canAfford ? .yellow : .red.opacity(0.8))
+                                .foregroundColor(canAfford ? .yellow : .orange)
                         }
                     } else {
-                        Text("Ücretsiz")
+                        Text("İzle")
                             .font(.system(size: 9, weight: .semibold))
-                            .foregroundColor(accentColor.opacity(0.75))
+                            .foregroundColor(accentColor.opacity(0.85))
                     }
                 }
             }
