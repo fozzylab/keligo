@@ -189,27 +189,49 @@ struct CrumbleCanvas: View {
     }
 }
 
-// MARK: - Floating Dust (Static, No TimelineView)
+// MARK: - Floating Dust (Static, positions generated once)
 
+/// Lightweight static dust overlay.
+/// Positions are normalised (0–1) and generated once on appear so they don't
+/// jump every time the parent view re-renders.
 struct FloatingDust: View {
     let color: Color
     let count: Int
-    
+
+    // Normalised particle data — produced once, never changes.
+    private struct Particle {
+        let x: CGFloat        // 0…1 relative to view width
+        let y: CGFloat        // 0…1 relative to view height
+        let size: CGFloat
+        let opacity: Double
+    }
+
+    @State private var particles: [Particle] = []
+
     var body: some View {
-        GeometryReader { geo in
-            Canvas { context, _ in
-                for _ in 0..<count {
-                    let x = CGFloat.random(in: 0...geo.size.width)
-                    let y = CGFloat.random(in: 0...geo.size.height)
-                    let size = CGFloat.random(in: 1...2.5)
-                    let opacity = Double.random(in: 0.04...0.10)
-                    
-                    var path = Path()
-                    path.addEllipse(in: CGRect(x: x, y: y, width: size, height: size))
-                    context.fill(path, with: .color(color.opacity(opacity)))
-                }
+        Canvas { context, size in
+            for p in particles {
+                var path = Path()
+                path.addEllipse(in: CGRect(
+                    x: p.x * size.width,
+                    y: p.y * size.height,
+                    width: p.size,
+                    height: p.size
+                ))
+                context.fill(path, with: .color(color.opacity(p.opacity)))
             }
         }
         .allowsHitTesting(false)
+        .onAppear {
+            guard particles.isEmpty else { return }
+            particles = (0..<count).map { _ in
+                Particle(
+                    x:       CGFloat.random(in: 0...1),
+                    y:       CGFloat.random(in: 0...1),
+                    size:    CGFloat.random(in: 1...2.5),
+                    opacity: Double.random(in: 0.04...0.10)
+                )
+            }
+        }
     }
 }
