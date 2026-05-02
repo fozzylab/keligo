@@ -21,7 +21,6 @@ class AchievementManager: ObservableObject {
         Achievement(id: "first_kids",         title: "Çocuk Kalbim",           description: "Çocuk modunu ilk kez oyna",                   icon: "🧒"),
         Achievement(id: "first_friend",       title: "İlk Meydan Okuma",       description: "Arkadaşa sor modunu ilk kez oyna",            icon: "🤝"),
         // --- Galibiyet ---
-        Achievement(id: "first_win",          title: "İlk Adım",               description: "İlk kelimeni doğru bul",                      icon: "🎯"),
         Achievement(id: "wins_10",            title: "Kelime Çırağı",           description: "10 oyun kazan",                               icon: "📖"),
         Achievement(id: "wins_25",            title: "Kelime Avcısı",           description: "25 oyun kazan",                               icon: "🎪"),
         Achievement(id: "wins_50",            title: "Efsane",                  description: "50 oyun kazan",                               icon: "👑"),

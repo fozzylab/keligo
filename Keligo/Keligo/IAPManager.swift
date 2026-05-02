@@ -310,7 +310,7 @@ struct IAPStoreView: View {
                             .padding(.horizontal)
                         }
 
-                        if let err = iap.errorMessage {
+                        if let err = iap.errorMessage, !iap.products.isEmpty {
                             Text(err)
                                 .font(.caption)
                                 .foregroundColor(.red)
