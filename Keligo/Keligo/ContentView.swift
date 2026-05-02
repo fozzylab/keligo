@@ -209,6 +209,7 @@ struct GameBoardView<Overlay: View>: View {
     @ViewBuilder var gameOverOverlay: () -> Overlay
 
     @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var stats: StatsManager
     @EnvironmentObject var achievements: AchievementManager
     @EnvironmentObject var jetons: JetonManager
     @StateObject private var lives = LivesManager.shared
@@ -223,14 +224,19 @@ struct GameBoardView<Overlay: View>: View {
     @State private var showWordReport = false  // word error report sheet
     @State private var showRewardedCapAlert = false  // günlük cap dolduğunda
     @State private var rewardToastText: String? = nil  // "+1 harf" gibi geri bildirim
-    @State private var showInsufficientJetonAlert = false  // jeton yetersiz uyarısı
+    @State private var showInsufficientJetonSheet = false  // jeton yetersiz ekranı
+    @State private var showLivesInfo = false               // oyun içi can bilgi ekranı
+    @State private var showOutOfLivesGame = false          // oyun içi OutOfLives sheet
     @State private var now = Date()  // lives countdown timer tick
     private let regenTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     // 2026: Continue after loss
     @State private var showContinueAfterLoss = false
     @State private var hasUsedContinue = false
-    
+
+    // Back confirmation (oyun sırasında 1 can gider)
+    @State private var showBackConfirm = false
+
     // 2026: Word Lore sheet
     @State private var showWordLore = false
 
@@ -302,7 +308,7 @@ struct GameBoardView<Overlay: View>: View {
                             withAnimation { rewardToastText = nil }
                         }
                     } else {
-                        showInsufficientJetonAlert = true
+                        showInsufficientJetonSheet = true
                     }
                 } onDecline: {
                     showContinueAfterLoss = false
@@ -338,6 +344,19 @@ struct GameBoardView<Overlay: View>: View {
             }
         }
         .onReceive(regenTimer) { now = $0 }
+        .alert("Oyundan Çık?", isPresented: $showBackConfirm) {
+            Button("Çık", role: .destructive) {
+                if !lives.hasInfinite { lives.loseOne() }
+                // Oyun yarıda bırakıldı — istatistiklere kayıp olarak yaz
+                if vm.gameState == .playing {
+                    stats.recordLoss(category: vm.category)
+                }
+                onBack()
+            }
+            Button("Devam Et", role: .cancel) {}
+        } message: {
+            Text("Oyundan çıkarsan \(lives.hasInfinite ? "canın gitmez" : "1 canın gider"). Emin misin?")
+        }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showHistory) {
             GuessHistoryView(history: vm.guessHistory, theme: theme)
@@ -349,6 +368,44 @@ struct GameBoardView<Overlay: View>: View {
         }
         .sheet(isPresented: $showWordLore) {
             WordLoreSheet(word: vm.currentWord, category: vm.category, theme: theme)
+        }
+        .sheet(isPresented: $showLivesInfo) {
+            LivesInfoSheet(
+                lives: lives,
+                onRefill: { showOutOfLivesGame = true },
+                onDismiss: { showLivesInfo = false }
+            )
+            .environmentObject(settings)
+            .environmentObject(jetons)
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.hidden)
+        }
+        .sheet(isPresented: $showOutOfLivesGame) {
+            OutOfLivesSheet()
+                .environmentObject(settings)
+                .environmentObject(jetons)
+        }
+        .sheet(isPresented: $showInsufficientJetonSheet) {
+            InsufficientJetonSheet(
+                onWatchAd: {
+                    showInsufficientJetonSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        if AdManager.shared.canShowRewarded(.letter) {
+                            showRewardedAdSimulation = true
+                        } else {
+                            showRewardedCapAlert = true
+                        }
+                    }
+                },
+                onGoStore: {
+                    showInsufficientJetonSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { showSettings = true }
+                }
+            )
+            .environmentObject(settings)
+            .environmentObject(jetons)
+            .presentationDetents([.fraction(0.45)])
+            .presentationDragIndicator(.visible)
         }
         .alert("Reklam izlendi!", isPresented: $showRewardedAdSimulation) {
             Button("Tamam") {
@@ -371,19 +428,6 @@ struct GameBoardView<Overlay: View>: View {
             Button("Tamam", role: .cancel) {}
         } message: {
             Text("Reklamla harf açma hakkın bugün için doldu. Yarın tekrar gel.")
-        }
-        .alert("Yeterli jeton yok", isPresented: $showInsufficientJetonAlert) {
-            Button("Mağazaya Git") { showSettings = true }
-            Button("Reklam İzle") {
-                if AdManager.shared.canShowRewarded(.letter) {
-                    showRewardedAdSimulation = true
-                } else {
-                    showRewardedCapAlert = true
-                }
-            }
-            Button("Tamam", role: .cancel) {}
-        } message: {
-            Text("Bu aksiyon için yeterli jetonun yok. Jeton kazanmak için reklam izleyebilir veya mağazadan satın alabilirsin.")
         }
         .onChange(of: vm.wrongGuesses) {
             withAnimation(.linear(duration: 0.5)) { shakeCount += 1 }
@@ -424,60 +468,7 @@ struct GameBoardView<Overlay: View>: View {
                 CinematicHaptics.shared.play(.correct)
             }
         }
-        .onChange(of: vm.gameState) { _, state in
-            // Reset continue flag on new game
-            if state == .playing {
-                showContinueAfterLoss = false
-                hasUsedContinue = false
-                return
-            }
-            
-            // Show continue prompt on loss (before game over)
-            if state == .lost && !hasUsedContinue {
-                showContinueAfterLoss = true
-                return
-            }
-            
-            guard state != .playing else { return }
-            
-            // 2026: AI session recording
-            ai.recordGame(
-                word: vm.currentWord,
-                won: state == .won,
-                wrongGuesses: vm.wrongGuesses,
-                duration: 0, // Could be tracked with a timer
-                category: vm.category
-            )
-            
-            achievements.check(
-                stats: vm.stats,
-                chapters: ChapterManager.shared,
-                wrongCount: vm.wrongGuesses,
-                hintUsed: vm.hintUsed,
-                won: state == .won
-            )
-            // Ad cadence — interstitial Sonsuz/Çocuk için tetikle (Daily/Chapter/Speed dışı)
-            if !modeLabel.contains("Günlük") && !modeLabel.contains("Bölüm") && !modeLabel.contains("Hız") {
-                AdManager.shared.notifyGameEnded()
-                if AdManager.shared.shouldShowInterstitial() {
-                    Task { await AdManager.shared.presentInterstitial() }
-                }
-            }
-            // Prompt manager — ardışık kayıp tetiği
-            AppPromptManager.shared.notifyGameEnded(won: state == .won)
-            
-            // 2026: Cinematic haptics on game end
-            if settings.hapticEnabled {
-                CinematicHaptics.shared.play(state == .won ? .win : .loss)
-            }
-            
-            // 2026: Show Word Lore on win
-            if state == .won {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                    showWordLore = true
-                }
-            }
-        }
+        .onChange(of: vm.gameState) { _, state in handleGameStateChange(state) }
     }
 
     // MARK: - iPad layout
@@ -523,20 +514,19 @@ struct GameBoardView<Overlay: View>: View {
             wordDisplay
             wordHintCard
 
-            // "Neredeyse!" — inline, just below word, above wrong letters
-            if showNearSolvedBanner {
-                HStack(spacing: 6) {
-                    Text("🔥")
-                    Text("Neredeyse!")
-                        .font(.subheadline.weight(.black))
-                        .foregroundColor(.white)
-                }
-                .padding(.horizontal, 18).padding(.vertical, 7)
-                .background(Color.orange.opacity(0.88), in: Capsule())
-                .shadow(color: .orange.opacity(0.35), radius: 8, y: 3)
-                .padding(.top, 6)
-                .transition(.scale(scale: 0.8).combined(with: .opacity))
+            // "Neredeyse!" — sabit yükseklikte, görününce kayma olmaz
+            HStack(spacing: 6) {
+                Text("🔥")
+                Text("Neredeyse!")
+                    .font(.subheadline.weight(.black))
+                    .foregroundColor(.white)
             }
+            .padding(.horizontal, 18).padding(.vertical, 7)
+            .background(Color.orange.opacity(0.88), in: Capsule())
+            .shadow(color: .orange.opacity(0.35), radius: 8, y: 3)
+            .padding(.top, 6)
+            .opacity(showNearSolvedBanner ? 1 : 0)
+            .animation(.spring(response: 0.35, dampingFraction: 0.65), value: showNearSolvedBanner)
 
             wrongLettersRow
             jetonActionsRow
@@ -560,6 +550,49 @@ struct GameBoardView<Overlay: View>: View {
         }
     }
 
+    // MARK: - Game state handler (extracted to avoid compiler type-check timeout)
+
+    private func handleGameStateChange(_ state: GameState) {
+        if state == .playing {
+            showContinueAfterLoss = false
+            hasUsedContinue = false
+            return
+        }
+        if state == .lost && !hasUsedContinue {
+            showContinueAfterLoss = true
+            return
+        }
+        guard state != .playing else { return }
+
+        ai.recordGame(
+            word: vm.currentWord,
+            won: state == .won,
+            wrongGuesses: vm.wrongGuesses,
+            duration: 0,
+            category: vm.category
+        )
+        achievements.check(
+            stats: vm.stats,
+            chapters: ChapterManager.shared,
+            wrongCount: vm.wrongGuesses,
+            hintUsed: vm.hintUsed,
+            won: state == .won
+        )
+        if !modeLabel.contains("Günlük") && !modeLabel.contains("Bölüm") && !modeLabel.contains("Hız") {
+            AdManager.shared.notifyGameEnded()
+            if AdManager.shared.shouldShowInterstitial() {
+                Task { await AdManager.shared.presentInterstitial() }
+            }
+        }
+        AppPromptManager.shared.notifyGameEnded(won: state == .won)
+        if settings.hapticEnabled {
+            CinematicHaptics.shared.play(state == .won ? .win : .loss)
+        }
+        if state == .won {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { showWordLore = true }
+        }
+    }
+
     // MARK: - Top bar
 
     private var topBar: some View {
@@ -573,7 +606,13 @@ struct GameBoardView<Overlay: View>: View {
                 .frame(maxWidth: .infinity)
 
             HStack {
-            Button(action: onBack) {
+            Button {
+                if vm.gameState == .playing {
+                    showBackConfirm = true
+                } else {
+                    onBack()
+                }
+            } label: {
                 Image(systemName: "chevron.left.circle.fill")
                     .symbolRenderingMode(.hierarchical)
                     .font(.title2)
@@ -581,37 +620,28 @@ struct GameBoardView<Overlay: View>: View {
             }
             Spacer()
             HStack(spacing: 6) {
-                // Lives pill (can sayısı + yenilenme sayacı)
-                HStack(spacing: 3) {
-                    Image(systemName: lives.hasInfinite ? "infinity" : "heart.fill")
-                        .font(.system(size: 8))
-                        .foregroundColor(.red)
-                    Text(lives.hasInfinite ? "∞" : "\(lives.current)")
-                        .font(.caption2.weight(.bold))
-                        .foregroundColor(.red)
-                    if !lives.hasInfinite, let next = lives.nextRegenAt {
-                        let remaining = max(0, next.timeIntervalSince(now))
-                        let mins = Int(remaining) / 60
-                        let secs = Int(remaining) % 60
-                        Text("·\(mins):\(String(format: "%02d", secs))")
-                            .font(.system(size: 8, weight: .semibold).monospacedDigit())
-                            .foregroundColor(.red.opacity(0.75))
+                // Lives pill — tıklanabilir, LivesInfoSheet açar
+                Button { showLivesInfo = true } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: lives.hasInfinite ? "infinity" : "heart.fill")
+                            .font(.system(size: 8))
+                            .foregroundColor(.red)
+                        Text(lives.hasInfinite ? "∞" : "\(lives.current)")
+                            .font(.caption2.weight(.bold))
+                            .foregroundColor(.red)
+                        if !lives.hasInfinite, let next = lives.nextRegenAt {
+                            let remaining = max(0, next.timeIntervalSince(now))
+                            let mins = Int(remaining) / 60
+                            let secs = Int(remaining) % 60
+                            Text("·\(mins):\(String(format: "%02d", secs))")
+                                .font(.system(size: 8, weight: .semibold).monospacedDigit())
+                                .foregroundColor(.red.opacity(0.75))
+                        }
                     }
+                    .padding(.horizontal, 7).padding(.vertical, 4)
+                    .background(Color.red.opacity(0.14), in: Capsule())
                 }
-                .padding(.horizontal, 7).padding(.vertical, 4)
-                .background(Color.red.opacity(0.14), in: Capsule())
-
-                // Jeton balance pill
-                HStack(spacing: 3) {
-                    Image(systemName: "circle.fill")
-                        .font(.system(size: 8))
-                        .foregroundColor(.yellow)
-                    Text("\(jetons.balance)")
-                        .font(.caption2.weight(.bold))
-                        .foregroundColor(.yellow)
-                }
-                .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(Color.yellow.opacity(0.14), in: Capsule())
+                .buttonStyle(ScaleButtonStyle())
 
                 Button { showSettings = true } label: {
                     Image(systemName: "gearshape.circle.fill")
@@ -645,17 +675,6 @@ struct GameBoardView<Overlay: View>: View {
             .padding(.horizontal, 12).padding(.vertical, 5)
             .background(theme.cardFill, in: Capsule())
 
-            // Flag button — report word error
-            Button {
-                showWordReport = true
-            } label: {
-                Image(systemName: "flag.fill")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(theme.secondaryText.opacity(0.6))
-                    .padding(6)
-                    .background(theme.cardFill, in: Circle())
-            }
-            .buttonStyle(ScaleButtonStyle())
         }
         .padding(.bottom, 6)
     }
@@ -745,10 +764,31 @@ struct GameBoardView<Overlay: View>: View {
         }
     }
 
+    @ViewBuilder
     private var wordDisplay: some View {
+        let chunks = wordChunks()
+        if chunks.count > 1 {
+            multiWordDisplay(chunks)
+        } else {
+            singleWordDisplay(chunks.first ?? [])
+        }
+    }
+
+    private func multiWordDisplay(_ chunks: [[(offset: Int, char: Character)]]) -> some View {
+        VStack(spacing: 8) {
+            ForEach(chunks.indices, id: \.self) { row in
+                wordTileRow(chunks[row])
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .modifier(ShakeEffect(animatableData: shakeCount))
+        .padding(.bottom, 10)
+    }
+
+    private func singleWordDisplay(_ items: [(offset: Int, char: Character)]) -> some View {
         GeometryReader { geo in
             ScrollView(.horizontal, showsIndicators: false) {
-                wordLetterTiles
+                wordTileRow(items)
                     .frame(minWidth: geo.size.width, alignment: .center)
             }
         }
@@ -757,25 +797,34 @@ struct GameBoardView<Overlay: View>: View {
         .padding(.bottom, 10)
     }
 
-    private var wordLetterTiles: some View {
+    /// displayWord'ü boşluklarda bölerek (offset'i koruyan) chunk dizisi döner
+    private func wordChunks() -> [[(offset: Int, char: Character)]] {
+        var chunks: [[(offset: Int, char: Character)]] = []
+        var current: [(offset: Int, char: Character)] = []
+        for (idx, ch) in vm.displayWord.enumerated() {
+            if ch == " " {
+                if !current.isEmpty { chunks.append(current); current = [] }
+            } else {
+                current.append((offset: idx, char: ch))
+            }
+        }
+        if !current.isEmpty { chunks.append(current) }
+        return chunks.isEmpty ? [[]] : chunks
+    }
+
+    private func wordTileRow(_ items: [(offset: Int, char: Character)]) -> some View {
         HStack(spacing: 0) {
-            ForEach(Array(vm.displayWord.enumerated()), id: \.offset) { idx, char in
-                if char == " " {
-                    Rectangle()
-                        .fill(Color.clear)
-                        .frame(width: 20, height: 40)
-                } else {
-                    CrystalLetterTile(
-                        letter: char,
-                        isRevealed: char != "_",
-                        isSpace: false,
-                        theme: theme,
-                        accent: theme.correct,
-                        isBouncing: bouncingIndices.contains(idx),
-                        index: idx
-                    )
-                    .padding(.horizontal, 3)
-                }
+            ForEach(items, id: \.offset) { item in
+                CrystalLetterTile(
+                    letter: item.char,
+                    isRevealed: item.char != "_",
+                    isSpace: false,
+                    theme: theme,
+                    accent: theme.correct,
+                    isBouncing: bouncingIndices.contains(item.offset),
+                    index: item.offset
+                )
+                .padding(.horizontal, 3)
             }
         }
         .padding(.horizontal, 16)
@@ -830,13 +879,26 @@ struct GameBoardView<Overlay: View>: View {
     // MARK: - Jeton action buttons
 
     private var jetonActionsRow: some View {
-        // Tüm butonlar eşit genişlikte, buton sayısına göre otomatik sığar.
-        HStack(spacing: 8) {
+        VStack(spacing: 4) {
+            // Jeton bakiyesi — üst bar'dan kaldırıldı, bağlamsal olarak burada
+            HStack(spacing: 4) {
+                Image(systemName: "circle.fill")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(.yellow)
+                Text("\(jetons.balance) jeton")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(theme.primaryText)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+
+            // Tüm butonlar eşit genişlikte, buton sayısına göre otomatik sığar.
+            HStack(spacing: 8) {
             // 1. Jeton Kazan — her zaman sol başta
             if vm.canWatchRewardedAd {
                 JetonActionButton(
                     icon: "play.rectangle.fill",
-                    title: "Jeton Kazan",
+                    title: "Harf Aç",
                     cost: 0,
                     canAct: true,
                     canAfford: true,
@@ -860,7 +922,7 @@ struct GameBoardView<Overlay: View>: View {
                 canAct: vm.hasUnrevealedVowels && vm.gameState == .playing,
                 canAfford: jetons.canAfford(JetonManager.costVowel),
                 theme: theme,
-                onInsufficientFunds: { showInsufficientJetonAlert = true }
+                onInsufficientFunds: { showInsufficientJetonSheet = true }
             ) { vm.buyVowel() }
 
             // 3. Harf Al
@@ -871,7 +933,7 @@ struct GameBoardView<Overlay: View>: View {
                 canAct: vm.gameState == .playing,
                 canAfford: jetons.canAfford(JetonManager.costLetter),
                 theme: theme,
-                onInsufficientFunds: { showInsufficientJetonAlert = true }
+                onInsufficientFunds: { showInsufficientJetonSheet = true }
             ) { vm.buyLetter() }
 
             // 4. Pas — sadece mümkünse göster
@@ -883,7 +945,7 @@ struct GameBoardView<Overlay: View>: View {
                     canAct: vm.gameState == .playing,
                     canAfford: jetons.canAfford(JetonManager.costSkip),
                     theme: theme,
-                    onInsufficientFunds: { showInsufficientJetonAlert = true }
+                    onInsufficientFunds: { showInsufficientJetonSheet = true }
                 ) { vm.skipWord() }
             }
 
@@ -896,11 +958,12 @@ struct GameBoardView<Overlay: View>: View {
                     canAct: vm.gameState == .playing,
                     canAfford: jetons.canAfford(JetonManager.costUndo),
                     theme: theme,
-                    onInsufficientFunds: { showInsufficientJetonAlert = true }
+                    onInsufficientFunds: { showInsufficientJetonSheet = true }
                 ) { vm.undo() }
             }
-        }
-        .padding(.horizontal, 16)
+            }  // HStack kapanışı
+            .padding(.horizontal, 16)
+        }  // VStack kapanışı
         .padding(.bottom, 6)
     }
 
@@ -1286,16 +1349,20 @@ struct JetonActionButton: View {
                     .font(.system(size: 9, weight: .bold))
                     .foregroundColor(cost == 0 ? accentColor : (canAct ? theme.primaryText : theme.secondaryText))
                     .lineLimit(1).minimumScaleFactor(0.7)
-                if cost > 0 {
-                    HStack(spacing: 2) {
+                // Her zaman 3. satır — eşit yükseklik için (cost==0 ise boş)
+                HStack(spacing: 2) {
+                    if cost > 0 {
                         Image(systemName: "circle.fill")
                             .font(.system(size: 5, weight: .bold))
                             .foregroundColor(.yellow)
                         Text("\(cost)")
                             .font(.system(size: 8, weight: .semibold))
                             .foregroundColor(canAfford ? .yellow : .orange)
+                    } else {
+                        Color.clear.frame(height: 10)
                     }
                 }
+                .frame(height: 12)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
@@ -1307,7 +1374,7 @@ struct JetonActionButton: View {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(cost == 0 ? accentColor.opacity(0.30) : theme.cardStroke, lineWidth: 1)
             )
-            .opacity(canAct ? 1.0 : 0.38)
+            .opacity(canAct ? 1.0 : 0.50)
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -1371,6 +1438,114 @@ struct GuessHistoryView: View {
             Spacer()
         }
         .background(theme.background)
+    }
+}
+
+// MARK: - Insufficient Jeton Sheet
+
+struct InsufficientJetonSheet: View {
+    let onWatchAd: () -> Void
+    let onGoStore: () -> Void
+
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var jetons: JetonManager
+    @Environment(\.dismiss) private var dismiss
+
+    private let ad = AdManager.shared
+    var t: AppTheme { settings.theme }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(t.secondaryText.opacity(0.25))
+                .frame(width: 40, height: 4)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
+
+            Image(systemName: "circle.slash")
+                .font(.system(size: 40))
+                .foregroundStyle(LinearGradient(colors: [.yellow, .orange], startPoint: .top, endPoint: .bottom))
+                .padding(.bottom, 10)
+
+            Text("Yeterli Jeton Yok")
+                .font(.title2.weight(.black))
+                .foregroundColor(t.primaryText)
+            Text("Bakiye: \(jetons.balance) jeton")
+                .font(.subheadline)
+                .foregroundColor(t.secondaryText)
+                .padding(.bottom, 20)
+
+            VStack(spacing: 10) {
+                // Reklam izle
+                Button(action: onWatchAd) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color.purple.opacity(0.18))
+                            .frame(width: 44, height: 44)
+                            .overlay(Image(systemName: "play.rectangle.fill").foregroundColor(.purple))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Reklam İzle")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundColor(t.primaryText)
+                            Text(ad.canShowRewarded(.letter)
+                                 ? "Kısa video → jeton kazan"
+                                 : "Bugünkü hak doldu")
+                                .font(.caption)
+                                .foregroundColor(t.secondaryText)
+                        }
+                        Spacer()
+                        Text("+🪙")
+                            .font(.caption.weight(.black))
+                            .foregroundColor(.purple)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(Color.purple.opacity(0.15), in: Capsule())
+                    }
+                    .padding(14)
+                    .background(t.cardFill, in: RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(t.cardStroke, lineWidth: 0.8))
+                    .opacity(ad.canShowRewarded(.letter) ? 1 : 0.45)
+                }
+                .buttonStyle(ScaleButtonStyle())
+                .disabled(!ad.canShowRewarded(.letter))
+
+                // Mağaza
+                Button(action: onGoStore) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color.yellow.opacity(0.18))
+                            .frame(width: 44, height: 44)
+                            .overlay(Image(systemName: "bag.fill").foregroundColor(.yellow))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Jeton Satın Al")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundColor(t.primaryText)
+                            Text("Mağazadan jeton paketi seç")
+                                .font(.caption)
+                                .foregroundColor(t.secondaryText)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(t.secondaryText)
+                    }
+                    .padding(14)
+                    .background(t.cardFill, in: RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(t.cardStroke, lineWidth: 0.8))
+                }
+                .buttonStyle(ScaleButtonStyle())
+            }
+            .padding(.horizontal, 20)
+
+            Spacer(minLength: 0)
+
+            Button("Kapat") { dismiss() }
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(t.secondaryText)
+                .padding(.top, 16)
+                .padding(.bottom, 30)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(t.background.ignoresSafeArea())
     }
 }
 

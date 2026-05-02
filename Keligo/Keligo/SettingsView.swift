@@ -7,8 +7,6 @@ struct SettingsView: View {
     @EnvironmentObject var achievements: AchievementManager
     @Environment(\.dismiss) private var dismiss
     @State private var showResetAlert = false
-    @State private var showReports = false
-    @StateObject private var reporter = WordReportManager.shared
 
     var t: AppTheme { settings.theme }
     private let chapters = ChapterManager.shared
@@ -350,31 +348,6 @@ struct SettingsView: View {
                         }
                         .background(t.surface).cornerRadius(12).padding(.horizontal)
 
-                        // KELIME HATALARI
-                        sectionHeader("Kelime Hataları")
-                        VStack(spacing: 0) {
-                            settingsRow(icon: "flag.fill", title: "Bekleyen Bildirimler") {
-                                Button {
-                                    showReports = true
-                                } label: {
-                                    HStack(spacing: 6) {
-                                        if reporter.count > 0 {
-                                            Text("\(reporter.count) adet")
-                                                .font(.subheadline)
-                                                .foregroundColor(.orange)
-                                        } else {
-                                            Text("Temiz ✅")
-                                                .font(.subheadline)
-                                                .foregroundColor(t.secondaryText)
-                                        }
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption.weight(.semibold))
-                                            .foregroundColor(t.secondaryText)
-                                    }
-                                }
-                            }
-                        }
-                        .background(t.surface).cornerRadius(12).padding(.horizontal)
 
                         Spacer(minLength: 32)
                     }
@@ -393,10 +366,6 @@ struct SettingsView: View {
                 Button("İptal", role: .cancel) {}
             } message: {
                 Text("Tüm istatistikler silinecek.")
-            }
-            .sheet(isPresented: $showReports) {
-                PendingReportsView()
-                    .environmentObject(settings)
             }
         }
     }

@@ -7,7 +7,6 @@ struct StatsView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showHistory = false
-    @State private var showReports = false
 
     var t: AppTheme { settings.theme }
 
@@ -99,24 +98,6 @@ struct StatsView: View {
                             Image(systemName: "trophy.fill")
                                 .foregroundColor(t.accent)
                         }
-                        // Pending word reports
-                        Button {
-                            showReports = true
-                        } label: {
-                            ZStack(alignment: .topTrailing) {
-                                Image(systemName: "flag.fill")
-                                    .foregroundColor(t.accent)
-                                let c = WordReportManager.shared.count
-                                if c > 0 {
-                                    Text("\(c)")
-                                        .font(.system(size: 9, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .padding(3)
-                                        .background(Color.red, in: Circle())
-                                        .offset(x: 6, y: -6)
-                                }
-                            }
-                        }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -126,10 +107,6 @@ struct StatsView: View {
             .sheet(isPresented: $showHistory) {
                 GameHistoryView()
                     .environmentObject(stats)
-                    .environmentObject(settings)
-            }
-            .sheet(isPresented: $showReports) {
-                PendingReportsView()
                     .environmentObject(settings)
             }
         }

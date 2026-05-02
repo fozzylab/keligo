@@ -89,8 +89,11 @@ struct WordReportSheet: View {
                     // Submit button
                     Button {
                         guard let reason = selected else { return }
-                        WordReportManager.shared.report(word: word, category: category, reason: reason)
                         withAnimation(.spring()) { showConfirmation = true }
+                        // Direkt bu kelime için mail aç — hiçbir şey saklanmaz
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            WordReportManager.shared.sendDirectMail(word: word, category: category, reason: reason)
+                        }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) { dismiss() }
                     } label: {
                         HStack(spacing: 8) {
@@ -133,92 +136,3 @@ struct WordReportSheet: View {
     }
 }
 
-// MARK: - Pending Reports List (shown in SettingsView)
-
-struct PendingReportsView: View {
-    @StateObject private var reporter = WordReportManager.shared
-    @EnvironmentObject var settings: SettingsViewModel
-    @Environment(\.dismiss) private var dismiss
-    @State private var showClearAlert = false
-
-    var t: AppTheme { settings.theme }
-
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                t.background.ignoresSafeArea()
-
-                if reporter.reports.isEmpty {
-                    VStack(spacing: 12) {
-                        Text("✅").font(.system(size: 48))
-                        Text("Bekleyen bildirim yok")
-                            .font(.headline)
-                            .foregroundColor(t.primaryText)
-                        Text("Oyun içinde 🚩 butonuna basarak\nkelime hatalarını bildirebilirsin.")
-                            .font(.subheadline)
-                            .foregroundColor(t.secondaryText)
-                            .multilineTextAlignment(.center)
-                    }
-                } else {
-                    List {
-                        ForEach(reporter.reports) { report in
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(report.word)
-                                        .font(.subheadline.weight(.bold))
-                                        .foregroundColor(t.primaryText)
-                                    Spacer()
-                                    Text(report.category)
-                                        .font(.caption)
-                                        .foregroundColor(t.accent)
-                                        .padding(.horizontal, 8).padding(.vertical, 3)
-                                        .background(t.accent.opacity(0.12), in: Capsule())
-                                }
-                                Text(report.reason)
-                                    .font(.caption)
-                                    .foregroundColor(t.secondaryText)
-                            }
-                            .listRowBackground(t.surface)
-                        }
-                        .onDelete { reporter.delete(offsets: $0) }
-                    }
-                    .listStyle(.insetGrouped)
-                    .scrollContentBackground(.hidden)
-                }
-            }
-            .navigationTitle("Hata Bildirimleri (\(reporter.count))")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Kapat") { dismiss() }.foregroundColor(t.accent)
-                }
-                if !reporter.reports.isEmpty {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Menu {
-                            Button {
-                                reporter.openMail()
-                            } label: {
-                                Label("Mail ile Gönder", systemImage: "envelope.fill")
-                            }
-                            Button(role: .destructive) {
-                                showClearAlert = true
-                            } label: {
-                                Label("Tümünü Sil", systemImage: "trash")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis.circle.fill")
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(t.accentGradient)
-                        }
-                    }
-                }
-            }
-            .alert("Tümünü Sil", isPresented: $showClearAlert) {
-                Button("Sil", role: .destructive) { reporter.clearAll() }
-                Button("İptal", role: .cancel) {}
-            } message: {
-                Text("Tüm bekleyen hata bildirimleri silinecek.")
-            }
-        }
-    }
-}

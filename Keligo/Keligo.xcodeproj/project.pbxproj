@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		569880652FA5737A0013676F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569880642FA5737A0013676F /* StoreKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		56F25FE62F99E450000930EA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		569880642FA5737A0013676F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		56F25FD82F99E44E000930EA /* Keligo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keligo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56F25FE52F99E450000930EA /* KeligoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeligoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56F25FEF2F99E450000930EA /* KeligoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeligoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				569880652FA5737A0013676F /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,12 +78,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		569880632FA5737A0013676F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				569880642FA5737A0013676F /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		56F25FCF2F99E44E000930EA = {
 			isa = PBXGroup;
 			children = (
 				56F25FDA2F99E44E000930EA /* Keligo */,
 				56F25FE82F99E450000930EA /* KeligoTests */,
 				56F25FF22F99E450000930EA /* KeligoUITests */,
+				569880632FA5737A0013676F /* Frameworks */,
 				56F25FD92F99E44E000930EA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -397,6 +412,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Keligo/KeligoDebug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MV9HFFAF2K;
@@ -432,6 +448,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Keligo/KeligoRelease.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MV9HFFAF2K;
