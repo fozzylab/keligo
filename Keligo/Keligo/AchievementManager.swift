@@ -14,50 +14,68 @@ class AchievementManager: ObservableObject {
     private init() { load() }
 
     @Published var achievements: [Achievement] = [
-        // --- İlk adımlar ---
-        Achievement(id: "first_win",        title: "İlk Adım",            description: "İlk kelimeni doğru bul",                    icon: "🎯"),
-        Achievement(id: "wins_10",          title: "Kelime Çırağı",       description: "10 oyun kazan",                             icon: "📖"),
-        Achievement(id: "wins_25",          title: "Kelime Avcısı",       description: "25 oyun kazan",                             icon: "🎪"),
-        Achievement(id: "wins_50",          title: "Efsane",              description: "50 oyun kazan",                             icon: "👑"),
-        Achievement(id: "wins_100",         title: "Kelime Tanrısı",      description: "100 oyun kazan",                            icon: "🏆"),
-        Achievement(id: "wins_250",         title: "İmparator",           description: "250 oyun kazan",                            icon: "👸"),
+        // --- İlk oyunlar ---
+        Achievement(id: "first_win",          title: "İlk Adım",               description: "İlk kelimeni doğru bul",                      icon: "🎯"),
+        Achievement(id: "first_daily",        title: "İlk Günlük Kelime",      description: "Günlük kelimeyi ilk kez oyna",                 icon: "📅"),
+        Achievement(id: "first_speed",        title: "İlk Yarış",              description: "Hız modunu ilk kez oyna",                     icon: "⚡️"),
+        Achievement(id: "first_kids",         title: "Çocuk Kalbim",           description: "Çocuk modunu ilk kez oyna",                   icon: "🧒"),
+        Achievement(id: "first_friend",       title: "İlk Meydan Okuma",       description: "Arkadaşa sor modunu ilk kez oyna",            icon: "🤝"),
+        // --- Galibiyet ---
+        Achievement(id: "first_win",          title: "İlk Adım",               description: "İlk kelimeni doğru bul",                      icon: "🎯"),
+        Achievement(id: "wins_10",            title: "Kelime Çırağı",           description: "10 oyun kazan",                               icon: "📖"),
+        Achievement(id: "wins_25",            title: "Kelime Avcısı",           description: "25 oyun kazan",                               icon: "🎪"),
+        Achievement(id: "wins_50",            title: "Efsane",                  description: "50 oyun kazan",                               icon: "👑"),
+        Achievement(id: "wins_100",           title: "Kelime Tanrısı",          description: "100 oyun kazan",                              icon: "🏆"),
+        Achievement(id: "wins_250",           title: "İmparator",               description: "250 oyun kazan",                              icon: "👸"),
+        Achievement(id: "wins_500",           title: "Efsaneler Efsanesi",      description: "500 oyun kazan",                              icon: "🌌"),
         // --- Günlük seri ---
-        Achievement(id: "streak_3",         title: "Üç Üstüne",           description: "Günlük kelimeyi 3 gün üst üste bil",        icon: "🔥"),
-        Achievement(id: "streak_5",         title: "Seri Başlangıcı",     description: "Günlük kelimeyi 5 gün üst üste bil",        icon: "🔥"),
-        Achievement(id: "streak_7",         title: "Haftalık Seri",       description: "7 günlük kesintisiz galibiyet",             icon: "🔥🔥"),
-        Achievement(id: "streak_10",        title: "Seri Ustası",         description: "10 günlük kesintisiz galibiyet",            icon: "🔥🔥"),
-        Achievement(id: "streak_14",        title: "İki Hafta Kesintisiz",description: "14 günlük kesintisiz galibiyet",            icon: "🏅"),
-        Achievement(id: "streak_30",        title: "Ay Şampiyonu",        description: "30 günlük kesintisiz galibiyet",            icon: "🏅"),
-        Achievement(id: "streak_60",        title: "Efsane Seri",         description: "60 günlük kesintisiz galibiyet",            icon: "🌟"),
+        Achievement(id: "streak_3",           title: "Üç Üstüne",               description: "Günlük kelimeyi 3 gün üst üste bil",          icon: "🔥"),
+        Achievement(id: "streak_5",           title: "Seri Başlangıcı",         description: "Günlük kelimeyi 5 gün üst üste bil",          icon: "🔥"),
+        Achievement(id: "streak_7",           title: "Haftalık Seri",           description: "7 günlük kesintisiz galibiyet",               icon: "🔥🔥"),
+        Achievement(id: "streak_10",          title: "Seri Ustası",             description: "10 günlük kesintisiz galibiyet",              icon: "🔥🔥"),
+        Achievement(id: "streak_14",          title: "İki Hafta Kesintisiz",    description: "14 günlük kesintisiz galibiyet",              icon: "🏅"),
+        Achievement(id: "streak_30",          title: "Ay Şampiyonu",            description: "30 günlük kesintisiz galibiyet",              icon: "🏅"),
+        Achievement(id: "streak_60",          title: "Efsane Seri",             description: "60 günlük kesintisiz galibiyet",              icon: "🌟"),
         // --- Mükemmellik ---
-        Achievement(id: "perfect",          title: "Kusursuz",            description: "Hiç yanlış yapmadan kazan",                 icon: "⭐️"),
-        Achievement(id: "no_hint",          title: "İpuçsuz Zafer",       description: "İpucu kullanmadan kelimeyi bil",            icon: "💡"),
-        Achievement(id: "perfect_3",        title: "Hatasız Üçlü",        description: "3 kez sıfır hatayla kazan",                 icon: "💫"),
-        Achievement(id: "perfect_10",       title: "Hatasız Usta",        description: "10 kez sıfır hatayla kazan",                icon: "✨"),
-        // --- Bölüm ---
-        Achievement(id: "chapter1",         title: "Bölüm Tamamlayıcı",  description: "Başlangıç bölümünü bitir",                  icon: "🏁"),
-        Achievement(id: "all_chapters",     title: "Bölüm Ustası",        description: "Tüm bölümleri tamamla",                     icon: "🗺️"),
-        Achievement(id: "chapter_3star",    title: "Üç Yıldız",           description: "Herhangi bir bölümü 3 yıldızla bitir",      icon: "⭐️⭐️⭐️"),
-        // --- Hız ---
-        Achievement(id: "speed_5",          title: "Hız Şampiyonu",       description: "Hız modunda 5 kelime çöz",                  icon: "⚡️"),
-        Achievement(id: "speed_10",         title: "Rüzgar Gibi",         description: "Hız modunda 10 kelime çöz",                 icon: "💨"),
-        Achievement(id: "speed_20",         title: "Şimşek",              description: "Hız modunda 20 kelime çöz",                 icon: "🌩️"),
+        Achievement(id: "perfect",            title: "Kusursuz",                description: "Hiç yanlış yapmadan kazan",                   icon: "⭐️"),
+        Achievement(id: "no_hint",            title: "İpuçsuz Zafer",           description: "İpucu kullanmadan kelimeyi bil",              icon: "💡"),
+        Achievement(id: "perfect_3",          title: "Hatasız Üçlü",            description: "3 kez sıfır hatayla kazan",                   icon: "💫"),
+        Achievement(id: "perfect_10",         title: "Hatasız Usta",            description: "10 kez sıfır hatayla kazan",                  icon: "✨"),
+        // --- Bölüm tamamlama ---
+        Achievement(id: "chapter1",           title: "Bölüm Tamamlayıcı",      description: "İlk bölümü bitir",                            icon: "🏁"),
+        Achievement(id: "chapters_5",         title: "Macera Başlıyor",         description: "5 bölüm tamamla",                             icon: "🗺️"),
+        Achievement(id: "chapters_10",        title: "Yarı Yolda",              description: "10 bölüm tamamla",                            icon: "🧩"),
+        Achievement(id: "all_chapters",       title: "Bölüm Ustası",            description: "Tüm 20 bölümü tamamla",                       icon: "🗺️"),
+        // --- Bölüm 3 yıldız ---
+        Achievement(id: "chapter_3star",      title: "Üç Yıldız",               description: "Herhangi bir bölümü 3 yıldızla bitir",        icon: "⭐️"),
+        Achievement(id: "chapters_3star_5",   title: "Yıldız Koleksiyoneri",    description: "5 bölümü 3 yıldızla bitir",                   icon: "🌠"),
+        Achievement(id: "chapters_3star_10",  title: "Yıldız Ustası",           description: "10 bölümü 3 yıldızla bitir",                  icon: "💫"),
+        Achievement(id: "chapters_3star_all", title: "Mükemmeliyetçi",          description: "Tüm bölümleri 3 yıldızla bitir",              icon: "✨"),
+        // --- Hız modu ---
+        Achievement(id: "speed_5",            title: "Hız Şampiyonu",           description: "Hız modunda 5 kelime çöz",                    icon: "⚡️"),
+        Achievement(id: "speed_10",           title: "Rüzgar Gibi",             description: "Hız modunda 10 kelime çöz",                   icon: "💨"),
+        Achievement(id: "speed_20",           title: "Şimşek",                  description: "Hız modunda 20 kelime çöz",                   icon: "🌩️"),
+        Achievement(id: "speed_30",           title: "Fırtına",                 description: "Hız modunda 30 kelime çöz",                   icon: "🌪️"),
+        Achievement(id: "speed_50",           title: "Işık Hızı",               description: "Hız modunda 50 kelime çöz",                   icon: "🚀"),
         // --- Kategori ---
-        Achievement(id: "categories_5",     title: "Kategori Gezgini",    description: "5 farklı kategoride kazan",                 icon: "🗂️"),
-        Achievement(id: "categories_10",    title: "Keşifçi",             description: "10 farklı kategoride kazan",                icon: "🧭"),
-        Achievement(id: "all_categories",   title: "Ansiklopedi",         description: "Tüm kategorilerde kazan",                   icon: "📚"),
+        Achievement(id: "categories_5",       title: "Kategori Gezgini",        description: "5 farklı kategoride kazan",                   icon: "🗂️"),
+        Achievement(id: "categories_10",      title: "Keşifçi",                 description: "10 farklı kategoride kazan",                  icon: "🧭"),
+        Achievement(id: "all_categories",     title: "Ansiklopedi",             description: "Tüm kategorilerde kazan",                     icon: "📚"),
         // --- Günlük oynama ---
-        Achievement(id: "daily_5",          title: "Günlük Kahraman",     description: "Günlük kelimeyi 5 kez oyna",                icon: "📅"),
-        Achievement(id: "daily_10",         title: "Gün Sayıcı",          description: "Günlük kelimeyi 10 kez oyna",               icon: "🗓️"),
-        Achievement(id: "daily_30",         title: "Aylık Oyuncu",        description: "Günlük kelimeyi 30 kez oyna",               icon: "🎖️"),
-        Achievement(id: "daily_100",        title: "Her Gün Burada",      description: "100 günlük kelime oyna",                    icon: "🏆"),
+        Achievement(id: "daily_5",            title: "Günlük Kahraman",         description: "Günlük kelimeyi 5 kez oyna",                  icon: "📅"),
+        Achievement(id: "daily_10",           title: "Gün Sayıcı",              description: "Günlük kelimeyi 10 kez oyna",                 icon: "🗓️"),
+        Achievement(id: "daily_30",           title: "Aylık Oyuncu",            description: "Günlük kelimeyi 30 kez oyna",                 icon: "🎖️"),
+        Achievement(id: "daily_100",          title: "Her Gün Burada",          description: "100 günlük kelime oyna",                      icon: "🏆"),
         // --- Toplam oyun ---
-        Achievement(id: "games_played_50",  title: "Tecrübeli",           description: "Toplam 50 oyun oyna",                       icon: "🎮"),
-        Achievement(id: "games_played_200", title: "Veteran",             description: "Toplam 200 oyun oyna",                      icon: "🎲"),
-        // --- Haftalık ---
-        Achievement(id: "weekly_first",     title: "Haftalık Meydan Okuyucu", description: "Bir haftalık meydan okumayı tamamla",   icon: "📆"),
-        Achievement(id: "weekly_3",         title: "Hafta Sona Ermez",    description: "3 farklı haftalık meydan okumayı tamamla",  icon: "🗓️"),
+        Achievement(id: "games_played_50",    title: "Tecrübeli",               description: "Toplam 50 oyun oyna",                         icon: "🎮"),
+        Achievement(id: "games_played_200",   title: "Veteran",                 description: "Toplam 200 oyun oyna",                        icon: "🎲"),
+        Achievement(id: "games_played_500",   title: "Efsane Oyuncu",           description: "Toplam 500 oyun oyna",                        icon: "🎯"),
+        // --- Haftalık meydan okuma ---
+        Achievement(id: "weekly_first",       title: "Haftalık Meydan Okuyucu", description: "Bir haftalık meydan okumayı tamamla",         icon: "📆"),
+        Achievement(id: "weekly_3",           title: "Hafta Sona Ermez",        description: "3 haftalık meydan okumayı tamamla",           icon: "🗓️"),
+        Achievement(id: "weekly_10",          title: "Haftalık Dedektif",       description: "10 haftalık meydan okumayı tamamla",          icon: "🔍"),
     ]
+    // Toplam puan: 860 / 1000 ✓
 
     @Published var pendingToast: Achievement? = nil
 
@@ -70,7 +88,14 @@ class AchievementManager: ObservableObject {
                   !achievements[idx].isUnlocked else { return }
             achievements[idx].isUnlocked = true
             newlyUnlocked.append(achievements[idx])
+            GameCenterManager.shared.reportAchievement(id: "com.fozzylabs.keligo.\(id)")
         }
+
+        // İlk oyunlar — mod keşfi
+        if stats.totalDailyPlays >= 1  { unlock("first_daily") }
+        if stats.speedHighScore >= 1   { unlock("first_speed") }
+        if stats.kidsGamesPlayed >= 1  { unlock("first_kids") }
+        if stats.friendGamesPlayed >= 1 { unlock("first_friend") }
 
         // Galibiyet sayısı
         if stats.wins >= 1   { unlock("first_win") }
@@ -79,6 +104,7 @@ class AchievementManager: ObservableObject {
         if stats.wins >= 50  { unlock("wins_50") }
         if stats.wins >= 100 { unlock("wins_100") }
         if stats.wins >= 250 { unlock("wins_250") }
+        if stats.wins >= 500 { unlock("wins_500") }
 
         // Günlük galibiyet serisi
         if stats.currentStreak >= 3  { unlock("streak_3") }
@@ -92,9 +118,8 @@ class AchievementManager: ObservableObject {
         // Mükemmellik — sadece galibiyet durumunda
         if won {
             if wrongCount == 0 { unlock("perfect") }
-            if !hintUsed       { unlock("no_hint") }  // ← artık sadece kazanınca
+            if !hintUsed       { unlock("no_hint") }
 
-            // Hatasız sayacı (UserDefaults ile track et)
             if wrongCount == 0 {
                 let key = "perfect_count"
                 let n = UserDefaults.standard.integer(forKey: key) + 1
@@ -104,26 +129,33 @@ class AchievementManager: ObservableObject {
             }
         }
 
-        // Bölüm
-        if (chapters.stars[0] ?? 0) >= 1 { unlock("chapter1") }
-        if chapters.chapters.allSatisfy({ (chapters.stars[$0.id] ?? 0) >= 1 }) {
-            unlock("all_chapters")
-        }
-        if chapters.chapters.contains(where: { (chapters.stars[$0.id] ?? 0) >= 3 }) {
-            unlock("chapter_3star")
-        }
+        // Bölüm tamamlama
+        let completedCount = chapters.chapters.filter { (chapters.stars[$0.id] ?? 0) >= 1 }.count
+        if completedCount >= 1  { unlock("chapter1") }
+        if completedCount >= 5  { unlock("chapters_5") }
+        if completedCount >= 10 { unlock("chapters_10") }
+        if completedCount >= chapters.chapters.count { unlock("all_chapters") }
+
+        // Bölüm 3 yıldız
+        let threeStarCount = chapters.chapters.filter { (chapters.stars[$0.id] ?? 0) >= 3 }.count
+        if threeStarCount >= 1  { unlock("chapter_3star") }
+        if threeStarCount >= 5  { unlock("chapters_3star_5") }
+        if threeStarCount >= 10 { unlock("chapters_3star_10") }
+        if threeStarCount >= chapters.chapters.count { unlock("chapters_3star_all") }
 
         // Hız modu
         if stats.speedHighScore >= 5  { unlock("speed_5") }
         if stats.speedHighScore >= 10 { unlock("speed_10") }
         if stats.speedHighScore >= 20 { unlock("speed_20") }
+        if stats.speedHighScore >= 30 { unlock("speed_30") }
+        if stats.speedHighScore >= 50 { unlock("speed_50") }
 
         // Kategori
         if stats.wonCategories.count >= 5  { unlock("categories_5") }
         if stats.wonCategories.count >= 10 { unlock("categories_10") }
         if stats.wonCategories.count >= WordList.categories.count { unlock("all_categories") }
 
-        // Günlük oynama (toplam kümülatif)
+        // Günlük oynama
         if stats.totalDailyPlays >= 5   { unlock("daily_5") }
         if stats.totalDailyPlays >= 10  { unlock("daily_10") }
         if stats.totalDailyPlays >= 30  { unlock("daily_30") }
@@ -132,11 +164,13 @@ class AchievementManager: ObservableObject {
         // Toplam oyun
         if stats.totalGames >= 50  { unlock("games_played_50") }
         if stats.totalGames >= 200 { unlock("games_played_200") }
+        if stats.totalGames >= 500 { unlock("games_played_500") }
 
         // Haftalık meydan okuma
         if WeeklyChallengeManager.shared.isWeekComplete() { unlock("weekly_first") }
         let completedWeeks = UserDefaults.standard.integer(forKey: "completedWeeksCount")
-        if completedWeeks >= 3 { unlock("weekly_3") }
+        if completedWeeks >= 3  { unlock("weekly_3") }
+        if completedWeeks >= 10 { unlock("weekly_10") }
 
         save()
 
@@ -159,7 +193,6 @@ class AchievementManager: ObservableObject {
         case .forest:   return stats.currentStreak >= 7
         case .sunset:   return stats.wins >= 25 || chapters.chapters.contains { (chapters.stars[$0.id] ?? 0) >= 3 }
         case .midnight: return stats.wins >= 50
-        // Premium themes — IAP ile açılır
         case .neon, .galaxy, .pastel, .vintage, .halloween, .chalk:
             return IAPManager.shared.isThemePackUnlocked
         }

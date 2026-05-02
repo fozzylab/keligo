@@ -9,8 +9,9 @@ class GameCenterManager: NSObject, ObservableObject {
     @Published var isAuthenticated = false
     @Published var authViewController: UIViewController? = nil
 
-    static let speedLeaderboardID = "keligo_tr_speed_leaderboard"
-    static let xpLeaderboardID   = "keligo_tr_xp_weekly"   // ← App Store Connect'te bu ID'yi oluştur
+    static let speedLeaderboardID  = "keligo_tr_speed_leaderboard"
+    static let xpWeeklyID          = "keligo_tr_xp_weekly"
+    static let xpAllTimeID         = "keligo_tr_xp_alltime"
 
     // MARK: - Authentication
 
@@ -51,10 +52,11 @@ class GameCenterManager: NSObject, ObservableObject {
         return
         #else
         guard GKLocalPlayer.local.isAuthenticated else { return }
+        // Hem haftalık hem all-time leaderboard'a gönder
         GKLeaderboard.submitScore(
             xp, context: 0,
             player: GKLocalPlayer.local,
-            leaderboardIDs: [Self.xpLeaderboardID]
+            leaderboardIDs: [Self.xpWeeklyID, Self.xpAllTimeID]
         ) { _ in }
         #endif
     }

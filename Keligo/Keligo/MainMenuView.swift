@@ -521,6 +521,15 @@ struct MainMenuView: View {
             gradient: [Color(red: 0.20, green: 0.60, blue: 0.85), Color(red: 0.10, green: 0.85, blue: 0.75)],
             theme: t
         ) { showFriendChallenge = true }
+
+        GameModeCard(
+            icon: "bag.fill",
+            title: "Premium Mağaza",
+            subtitle: "Temalar, jeton ve daha fazlası",
+            gradient: [Color(red: 1.00, green: 0.75, blue: 0.00), Color(red: 1.00, green: 0.45, blue: 0.00)],
+            badge: iap.isAdsRemoved ? nil : "PRO",
+            theme: t
+        ) { showIAPStore = true }
     }
 
     // MARK: - Easter egg

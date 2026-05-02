@@ -265,6 +265,7 @@ class GameViewModel: ObservableObject {
                 gameState = .lost
                 sound.playLose()
                 stats.recordLoss()
+                if kidsMode { stats.recordKidsPlay() }
                 recordHistory(mode: "Sonsuz")
                 settings.recordAdaptiveResult(won: false)
                 if countsAgainstLives {
@@ -278,6 +279,7 @@ class GameViewModel: ObservableObject {
                 gameState = .won
                 sound.playWin()
                 stats.recordWin(category: category)
+                if kidsMode { stats.recordKidsPlay() }
                 recordHistory(mode: "Sonsuz")
                 settings.recordAdaptiveResult(won: true)
             }

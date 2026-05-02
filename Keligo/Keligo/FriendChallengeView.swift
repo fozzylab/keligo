@@ -355,6 +355,7 @@ struct PlayChallengeView: View {
             VStack(spacing: 20) {
                 Text(gameVM.gameState == .won ? "🎉" : "💀")
                     .font(.system(size: 64))
+                    .onAppear { stats.recordFriendPlay() }
 
                 Text(gameVM.gameState == .won ? "Tebrikler!" : "Olmadı!")
                     .font(.system(size: 28, weight: .black, design: .rounded))

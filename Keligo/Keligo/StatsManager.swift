@@ -50,7 +50,9 @@ class StatsManager: ObservableObject {
     @Published var currentStreak: Int   { didSet { save("currentStreak", currentStreak); sharedSave("currentStreak", currentStreak) } }
     @Published var bestStreak: Int      { didSet { save("bestStreak", bestStreak) } }
     @Published var speedHighScore: Int  { didSet { save("speedHighScore", speedHighScore) } }
-    @Published var totalDailyPlays: Int { didSet { save("totalDailyPlays", totalDailyPlays) } }
+    @Published var totalDailyPlays: Int   { didSet { save("totalDailyPlays",   totalDailyPlays) } }
+    @Published var kidsGamesPlayed: Int   { didSet { save("kidsGamesPlayed",   kidsGamesPlayed) } }
+    @Published var friendGamesPlayed: Int { didSet { save("friendGamesPlayed", friendGamesPlayed) } }
     @Published var wonCategories: Set<String> {
         didSet {
             if let d = try? JSONEncoder().encode(Array(wonCategories)) {
@@ -248,7 +250,9 @@ class StatsManager: ObservableObject {
         currentStreak   = ud.integer(forKey: "currentStreak")
         bestStreak      = ud.integer(forKey: "bestStreak")
         speedHighScore  = ud.integer(forKey: "speedHighScore")
-        totalDailyPlays = ud.integer(forKey: "totalDailyPlays")
+        totalDailyPlays   = ud.integer(forKey: "totalDailyPlays")
+        kidsGamesPlayed   = ud.integer(forKey: "kidsGamesPlayed")
+        friendGamesPlayed = ud.integer(forKey: "friendGamesPlayed")
         wonCategories = (try? JSONDecoder().decode(Set<String>.self,
             from: ud.data(forKey: "wonCategories") ?? Data())) ?? []
 
@@ -318,6 +322,14 @@ class StatsManager: ObservableObject {
         syncToiCloud()
     }
 
+    func recordKidsPlay() {
+        kidsGamesPlayed += 1
+    }
+
+    func recordFriendPlay() {
+        friendGamesPlayed += 1
+    }
+
     func recordDailyPlay() {
         totalDailyPlays += 1
     }
@@ -329,7 +341,7 @@ class StatsManager: ObservableObject {
 
     func reset() {
         totalGames = 0; wins = 0; currentStreak = 0; bestStreak = 0
-        speedHighScore = 0; totalDailyPlays = 0; wonCategories = []
+        speedHighScore = 0; totalDailyPlays = 0; kidsGamesPlayed = 0; friendGamesPlayed = 0; wonCategories = []
         xp = 0; bestWordText = ""; bestWordWrong = 99
         categoryWins = [:]; categoryGames = [:]
         gameHistory = []
