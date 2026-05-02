@@ -126,6 +126,9 @@ class IAPManager: ObservableObject {
         do {
             let ids = IAPProduct.allCases.map { $0.rawValue }
             let fetched = try await Product.products(for: ids)
+            if fetched.isEmpty {
+                errorMessage = "Ürünler şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin."
+            }
             products = fetched.sorted { $0.price < $1.price }
         } catch {
             errorMessage = "Ürünler yüklenemedi. İnternet bağlantınızı kontrol edin."
@@ -284,7 +287,7 @@ struct IAPStoreView: View {
                                 Text("Ürünler yüklenemedi")
                                     .font(.headline.weight(.semibold))
                                     .foregroundColor(t.primaryText)
-                                Text("İnternet bağlantınızı kontrol edip tekrar deneyin.")
+                                Text(iap.errorMessage ?? "İnternet bağlantınızı kontrol edip tekrar deneyin.")
                                     .font(.subheadline)
                                     .foregroundColor(t.secondaryText)
                                     .multilineTextAlignment(.center)
