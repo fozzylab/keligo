@@ -125,12 +125,15 @@ class IAPManager: ObservableObject {
         errorMessage = nil
         do {
             let ids = IAPProduct.allCases.map { $0.rawValue }
+            print("[IAP] Fetching \(ids.count) product IDs: \(ids)")
             let fetched = try await Product.products(for: ids)
+            print("[IAP] Fetched \(fetched.count) products: \(fetched.map(\.id))")
             if fetched.isEmpty {
                 errorMessage = "Ürünler şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin."
             }
             products = fetched.sorted { $0.price < $1.price }
         } catch {
+            print("[IAP] loadProducts error: \(error)")
             errorMessage = "Ürünler yüklenemedi. İnternet bağlantınızı kontrol edin."
         }
         isLoadingProducts = false
