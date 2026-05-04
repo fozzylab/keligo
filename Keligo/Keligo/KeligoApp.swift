@@ -1,4 +1,5 @@
 import SwiftUI
+import GoogleMobileAds
 
 @main
 struct KeligoApp: App {
@@ -27,6 +28,7 @@ struct KeligoApp: App {
                 .environmentObject(vip)
                 .environmentObject(season)
                 .onAppear {
+                    MobileAds.shared.start { _ in }
                     GameCenterManager.shared.authenticate()
                     NotificationManager.shared.checkStatus { status in
                         DispatchQueue.main.async {

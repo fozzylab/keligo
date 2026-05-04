@@ -2,13 +2,16 @@ import Foundation
 import Combine
 import UIKit
 import os.log
+import GoogleMobileAds
 
-/// Centralized ad cadence + cap manager.
-/// AdMob entegrasyonu yapılana kadar `presentInterstitial` ve `presentRewarded`
-/// log atan stub'lardır. Gerçek SDK bağlanırken sadece bu iki method değişir.
+/// Centralized ad cadence + cap manager with real GoogleMobileAds SDK integration.
 @MainActor
 final class AdManager: ObservableObject {
     static let shared = AdManager()
+
+    // MARK: - Ad Unit IDs
+    private let interstitialAdUnitID = "ca-app-pub-2301774166987825/6849458927"
+    private let rewardedAdUnitID     = "ca-app-pub-2301774166987825/8162540596"
 
     // MARK: - Tunables
     static let interstitialEveryN: Int = 4
@@ -45,18 +48,51 @@ final class AdManager: ObservableObject {
 
     private let log = Logger(subsystem: "com.fozzylabs.keligo", category: "AdManager")
 
-    private init() {}
+    // MARK: - Loaded ads
+    private var interstitialAd: InterstitialAd?
+    private var rewardedAd: RewardedAd?
+
+    private init() {
+        preloadInterstitial()
+        preloadRewarded()
+    }
+
+    // MARK: - Preloading
+
+    private func preloadInterstitial() {
+        Task {
+            do {
+                interstitialAd = try await InterstitialAd.load(
+                    with: interstitialAdUnitID, request: Request()
+                )
+                log.info("📺 Interstitial preloaded")
+            } catch {
+                log.error("📺 Interstitial preload failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func preloadRewarded() {
+        Task {
+            do {
+                rewardedAd = try await RewardedAd.load(
+                    with: rewardedAdUnitID, request: Request()
+                )
+                log.info("📺 Rewarded preloaded")
+            } catch {
+                log.error("📺 Rewarded preload failed: \(error.localizedDescription)")
+            }
+        }
+    }
 
     // MARK: - Public API
 
-    /// Bir oyun bittiğinde GameBoardView buradan çağırır (won veya lost).
     func notifyGameEnded() {
         let ud = UserDefaults.standard
         ud.set(ud.integer(forKey: kTotalGamesEver) + 1,      forKey: kTotalGamesEver)
         ud.set(ud.integer(forKey: kGamesSinceLastInter) + 1, forKey: kGamesSinceLastInter)
     }
 
-    /// `notifyGameEnded` çağrıldıktan sonra kontrol et.
     func shouldShowInterstitial() -> Bool {
         if IAPManager.shared.isAdsRemoved { return false }
 
@@ -80,13 +116,27 @@ final class AdManager: ObservableObject {
         return true
     }
 
-    /// STUB: gerçek SDK bağlanana kadar log atıp `true` döner (gösterildi varsayımı).
     @discardableResult
     func presentInterstitial() async -> Bool {
+        guard let rootVC = rootViewController else {
+            log.error("📺 Interstitial: rootViewController bulunamadı")
+            return false
+        }
+
+        guard let ad = interstitialAd else {
+            log.info("📺 Interstitial henüz yüklenmedi, preload başlatılıyor")
+            preloadInterstitial()
+            return false
+        }
+
         let ud = UserDefaults.standard
         ud.set(Date(), forKey: kLastInterstitialAt)
         ud.set(0,      forKey: kGamesSinceLastInter)
-        log.info("📺 [STUB] Interstitial shown")
+
+        ad.present(from: rootVC)
+        interstitialAd = nil
+        preloadInterstitial()
+        log.info("📺 Interstitial gösterildi")
         return true
     }
 
@@ -100,29 +150,54 @@ final class AdManager: ObservableObject {
         remaining(kind) > 0
     }
 
-    /// STUB: tüketim ve cooldown güncellemesi yapar.
     @discardableResult
     func presentRewarded(_ kind: RewardKind) async -> Bool {
         guard canShowRewarded(kind) else {
-            log.info("📺 [STUB] Rewarded \(kind.rawValue) — cap reached")
+            log.info("📺 Rewarded \(kind.rawValue) — cap doldu")
             return false
         }
-        let day = todayKey()
-        let key = kRewardedUsed(kind, day: day)
-        UserDefaults.standard.set(UserDefaults.standard.integer(forKey: key) + 1, forKey: key)
-        UserDefaults.standard.set(Date(), forKey: kLastRewardedAt)
-        log.info("📺 [STUB] Rewarded \(kind.rawValue) shown — remaining: \(self.remaining(kind))")
-        return true
+
+        guard let rootVC = rootViewController else {
+            log.error("📺 Rewarded: rootViewController bulunamadı")
+            return false
+        }
+
+        guard let ad = rewardedAd else {
+            log.info("📺 Rewarded henüz yüklenmedi, preload başlatılıyor")
+            preloadRewarded()
+            return false
+        }
+
+        return await withCheckedContinuation { continuation in
+            ad.present(from: rootVC) { [weak self] in
+                guard let self else { continuation.resume(returning: false); return }
+                let day = self.todayKey()
+                let key = self.kRewardedUsed(kind, day: day)
+                UserDefaults.standard.set(UserDefaults.standard.integer(forKey: key) + 1, forKey: key)
+                UserDefaults.standard.set(Date(), forKey: self.kLastRewardedAt)
+                self.log.info("📺 Rewarded \(kind.rawValue) — kalan: \(self.remaining(kind))")
+                self.rewardedAd = nil
+                self.preloadRewarded()
+                continuation.resume(returning: true)
+            }
+        }
     }
 
     // MARK: - Helpers
+
+    private var rootViewController: UIViewController? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows
+            .first(where: \.isKeyWindow)?
+            .rootViewController
+    }
 
     private func todayKey() -> String {
         let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd"
         return f.string(from: Date())
     }
 
-    /// Test/reset için
     func resetAllCaps() {
         let prefix = "ad_rewarded_"
         for key in UserDefaults.standard.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
