@@ -210,6 +210,9 @@
 			);
 			mainGroup = 56F25FCF2F99E44E000930EA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5698806B2FA93FA60013676F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56F25FD92F99E44E000930EA /* Products */;
 			projectDirPath = "";
@@ -419,7 +422,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Keligo;
+				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-2301774166987825~7257592383";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Daha iyi bir deneyim sunmak için reklamları kişiselleştirmekte kullanılır.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -455,7 +460,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Keligo;
+				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-2301774166987825~7257592383";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Daha iyi bir deneyim sunmak için reklamları kişiselleştirmekte kullanılır.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -603,6 +610,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5698806B2FA93FA60013676F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 56F25FD02F99E44E000930EA /* Project object */;
 }
