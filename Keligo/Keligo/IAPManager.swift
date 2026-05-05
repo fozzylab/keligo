@@ -308,7 +308,7 @@ struct IAPStoreView: View {
                             }
                             .padding(32)
                         } else {
-                            VStack(spacing: 10) {
+                            VStack(spacing: 24) {
                                 let packIds = Set([
                                     "com.fozzylabs.keligo.sinemaPack",
                                     "com.fozzylabs.keligo.bilimPack",
@@ -316,9 +316,44 @@ struct IAPStoreView: View {
                                     "com.fozzylabs.keligo.sporYildizlariPack",
                                     "com.fozzylabs.keligo.muzikProPack"
                                 ])
+                                let jetonIds = Set([
+                                    "com.fozzylabs.keligo.jetons5",
+                                    "com.fozzylabs.keligo.jetons500",
+                                    "com.fozzylabs.keligo.jetons1500",
+                                    "com.fozzylabs.keligo.jetons5000"
+                                ])
                                 let featureProducts = iap.products.filter { !packIds.contains($0.id) }
-                                ForEach(featureProducts, id: \.id) { product in
-                                    IAPProductRow(product: product, iap: iap, theme: t)
+                                let jetons = featureProducts.filter { jetonIds.contains($0.id) }
+                                let premiumFeatures = featureProducts.filter { !jetonIds.contains($0.id) }
+
+                                // MARK: 🪙 Jetons
+                                VStack(alignment: .leading, spacing: 10) {
+                                    HStack(spacing: 8) {
+                                        Text("🪙")
+                                            .font(.title3)
+                                        Text("Jetonlar")
+                                            .font(.headline.weight(.bold))
+                                            .foregroundColor(t.primaryText)
+                                    }
+                                    .padding(.horizontal)
+                                    ForEach(jetons.sorted { $0.price < $1.price }, id: \.id) { product in
+                                        IAPProductRow(product: product, iap: iap, theme: t)
+                                    }
+                                }
+
+                                // MARK: ⭐ Premium Özellikler
+                                VStack(alignment: .leading, spacing: 10) {
+                                    HStack(spacing: 8) {
+                                        Text("⭐")
+                                            .font(.title3)
+                                        Text("Premium Özellikler")
+                                            .font(.headline.weight(.bold))
+                                            .foregroundColor(t.primaryText)
+                                    }
+                                    .padding(.horizontal)
+                                    ForEach(premiumFeatures.sorted { $0.price < $1.price }, id: \.id) { product in
+                                        IAPProductRow(product: product, iap: iap, theme: t)
+                                    }
                                 }
                             }
                             .padding(.horizontal)
