@@ -29,6 +29,9 @@ struct KeligoApp: App {
                 .environmentObject(season)
                 .onAppear {
                     MobileAds.shared.start { _ in }
+                    #if DEBUG
+                    MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ["6952f6e51be7767bd785e44aea6c0bf7"]
+                    #endif
                     GameCenterManager.shared.authenticate()
                     NotificationManager.shared.checkStatus { status in
                         DispatchQueue.main.async {
