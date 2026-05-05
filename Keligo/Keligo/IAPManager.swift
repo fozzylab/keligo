@@ -309,7 +309,15 @@ struct IAPStoreView: View {
                             .padding(32)
                         } else {
                             VStack(spacing: 10) {
-                                ForEach(iap.products, id: \.id) { product in
+                                let packIds = Set([
+                                    "com.fozzylabs.keligo.sinemaPack",
+                                    "com.fozzylabs.keligo.bilimPack",
+                                    "com.fozzylabs.keligo.tarihPlusPack",
+                                    "com.fozzylabs.keligo.sporYildizlariPack",
+                                    "com.fozzylabs.keligo.muzikProPack"
+                                ])
+                                let featureProducts = iap.products.filter { !packIds.contains($0.id) }
+                                ForEach(featureProducts, id: \.id) { product in
                                     IAPProductRow(product: product, iap: iap, theme: t)
                                 }
                             }

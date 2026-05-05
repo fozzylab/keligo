@@ -13,6 +13,8 @@ final class AdManager: ObservableObject {
     private let interstitialAdUnitID = "ca-app-pub-2301774166987825/6849458927"
     private let rewardedAdUnitID     = "ca-app-pub-2301774166987825/8162540596"
 
+    @Published var errorMessage: String?
+
     // MARK: - Tunables
     static let interstitialEveryN: Int = 4
     static let interstitialCooldownSec: TimeInterval = 75
@@ -125,6 +127,7 @@ final class AdManager: ObservableObject {
 
         guard let ad = interstitialAd else {
             log.info("📺 Interstitial henüz yüklenmedi, preload başlatılıyor")
+            errorMessage = "Reklam şu an hazır değil."
             preloadInterstitial()
             return false
         }
@@ -164,6 +167,7 @@ final class AdManager: ObservableObject {
 
         guard let ad = rewardedAd else {
             log.info("📺 Rewarded henüz yüklenmedi, preload başlatılıyor")
+            errorMessage = "Reklam şu an hazır değil. Lütfen daha sonra deneyin."
             preloadRewarded()
             return false
         }
