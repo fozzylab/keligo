@@ -7,6 +7,7 @@ import SwiftUI
 // These must be configured in App Store Connect before going live.
 
 enum IAPProduct: String, CaseIterable {
+    case jetons5            = "com.fozzylabs.keligo.jetons5"
     case jetons500          = "com.fozzylabs.keligo.jetons500"
     case jetons1500         = "com.fozzylabs.keligo.jetons1500"
     case jetons5000         = "com.fozzylabs.keligo.jetons5000"
@@ -22,6 +23,7 @@ enum IAPProduct: String, CaseIterable {
 
     var displayName: String {
         switch self {
+        case .jetons5:          return "5 Jeton"
         case .jetons500:          return "500 Jeton"
         case .jetons1500:         return "1.500 Jeton"
         case .jetons5000:         return "5.000 Jeton"
@@ -39,7 +41,7 @@ enum IAPProduct: String, CaseIterable {
 
     var icon: String {
         switch self {
-        case .jetons500, .jetons1500, .jetons5000: return "circle.fill"
+        case .jetons5, .jetons500, .jetons1500, .jetons5000: return "circle.fill"
         case .removeAds:          return "hand.thumbsup.fill"
         case .sinemaPack:         return "film.stack"
         case .bilimPack:          return "atom"
@@ -54,6 +56,7 @@ enum IAPProduct: String, CaseIterable {
 
     var jetonAmount: Int {
         switch self {
+        case .jetons5:     return 5
         case .jetons500:     return 500
         case .jetons1500:    return 1500
         case .jetons5000:    return 5000
@@ -422,6 +425,7 @@ struct IAPProductRow: View {
 
     private var emoji: String {
         switch iapProduct {
+        case .jetons5:           return "🟡"
         case .jetons500:           return "🟡"
         case .jetons1500:          return "🟠"
         case .jetons5000:          return "💎"

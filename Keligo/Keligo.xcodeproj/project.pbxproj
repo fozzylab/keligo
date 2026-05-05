@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		569880652FA5737A0013676F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569880642FA5737A0013676F /* StoreKit.framework */; };
+		5698810A2FA944CF0013676F /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 569881092FA944CF0013676F /* GoogleMobileAds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,9 +35,22 @@
 		56F25FEF2F99E450000930EA /* KeligoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeligoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		56C322E22FA9461300304B24 /* Exceptions for "Keligo" folder in "Keligo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 56F25FD72F99E44E000930EA /* Keligo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		56F25FDA2F99E44E000930EA /* Keligo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				56C322E22FA9461300304B24 /* Exceptions for "Keligo" folder in "Keligo" target */,
+			);
 			path = Keligo;
 			sourceTree = "<group>";
 		};
@@ -57,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5698810A2FA944CF0013676F /* GoogleMobileAds in Frameworks */,
 				569880652FA5737A0013676F /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -127,6 +142,7 @@
 			);
 			name = Keligo;
 			packageProductDependencies = (
+				569881092FA944CF0013676F /* GoogleMobileAds */,
 			);
 			productName = Keligo;
 			productReference = 56F25FD82F99E44E000930EA /* Keligo.app */;
@@ -421,6 +437,7 @@
 				DEVELOPMENT_TEAM = MV9HFFAF2K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Keligo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Keligo;
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-2301774166987825~7257592383";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
@@ -459,6 +476,7 @@
 				DEVELOPMENT_TEAM = MV9HFFAF2K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Keligo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Keligo;
 				INFOPLIST_KEY_GADApplicationIdentifier = "ca-app-pub-2301774166987825~7257592383";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
@@ -621,6 +639,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		569881092FA944CF0013676F /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5698806B2FA93FA60013676F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 56F25FD02F99E44E000930EA /* Project object */;
 }
