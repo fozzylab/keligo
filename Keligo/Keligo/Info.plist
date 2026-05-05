@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-2301774166987825~7257592383</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Daha iyi bir deneyim sunmak için reklamları kişiselleştirmekte kullanılır.</string>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict/>
