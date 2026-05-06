@@ -52,20 +52,19 @@ struct CreateChallengeView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var wordInput = ""
-    @State private var selectedCategory = "Meydan Okuma"
+    @State private var selectedCategory = ""
     @State private var generatedCode = ""
     @State private var error = ""
+    @State private var codeCopied = false
+    @FocusState private var wordFocused: Bool
 
     var t: AppTheme { settings.theme }
-
-    private var allCategories: [String] {
-        ["Meydan Okuma"] + WordList.categories
-    }
 
     var body: some View {
         NavigationStack {
             ZStack {
                 t.background.ignoresSafeArea()
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 24) {
                         // Instruction
@@ -94,6 +93,7 @@ struct CreateChallengeView: View {
                                 .foregroundColor(t.primaryText)
                                 .textInputAutocapitalization(.characters)
                                 .autocorrectionDisabled()
+                                .focused($wordFocused)
                                 .padding(14)
                                 .background(t.surface, in: RoundedRectangle(cornerRadius: 12))
                                 .onChange(of: wordInput) { _, val in
@@ -110,39 +110,47 @@ struct CreateChallengeView: View {
                         }
                         .padding(.horizontal, 24)
 
-                        // Category picker (optional hint)
+                        // Category hint (optional)
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Kategori İpucu (opsiyonel)")
                                 .font(.caption.weight(.semibold))
                                 .foregroundColor(t.secondaryText)
 
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
-                                    ForEach(allCategories, id: \.self) { cat in
-                                        Button {
-                                            selectedCategory = cat
-                                            generatedCode = ""
-                                        } label: {
-                                            Text(cat)
-                                                .font(.caption.weight(.semibold))
-                                                .foregroundColor(selectedCategory == cat ? .white : t.secondaryText)
-                                                .padding(.horizontal, 12).padding(.vertical, 6)
-                                                .background(
-                                                    selectedCategory == cat
-                                                        ? AnyShapeStyle(t.accentGradient)
-                                                        : AnyShapeStyle(t.surface),
-                                                    in: Capsule()
-                                                )
-                                        }
-                                        .buttonStyle(ScaleButtonStyle())
+                            Menu {
+                                Button {
+                                    selectedCategory = ""
+                                    generatedCode = ""
+                                } label: {
+                                    Label("İpucu Yok", systemImage: "xmark")
+                                }
+                                Divider()
+                                ForEach(WordList.categories, id: \.self) { cat in
+                                    Button {
+                                        selectedCategory = cat
+                                        generatedCode = ""
+                                    } label: {
+                                        Text(cat)
                                     }
                                 }
-                                .padding(.horizontal, 24)
+                            } label: {
+                                HStack {
+                                    Text(selectedCategory.isEmpty ? "İpucu seç (opsiyonel)" : selectedCategory)
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundColor(selectedCategory.isEmpty ? t.secondaryText : t.primaryText)
+                                    Spacer()
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.caption)
+                                        .foregroundColor(t.accent)
+                                }
+                                .padding(14)
+                                .background(t.surface, in: RoundedRectangle(cornerRadius: 12))
                             }
                         }
+                        .padding(.horizontal, 24)
 
                         // Generate button
                         Button {
+                            wordFocused = false
                             generateCode()
                         } label: {
                             Label("Kod Oluştur", systemImage: "qrcode")
@@ -164,11 +172,35 @@ struct CreateChallengeView: View {
                                     Text("Meydan Okuma Kodu")
                                         .font(.caption.weight(.semibold))
                                         .foregroundColor(t.secondaryText)
-                                    Text(generatedCode)
-                                        .font(.system(size: 36, weight: .black, design: .monospaced))
-                                        .foregroundColor(t.primaryText)
-                                        .tracking(4)
-                                    if selectedCategory != "Meydan Okuma" {
+
+                                    // Kod + kopyala butonu
+                                    Button {
+                                        UIPasteboard.general.string = generatedCode
+                                        codeCopied = true
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                            codeCopied = false
+                                        }
+                                    } label: {
+                                        HStack(spacing: 10) {
+                                            Text(generatedCode)
+                                                .font(.system(size: 36, weight: .black, design: .monospaced))
+                                                .foregroundColor(t.primaryText)
+                                                .tracking(4)
+                                            Image(systemName: codeCopied ? "checkmark.circle.fill" : "doc.on.doc")
+                                                .font(.title3)
+                                                .foregroundColor(codeCopied ? .green : t.accent)
+                                                .animation(.spring(response: 0.3), value: codeCopied)
+                                        }
+                                    }
+                                    .buttonStyle(ScaleButtonStyle())
+
+                                    Text("Kopyalandı!")
+                                        .font(.caption)
+                                        .foregroundColor(.green)
+                                        .opacity(codeCopied ? 1 : 0)
+                                        .animation(.easeInOut(duration: 0.2), value: codeCopied)
+
+                                    if !selectedCategory.isEmpty {
                                         Text("Kategori: \(selectedCategory)")
                                             .font(.caption)
                                             .foregroundColor(t.accent)
@@ -181,7 +213,7 @@ struct CreateChallengeView: View {
                                 Button {
                                     let cleanCode = generatedCode.replacingOccurrences(of: "-", with: "")
                                     let deepLink  = "keligo://challenge/\(cleanCode)"
-                                    let catHint   = selectedCategory != "Meydan Okuma" ? "\n🗂️ Kategori ipucu: \(selectedCategory)" : ""
+                                    let catHint   = selectedCategory.isEmpty ? "" : "\n🗂️ Kategori ipucu: \(selectedCategory)"
                                     let text = """
                                     🎯 Keligo'de sana meydan okuyorum!
 
@@ -195,7 +227,7 @@ struct CreateChallengeView: View {
 
                                     #Keligo
                                     """
-                                    presentShareSheet([text])
+                                    presentShareSheet([KeligoShareItem(text, title: "Keligo — Meydan Okuma")])
                                 } label: {
                                     Label("Kodu Paylaş", systemImage: "square.and.arrow.up")
                                         .font(.headline)
@@ -206,11 +238,17 @@ struct CreateChallengeView: View {
                                 }
                                 .buttonStyle(ScaleButtonStyle())
                             }
+                            .id("codeSection")
                             .padding(.horizontal, 24)
                         }
                     }
                     .padding(.bottom, 40)
                 }
+                .onChange(of: generatedCode) {
+                    guard !generatedCode.isEmpty else { return }
+                    withAnimation { proxy.scrollTo("codeSection", anchor: .bottom) }
+                }
+                } // ScrollViewReader
             }
             .navigationTitle("Meydan Oku")
             .navigationBarTitleDisplayMode(.inline)
@@ -226,6 +264,7 @@ struct CreateChallengeView: View {
         let word = wordInput.trimmingCharacters(in: .whitespaces)
         guard word.count >= 2 else { error = "En az 2 harf gerekli"; return }
         guard word.count <= 14 else { error = "En fazla 14 harf olabilir"; return }
+        codeCopied = false
         generatedCode = ChallengeCodec.encode(word: word)
     }
 }

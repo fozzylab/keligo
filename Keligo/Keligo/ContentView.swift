@@ -53,17 +53,24 @@ struct ContentView: View {
                 .transition(.opacity)
             }
 
-            // Daily login reward toast — sadece her iki splash bittikten sonra göster
-            if splashPhase == .none, let reward = dailyReward.pendingReward {
+            // Daily login reward toast — sadece splash bitti VE onboarding görüldü ise göster
+            if splashPhase == .none && hasSeenOnboarding, let reward = dailyReward.pendingReward {
                 DailyRewardToast(streak: reward.streak, jetons: reward.jetons) {
                     withAnimation(.spring()) { dailyReward.dismissReward() }
                 }
-                .zIndex(998)
+                .zIndex(50)
                 .transition(.move(edge: .top).combined(with: .opacity))
                 .animation(.spring(response: 0.5, dampingFraction: 0.75), value: dailyReward.pendingReward != nil)
             }
         }
         .animation(.easeInOut(duration: 0.25), value: splashPhase == .none)
+        // İlk kez açılışta onboarding bittikten sonra ödül kontrolü yap
+        .onChange(of: hasSeenOnboarding) { _, newValue in
+            guard newValue && splashPhase == .none else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                dailyReward.checkAndClaim()
+            }
+        }
     }
 }
 
@@ -239,6 +246,10 @@ struct GameBoardView<Overlay: View>: View {
 
     // 2026: Word Lore sheet
     @State private var showWordLore = false
+
+    // "Son şansın!" — oyun başına 1 kez göster
+    @State private var showLastChanceBanner = false
+    @State private var lastChanceBannerShown = false
 
     var isIPad: Bool { sizeClass == .regular }
 
@@ -443,6 +454,16 @@ struct GameBoardView<Overlay: View>: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                     nearMissPulse = false
                 }
+                // Banner: oyun başına sadece 1 kez
+                if !lastChanceBannerShown {
+                    lastChanceBannerShown = true
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
+                        showLastChanceBanner = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        withAnimation(.easeOut) { showLastChanceBanner = false }
+                    }
+                }
             }
         }
         .onChange(of: vm.guessedLetters) { old, new in
@@ -469,6 +490,11 @@ struct GameBoardView<Overlay: View>: View {
             }
         }
         .onChange(of: vm.gameState) { _, state in handleGameStateChange(state) }
+        .onChange(of: vm.currentWord) {
+            // Yeni kelimede son-şans bayrağını sıfırla
+            lastChanceBannerShown = false
+            showLastChanceBanner = false
+        }
     }
 
     // MARK: - iPad layout
@@ -531,8 +557,8 @@ struct GameBoardView<Overlay: View>: View {
             wrongLettersRow
             jetonActionsRow
 
-            // "Son şansın!" — inline, sits above keyboard
-            if isLastChance {
+            // "Son şansın!" — 1 kez göster, 2.5 saniye sonra kaybolur
+            if showLastChanceBanner {
                 HStack(spacing: 6) {
                     Text("⚠️")
                     Text("Son şansın!")
@@ -1085,8 +1111,6 @@ struct InfiniteGameOverView: View {
     @EnvironmentObject var jetons: JetonManager
     @StateObject private var lives = LivesManager.shared
 
-    @State private var showShare     = false
-    @State private var shareItems: [Any] = []
     @State private var showOutOfLives  = false
     @State private var showWordReport  = false
 
@@ -1148,12 +1172,13 @@ struct InfiniteGameOverView: View {
                                 won: isWon,
                                 streak: stats.currentStreak
                             )
+                            let items: [Any]
                             if let img = renderShareImage(GameShareCard(data: data)) {
-                                shareItems = [img]
+                                items = [img]
                             } else {
-                                shareItems = ["Keligo'da \(isWon ? "kazandım" : "kaybettim")! #Keligo"]
+                                items = ["Keligo'da \(isWon ? "kazandım" : "kaybettim")! #Keligo"]
                             }
-                            showShare = true
+                            presentShareSheet(items)
                         }
                     } label: {
                         iconButton("square.and.arrow.up")
@@ -1172,7 +1197,6 @@ struct InfiniteGameOverView: View {
             }
             .padding(32)
         }
-        .sheet(isPresented: $showShare) { ShareSheet(items: shareItems) }
         .sheet(isPresented: $showOutOfLives) {
             OutOfLivesSheet()
                 .environmentObject(settings)

@@ -7,7 +7,6 @@ import SwiftUI
 // These must be configured in App Store Connect before going live.
 
 enum IAPProduct: String, CaseIterable {
-    case jetons5            = "com.fozzylabs.keligo.jetons5"
     case jetons500          = "com.fozzylabs.keligo.jetons500"
     case jetons1500         = "com.fozzylabs.keligo.jetons1500"
     case jetons5000         = "com.fozzylabs.keligo.jetons5000"
@@ -23,7 +22,6 @@ enum IAPProduct: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .jetons5:          return "5 Jeton"
         case .jetons500:          return "500 Jeton"
         case .jetons1500:         return "1.500 Jeton"
         case .jetons5000:         return "5.000 Jeton"
@@ -56,7 +54,6 @@ enum IAPProduct: String, CaseIterable {
 
     var jetonAmount: Int {
         switch self {
-        case .jetons5:     return 5
         case .jetons500:     return 500
         case .jetons1500:    return 1500
         case .jetons5000:    return 5000
@@ -75,6 +72,7 @@ class IAPManager: ObservableObject {
     @Published var products: [Product] = []
     @Published var purchasedProductIDs: Set<String> = []
     @Published var isPurchasing = false
+    @Published var purchasingProductID: String? = nil
     @Published var isLoadingProducts = false
     @Published var errorMessage: String? = nil
 
@@ -115,10 +113,21 @@ class IAPManager: ObservableObject {
         }
     }
 
+    private var updatesTask: Task<Void, Never>?
+
     private init() {
+        updatesTask = Task { await listenForTransactionUpdates() }
         Task {
             await loadProducts()
             await refreshPurchases()
+        }
+    }
+
+    private func listenForTransactionUpdates() async {
+        for await result in Transaction.updates {
+            guard case .verified(let transaction) = result else { continue }
+            await handleTransaction(transaction)
+            await transaction.finish()
         }
     }
 
@@ -144,14 +153,19 @@ class IAPManager: ObservableObject {
 
     func purchase(_ product: Product) async {
         isPurchasing = true
+        purchasingProductID = product.id
         errorMessage = nil
         do {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
-                let transaction = try checkVerified(verification)
+                guard case .verified(let transaction) = verification else {
+                    errorMessage = "İşlem doğrulanamadı."
+                    break
+                }
                 await handleTransaction(transaction)
                 await transaction.finish()
+                await refreshPurchases()
             case .userCancelled:
                 break
             case .pending:
@@ -163,6 +177,7 @@ class IAPManager: ObservableObject {
             errorMessage = "Satın alma başarısız: \(error.localizedDescription)"
         }
         isPurchasing = false
+        purchasingProductID = nil
     }
 
     func restorePurchases() async {
@@ -174,17 +189,34 @@ class IAPManager: ObservableObject {
         }
     }
 
-    private func refreshPurchases() async {
-        for await result in Transaction.currentEntitlements {
-            guard let transaction = try? checkVerified(result) else { continue }
-            purchasedProductIDs.insert(transaction.productID)
+    func isOwned(_ productID: String) -> Bool {
+        guard let p = IAPProduct(rawValue: productID) else { return false }
+        switch p {
+        case .removeAds:           return isAdsRemoved
+        case .unlimitedLives:      return isUnlimitedLives
+        case .themePackPremium:    return isThemePackUnlocked
+        case .premiumBundle:       return purchasedProductIDs.contains(p.rawValue)
+                                       || UserDefaults.standard.bool(forKey: "pack_premium_bundle_unlocked")
+        case .sinemaPack:          return isPackUnlocked("sinema")
+        case .bilimPack:           return isPackUnlocked("bilim")
+        case .tarihPlusPack:       return isPackUnlocked("tarih_plus")
+        case .sporYildizlariPack:  return isPackUnlocked("spor_yildizlari")
+        case .muzikProPack:        return isPackUnlocked("muzik_pro")
+        case .jetons5, .jetons500, .jetons1500, .jetons5000: return false
         }
     }
 
-    private func handleTransaction(_ transaction: StoreKit.Transaction) async {
+    func refreshPurchases() async {
+        for await result in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = result else { continue }
+            await handleTransaction(transaction, awardJetons: false)
+        }
+    }
+
+    private func handleTransaction(_ transaction: StoreKit.Transaction, awardJetons: Bool = true) async {
         purchasedProductIDs.insert(transaction.productID)
-        // Award jetons for products that include jeton bonus
-        if let product = IAPProduct(rawValue: transaction.productID), product.jetonAmount > 0 {
+        // Award jetons only on first purchase, not on every launch restore
+        if awardJetons, let product = IAPProduct(rawValue: transaction.productID), product.jetonAmount > 0 {
             JetonManager.shared.earn(product.jetonAmount)
         }
 
@@ -282,9 +314,6 @@ struct IAPStoreView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(40)
-                        } else if iap.isPurchasing {
-                            ProgressView("Satın alma işleniyor…")
-                                .padding()
                         } else if iap.products.isEmpty {
                             VStack(spacing: 16) {
                                 Image(systemName: "cart.badge.questionmark")
@@ -317,7 +346,6 @@ struct IAPStoreView: View {
                                     "com.fozzylabs.keligo.muzikProPack"
                                 ])
                                 let jetonIds = Set([
-                                    "com.fozzylabs.keligo.jetons5",
                                     "com.fozzylabs.keligo.jetons500",
                                     "com.fozzylabs.keligo.jetons1500",
                                     "com.fozzylabs.keligo.jetons5000"
@@ -412,17 +440,21 @@ struct IAPStoreView: View {
                                         Image(systemName: "lock.open.fill")
                                             .foregroundColor(t.correct)
                                     } else if let product {
-                                        Button {
-                                            Task { await iap.purchase(product) }
-                                        } label: {
-                                            Text(product.displayPrice)
-                                                .font(.subheadline.weight(.bold))
-                                                .padding(.horizontal, 14).padding(.vertical, 8)
-                                                .background(t.accentGradient, in: Capsule())
-                                                .foregroundColor(.white)
+                                        if iap.purchasingProductID == product.id {
+                                            ProgressView().scaleEffect(0.85).frame(width: 60)
+                                        } else {
+                                            Button {
+                                                Task { await iap.purchase(product) }
+                                            } label: {
+                                                Text(product.displayPrice)
+                                                    .font(.subheadline.weight(.bold))
+                                                    .padding(.horizontal, 14).padding(.vertical, 8)
+                                                    .background(t.accentGradient, in: Capsule())
+                                                    .foregroundColor(.white)
+                                            }
+                                            .buttonStyle(ScaleButtonStyle())
+                                            .disabled(iap.isPurchasing)
                                         }
-                                        .buttonStyle(ScaleButtonStyle())
-                                        .disabled(iap.isPurchasing)
                                     } else {
                                         ProgressView().scaleEffect(0.8)
                                     }
@@ -468,7 +500,6 @@ struct IAPProductRow: View {
 
     private var emoji: String {
         switch iapProduct {
-        case .jetons5:           return "🟡"
         case .jetons500:           return "🟡"
         case .jetons1500:          return "🟠"
         case .jetons5000:          return "💎"
@@ -485,6 +516,9 @@ struct IAPProductRow: View {
         }
     }
 
+    private var owned: Bool { iap.isOwned(product.id) }
+    private var isThisProductBuying: Bool { iap.purchasingProductID == product.id }
+
     var body: some View {
         HStack(spacing: 14) {
             Text(emoji)
@@ -493,9 +527,16 @@ struct IAPProductRow: View {
                 .background(theme.surface, in: RoundedRectangle(cornerRadius: 12))
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(iapProduct?.displayName ?? product.displayName)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(theme.primaryText)
+                HStack(spacing: 5) {
+                    Text(iapProduct?.displayName ?? product.displayName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(theme.primaryText)
+                    if owned {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.caption)
+                            .foregroundColor(theme.correct)
+                    }
+                }
                 let amount = iapProduct?.jetonAmount ?? 0
                 if amount > 0 {
                     Text("\(amount) jeton hesabına eklenir")
@@ -505,19 +546,27 @@ struct IAPProductRow: View {
 
             Spacer()
 
-            Button {
-                Task { await iap.purchase(product) }
-            } label: {
-                Text(product.displayPrice)
-                    .font(.subheadline.weight(.bold))
-                    .padding(.horizontal, 16).padding(.vertical, 8)
-                    .background(theme.accentGradient, in: Capsule())
-                    .foregroundColor(.white)
+            if owned {
+                Image(systemName: "lock.open.fill")
+                    .foregroundColor(theme.correct)
+            } else if isThisProductBuying {
+                ProgressView().scaleEffect(0.85).frame(width: 60)
+            } else {
+                Button {
+                    Task { await iap.purchase(product) }
+                } label: {
+                    Text(product.displayPrice)
+                        .font(.subheadline.weight(.bold))
+                        .padding(.horizontal, 16).padding(.vertical, 8)
+                        .background(theme.accentGradient, in: Capsule())
+                        .foregroundColor(.white)
+                }
+                .buttonStyle(ScaleButtonStyle())
+                .disabled(iap.isPurchasing)
             }
-            .buttonStyle(ScaleButtonStyle())
-            .disabled(iap.isPurchasing)
         }
         .padding(14)
         .background(theme.surface, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(owned ? theme.correct.opacity(0.35) : Color.clear, lineWidth: 1))
     }
 }

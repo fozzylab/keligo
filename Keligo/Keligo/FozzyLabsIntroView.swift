@@ -216,8 +216,8 @@ struct FozzyLabsIntroView: View {
         withAnimation(.easeOut(duration: 0.3).delay(0.40)) {
             labelOpacity = 1.0
         }
-        // 6. Hold 1.0s then fade out
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) {
+        // 6. Hold then fade out
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             withAnimation(.easeInOut(duration: 0.35)) { fadeOut = 0 }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { onFinish() }
         }

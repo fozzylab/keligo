@@ -11,10 +11,13 @@ struct KeligoApp: App {
     @StateObject private var ai           = AIPersonalizationEngine.shared
     @StateObject private var vip          = VIPManager.shared
     @StateObject private var season       = SeasonManager.shared
+    @StateObject private var adManager    = AdManager.shared
 
     @Environment(\.scenePhase) private var scenePhase
     @State private var pendingChallengeCode: String? = nil
     @State private var showChallengeFromURL = false
+    @State private var showIAPStore = false
+    @State private var showAdErrorAlert = false
 
     var body: some Scene {
         WindowGroup {
@@ -62,6 +65,11 @@ struct KeligoApp: App {
                         LivesManager.shared.recomputeRegen()
                     }
                 }
+                .onChange(of: adManager.errorMessage) { _, newError in
+                    if newError != nil {
+                        showAdErrorAlert = true
+                    }
+                }
                 .sheet(isPresented: $showChallengeFromURL, onDismiss: { pendingChallengeCode = nil }) {
                     if let code = pendingChallengeCode {
                         DeepLinkChallengeView(code: code)
@@ -73,6 +81,28 @@ struct KeligoApp: App {
                             .environmentObject(vip)
                             .environmentObject(season)
                     }
+                }
+                .sheet(isPresented: $showIAPStore) {
+                    IAPStoreView()
+                        .environmentObject(settings)
+                        .environmentObject(stats)
+                        .environmentObject(achievements)
+                        .environmentObject(jetons)
+                        .environmentObject(iap)
+                        .environmentObject(ai)
+                        .environmentObject(vip)
+                        .environmentObject(season)
+                }
+                .alert("Reklam Yüklenemedi", isPresented: $showAdErrorAlert) {
+                    Button("Mağazaya Git") {
+                        showIAPStore = true
+                        adManager.errorMessage = nil
+                    }
+                    Button("Tamam") {
+                        adManager.errorMessage = nil
+                    }
+                } message: {
+                    Text(adManager.errorMessage ?? "Şu anda videolar gösterilemiyor.")
                 }
         }
     }

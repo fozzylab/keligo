@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject var settings: SettingsViewModel
     @EnvironmentObject var stats: StatsManager
     @EnvironmentObject var achievements: AchievementManager
+    @StateObject private var iap = IAPManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showResetAlert = false
 
@@ -422,11 +423,11 @@ struct ThemeCard: View {
             }
             Text(theme.displayName)
                 .font(.caption.weight(.medium))
-                .foregroundColor(locked ? .secondary : (isSelected ? theme.accent : .secondary))
+                .foregroundColor(isSelected ? theme.accent : theme.primaryText)
             if locked {
                 Text(requirement)
                     .font(.system(size: 8))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(theme.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }

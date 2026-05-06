@@ -186,6 +186,7 @@ class AchievementManager: ObservableObject {
     // MARK: Theme unlock rules (derived, not stored)
 
     func isThemeUnlocked(_ theme: AppTheme, stats: StatsManager, chapters: ChapterManager) -> Bool {
+        if IAPManager.shared.isThemePackUnlocked { return true }
         switch theme {
         case .classic:  return true
         case .ocean:    return stats.wins >= 10
@@ -193,7 +194,7 @@ class AchievementManager: ObservableObject {
         case .sunset:   return stats.wins >= 25 || chapters.chapters.contains { (chapters.stars[$0.id] ?? 0) >= 3 }
         case .midnight: return stats.wins >= 50
         case .neon, .galaxy, .pastel, .vintage, .halloween, .chalk:
-            return IAPManager.shared.isThemePackUnlocked
+            return false
         }
     }
 

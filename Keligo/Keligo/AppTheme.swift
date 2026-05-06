@@ -135,15 +135,21 @@ enum AppTheme: String, CaseIterable, Identifiable {
     
     var primaryText: Color {
         switch self {
-        case .chalk: return Color(red: 0.94, green: 0.94, blue: 0.90)
-        default:     return isDark ? .white : Color(.label)
+        case .chalk:   return Color(red: 0.94, green: 0.94, blue: 0.90)
+        case .pastel:  return Color(red: 0.22, green: 0.10, blue: 0.32)
+        case .vintage: return Color(red: 0.22, green: 0.14, blue: 0.06)
+        case .classic: return Color(red: 0.95, green: 0.95, blue: 1.00)
+        default:       return isDark ? .white : Color(red: 0.10, green: 0.10, blue: 0.12)
         }
     }
 
     var secondaryText: Color {
         switch self {
-        case .chalk: return Color(red: 0.94, green: 0.94, blue: 0.90).opacity(0.72)
-        default:     return isDark ? Color.white.opacity(0.72) : Color(.secondaryLabel)
+        case .chalk:   return Color(red: 0.94, green: 0.94, blue: 0.90).opacity(0.72)
+        case .pastel:  return Color(red: 0.22, green: 0.10, blue: 0.32).opacity(0.65)
+        case .vintage: return Color(red: 0.22, green: 0.14, blue: 0.06).opacity(0.65)
+        case .classic: return Color(red: 0.95, green: 0.95, blue: 1.00).opacity(0.72)
+        default:       return isDark ? Color.white.opacity(0.72) : Color(red: 0.10, green: 0.10, blue: 0.12).opacity(0.60)
         }
     }
 

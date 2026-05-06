@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import LinkPresentation
 
 // MARK: - Wordle-style emoji grid generator
 
@@ -410,6 +411,42 @@ struct DailyGameOverView: View {
         } message: {
             Text("📺 Kısa bir reklam sonrası \(stats.streakBeforeLoss) günlük serin geri gelir. Günde 1 kez kullanılabilir.")
         }
+    }
+}
+
+// MARK: - Rich share item: app icon + title in share sheet preview
+
+final class KeligoShareItem: NSObject, UIActivityItemSource {
+    let text: String
+    let title: String
+
+    init(_ text: String, title: String = "Keligo") {
+        self.text  = text
+        self.title = title
+    }
+
+    func activityViewControllerPlaceholderItem(_ vc: UIActivityViewController) -> Any { text }
+
+    func activityViewController(_ vc: UIActivityViewController,
+                                itemForActivityType type: UIActivity.ActivityType?) -> Any? { text }
+
+    func activityViewControllerLinkMetadata(_ vc: UIActivityViewController) -> LPLinkMetadata? {
+        let meta = LPLinkMetadata()
+        meta.title = title
+        if let icon = appIcon() {
+            meta.iconProvider = NSItemProvider(object: icon)
+        }
+        return meta
+    }
+
+    private func appIcon() -> UIImage? {
+        guard
+            let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
+            let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
+            let files   = primary["CFBundleIconFiles"] as? [String],
+            let name    = files.last
+        else { return nil }
+        return UIImage(named: name)
     }
 }
 

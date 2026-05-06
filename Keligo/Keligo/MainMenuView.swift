@@ -87,11 +87,6 @@ struct MainMenuView: View {
                         heroSection
                         statsStrip
                         
-                        // 2026: Daily Deal — alındıktan veya süresi dolduktan sonra gizlenir
-                        if !deal.hasClaimed {
-                            DailyDealCard()
-                        }
-                        
                         if AdManager.shared.canShowRewarded(.jetonBonus) && !iap.isAdsRemoved {
                             dailyBonusCard
                         }
@@ -248,6 +243,8 @@ struct MainMenuView: View {
             )
             .environmentObject(settings)
             .environmentObject(jetons)
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
         }
         .alert("Reklam izle, +\(JetonManager.rewardJetonAdBonus) jeton kazan", isPresented: $showBonusAdConfirm) {
             Button("İzle") {
