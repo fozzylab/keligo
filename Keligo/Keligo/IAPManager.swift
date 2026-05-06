@@ -39,7 +39,7 @@ enum IAPProduct: String, CaseIterable {
 
     var icon: String {
         switch self {
-        case .jetons5, .jetons500, .jetons1500, .jetons5000: return "circle.fill"
+        case .jetons500, .jetons1500, .jetons5000: return "circle.fill"
         case .removeAds:          return "hand.thumbsup.fill"
         case .sinemaPack:         return "film.stack"
         case .bilimPack:          return "atom"
@@ -202,7 +202,7 @@ class IAPManager: ObservableObject {
         case .tarihPlusPack:       return isPackUnlocked("tarih_plus")
         case .sporYildizlariPack:  return isPackUnlocked("spor_yildizlari")
         case .muzikProPack:        return isPackUnlocked("muzik_pro")
-        case .jetons5, .jetons500, .jetons1500, .jetons5000: return false
+        case .jetons500, .jetons1500, .jetons5000: return false
         }
     }
 
