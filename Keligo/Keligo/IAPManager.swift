@@ -466,11 +466,36 @@ struct IAPStoreView: View {
                             }
                         }
 
-                        Button("Satın Almaları Geri Yükle") {
-                            Task { await iap.restorePurchases() }
+                        // MARK: Restore Purchases — Apple Guideline 3.1.1
+                        VStack(spacing: 8) {
+                            Button {
+                                Task { await iap.restorePurchases() }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    if iap.isPurchasing {
+                                        ProgressView().scaleEffect(0.85).tint(t.accent)
+                                    } else {
+                                        Image(systemName: "arrow.clockwise")
+                                    }
+                                    Text("Satın Almaları Geri Yükle")
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(t.accent)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(t.accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(t.accent.opacity(0.30), lineWidth: 1))
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .disabled(iap.isPurchasing)
+                            .padding(.horizontal)
+
+                            Text("Daha önce satın aldıklarını aynı Apple ID ile geri yükle")
+                                .font(.caption)
+                                .foregroundColor(t.secondaryText)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
                         }
-                        .font(.caption)
-                        .foregroundColor(t.secondaryText)
                         .padding(.bottom, 32)
                     }
                 }
