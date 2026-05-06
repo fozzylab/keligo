@@ -180,13 +180,28 @@ class IAPManager: ObservableObject {
         purchasingProductID = nil
     }
 
+    // Restore sonucu için kullanıcıya gösterilecek mesaj
+    @Published var restoreMessage: String? = nil
+
     func restorePurchases() async {
+        isPurchasing = true
+        restoreMessage = nil
+        errorMessage = nil
         do {
+            let beforeCount = purchasedProductIDs.count
             try await AppStore.sync()
             await refreshPurchases()
+            let afterCount = purchasedProductIDs.count
+            let restored = afterCount - beforeCount
+            if restored > 0 {
+                restoreMessage = "✅ \(restored) satın alma geri yüklendi."
+            } else {
+                restoreMessage = "ℹ️ Geri yüklenecek satın alma bulunamadı."
+            }
         } catch {
-            errorMessage = "Geri yükleme başarısız."
+            errorMessage = "Geri yükleme başarısız: \(error.localizedDescription)"
         }
+        isPurchasing = false
     }
 
     func isOwned(_ productID: String) -> Bool {
@@ -467,7 +482,7 @@ struct IAPStoreView: View {
                         }
 
                         // MARK: Restore Purchases — Apple Guideline 3.1.1
-                        VStack(spacing: 8) {
+                        VStack(spacing: 10) {
                             Button {
                                 Task { await iap.restorePurchases() }
                             } label: {
@@ -490,12 +505,23 @@ struct IAPStoreView: View {
                             .disabled(iap.isPurchasing)
                             .padding(.horizontal)
 
-                            Text("Daha önce satın aldıklarını aynı Apple ID ile geri yükle")
-                                .font(.caption)
-                                .foregroundColor(t.secondaryText)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
+                            // Restore sonuç mesajı
+                            if let msg = iap.restoreMessage {
+                                Text(msg)
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundColor(msg.hasPrefix("✅") ? t.correct : t.secondaryText)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                            } else {
+                                Text("Daha önce satın aldıklarını aynı Apple ID ile geri yükle")
+                                    .font(.caption)
+                                    .foregroundColor(t.secondaryText)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                            }
                         }
+                        .animation(.easeInOut(duration: 0.25), value: iap.restoreMessage)
                         .padding(.bottom, 32)
                     }
                 }
