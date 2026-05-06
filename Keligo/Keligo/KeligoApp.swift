@@ -1,5 +1,6 @@
 import SwiftUI
 import GoogleMobileAds
+import AppTrackingTransparency
 
 @main
 struct KeligoApp: App {
@@ -31,10 +32,7 @@ struct KeligoApp: App {
                 .environmentObject(vip)
                 .environmentObject(season)
                 .onAppear {
-                    MobileAds.shared.start { _ in }
-                    #if DEBUG
-                    MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ["6952f6e51be7767bd785e44aea6c0bf7"]
-                    #endif
+                    requestTrackingAndStartAds()
                     GameCenterManager.shared.authenticate()
                     NotificationManager.shared.checkStatus { status in
                         DispatchQueue.main.async {
@@ -104,6 +102,21 @@ struct KeligoApp: App {
                 } message: {
                     Text(adManager.errorMessage ?? "Şu anda videolar gösterilemiyor.")
                 }
+        }
+    }
+
+    // ATT izni splash bittikten sonra (onAppear'dan ~1s sonra) istenir.
+    // Kullanıcı izin verirse kişiselleştirilmiş reklam, vermezse genel reklam gösterilir.
+    private func requestTrackingAndStartAds() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            ATTrackingManager.requestTrackingAuthorization { _ in
+                DispatchQueue.main.async {
+                    #if DEBUG
+                    MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ["6952f6e51be7767bd785e44aea6c0bf7"]
+                    #endif
+                    MobileAds.shared.start { _ in }
+                }
+            }
         }
     }
 }
