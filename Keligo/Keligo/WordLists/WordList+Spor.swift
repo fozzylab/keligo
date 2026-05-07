@@ -117,6 +117,11 @@ extension WordList {
         "ANTRENÖR":     "Sporculara teknik ve fiziksel anlamda rehberlik eden eğitmen.",
         "HAKEM":        "Müsabakayı yöneten, kurallara uyumu denetleyen yetkili kişi.",
         "RAKET":        "Tenis, badminton gibi sporlarda topu vurmak için kullanılan araç.",
+        "AMERİKAN FUTBOLU": "Oval topla oynanan, yoğun çarpışmaların olduğu Kuzey Amerika kökenli takım sporu.",
+        "PENTATLON":    "Koşu, yüzme, eskrim, binicilik ve atıştan oluşan beş branşlı olimpik spor.",
+        "SPORCU":       "Düzenli antrenman yaparak bir ya da birden fazla spor dalında yarışan kişi.",
+        "TRAMPLEN":     "Jimnastik ve dalışta yüksek sıçrama sağlayan esnek platform.",
+        "WUSHU":        "Geleneksel Çin dövüş sanatlarını kapsayan gösteri ve yarışma sporu.",
         "KRAMPON":      "Futbol ve rugby oyuncularının kaymaması için giydiği özel çivili bot.",
         "FORMA":        "Sporcuların giydikleri takım rengini ve numarasını gösteren özel kıyafet.",
     ]

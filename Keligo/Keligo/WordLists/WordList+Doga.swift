@@ -98,5 +98,15 @@ extension WordList {
         "YARIMADA":     "Üç tarafı suyla çevrili, bir tarafı karaya bağlı toprak parçası.",
         "YAĞMUR":       "Bulutlardaki su damlacıklarının düşmesiyle oluşan yağış.",
         "ZİRVE":        "Dağın en yüksek noktası.",
+        "AÇIK DENİZ":   "Kıyıdan uzak, derinliği fazla olan engin deniz bölgesi.",
+        "BUHAR":        "Suyun ısınarak gaz hâline geçmesiyle oluşan görünmez su bulutu.",
+        "ÇAYIR":        "Genellikle sulak alanlarda kendiliğinden yetişen, ot kaplı düzlük.",
+        "DORUK":        "Bir dağ ya da tepenin en üst noktası.",
+        "GÖK":          "Bulutların, yıldızların ve atmosferin göründüğü yüksek uzay.",
+        "GÖLET":        "Doğal ya da yapay olarak oluşmuş küçük su birikintisi.",
+        "KOY":          "Denizin karaya doğru girdiği, küçük çaplı sığınak gibi kıyı girintisi.",
+        "KÖRFEZ":       "Karanın içine doğru büyükçe girinti yapan, üç yanı kıyıyla çevrili deniz bölümü.",
+        "MERA":         "Hayvanların otlatıldığı, geniş ve düz otlak alan.",
+        "TEPE":         "Çevresine göre yüksek, genellikle yuvarlak tepeli küçük yükselti.",
     ]
 }

@@ -125,6 +125,7 @@ extension WordList {
         "TEKNİSYEN":    "Teknik arıza ve bakımı gerçekleştiren uygulamalı çalışan.",
         "TAMİRCİ":      "Bozuk araç gereç veya makineleri onaran kişi.",
         "VETERİNER":    "Hayvanları tedavi eden hayvan doktoru.",
+        "İNTERNET YAYINCISI": "Oyun, sohbet veya içerik üretimini canlı olarak yayınlayan dijital içerik üreticisi.",
         "YAZILIMCI":    "Bilgisayar programları ve uygulamalar geliştiren kişi.",
         "YÖNETMEN":     "Film veya tiyatro yapımını yöneten sanatçı.",
     ]

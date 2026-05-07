@@ -95,5 +95,12 @@ extension WordList {
         "SİBER GÜVENLİK": "Bilgisayar sistemlerini ve verileri siber tehditlere karşı koruyan alan.",
         "TELESKOP":     "Uzaktaki gökcisimlerini büyüterek gözlemlemeye yarayan optik araç.",
         "ZOOLOJİ":      "Hayvanları, davranışlarını ve türlerini inceleyen biyoloji dalı.",
+        "ALGORİTMA":    "Bir problemi çözmek için adım adım tanımlanmış işlemler dizisi.",
+        "BULUT":        "Bilişimde verilerin ve uygulamaların internet üzerinden sunucu ağında depolandığı sistem.",
+        "İSTATİSTİK":   "Verileri toplama, düzenleme ve yorumlama yöntemlerini araştıran matematik dalı.",
+        "ROBOT":        "Programlanabilir, otomatik iş yapan, insan müdahalesi olmadan çalışan makine.",
+        "VERİ":         "Bilgisayar ortamında işlenen ham bilgi; sayı, metin veya görsel biçiminde olabilir.",
+        "YAPAY ZEKA":   "İnsan zekâsını taklit eden, öğrenme ve karar verme yapan bilgisayar sistemi.",
+        "YAZILIM":      "Bilgisayara belirli görevleri yaptıran, programlama diliyle yazılmış talimatlar bütünü.",
     ]
 }

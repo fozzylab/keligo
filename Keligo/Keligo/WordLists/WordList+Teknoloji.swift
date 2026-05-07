@@ -109,6 +109,9 @@ extension WordList {
         "VERİ":         "İşlenmek üzere toplanan ham bilgi ya da rakamlar.",
         "VERİTABANI":   "Verilerin düzenli biçimde saklandığı ve sorgulandığı sistem.",
         "YAPAY ZEKA":   "Makinelerin insan gibi öğrenip karar verebildiği teknoloji alanı.",
+        "ANALİTİK":     "Verileri inceleyerek anlamlı sonuçlar ve kalıplar çıkarma süreciyle ilgili yöntem.",
+        "GÜVENLİK":     "Bilgisayar sistemlerini yetkisiz erişim ve saldırılardan koruma alanı.",
+        "YAZILIMCI":    "Yazılım geliştiren, kod yazan ve uygulama üreten kişi.",
         "YAZICI":       "Dijital belgeleri kağıda basan çevre birimi.",
         "YAZILIM":      "Bilgisayara görev tanımlayan program ve kod bütünü.",
     ]
