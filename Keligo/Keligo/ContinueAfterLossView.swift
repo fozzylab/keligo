@@ -8,15 +8,21 @@ struct ContinueAfterLossView: View {
     let onWatchAd: () -> Void
     let onSpendJetons: () -> Void
     let onDecline: () -> Void
-    
+
     @State private var appear = false
-    
+
+    // Tema koyu ise beyaz metin, açık ise tema birincil metni
+    private var textColor: Color      { theme.isDark ? .white : theme.primaryText }
+    private var subTextColor: Color   { theme.isDark ? .white.opacity(0.75) : theme.secondaryText }
+    private var mutedColor: Color     { theme.isDark ? .white.opacity(0.45) : theme.secondaryText.opacity(0.6) }
+    private var buttonFgColor: Color  { theme.isDark ? .white : theme.primaryText }
+
     var body: some View {
         ZStack {
-            Color.black.opacity(0.75)
+            Color.black.opacity(0.60)
                 .ignoresSafeArea()
                 .onTapGesture { /* block dismiss */ }
-            
+
             VStack(spacing: 22) {
                 // Icon
                 ZStack {
@@ -29,18 +35,18 @@ struct ContinueAfterLossView: View {
                         .foregroundStyle(theme.accentGradient)
                         .symbolEffect(.pulse)
                 }
-                
+
                 // Title
                 Text("Son Şansın!")
                     .font(.system(size: 32, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
-                
+                    .foregroundColor(textColor)
+
                 Text("Bir yanlış hakkın daha var. Oyunu kurtarmak ister misin?")
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(subTextColor)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
-                
+
                 VStack(spacing: 12) {
                     // Watch ad button
                     Button(action: onWatchAd) {
@@ -52,7 +58,7 @@ struct ContinueAfterLossView: View {
                                     .font(.headline)
                                 Text("Ücretsiz devam et")
                                     .font(.caption)
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(.white.opacity(0.75))
                             }
                             Spacer()
                         }
@@ -61,7 +67,7 @@ struct ContinueAfterLossView: View {
                         .padding(.vertical, 14)
                         .background(
                             LinearGradient(
-                                colors: [Color.purple.opacity(0.7), Color.indigo.opacity(0.8)],
+                                colors: [Color.purple.opacity(0.75), Color.indigo.opacity(0.85)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             ),
@@ -69,7 +75,7 @@ struct ContinueAfterLossView: View {
                         )
                     }
                     .buttonStyle(ScaleButtonStyle())
-                    
+
                     // Spend jetons button
                     Button(action: onSpendJetons) {
                         HStack(spacing: 10) {
@@ -79,56 +85,46 @@ struct ContinueAfterLossView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(JetonManager.costContinueAfterLoss) Jeton Harca")
                                     .font(.headline)
+                                    .foregroundColor(buttonFgColor)
                                 Text(canAffordJetons ? "Hemen devam et" : "Yetersiz jeton")
                                     .font(.caption)
-                                    .foregroundColor(canAffordJetons ? .white.opacity(0.7) : .red.opacity(0.9))
+                                    .foregroundColor(canAffordJetons ? subTextColor : .red.opacity(0.85))
                             }
                             Spacer()
                         }
-                        .foregroundColor(canAffordJetons ? .white : .white.opacity(0.5))
                         .padding(.horizontal, 20)
                         .padding(.vertical, 14)
                         .background(
-                            canAffordJetons
-                                ? AnyShapeStyle(Color.white.opacity(0.12))
-                                : AnyShapeStyle(Color.white.opacity(0.05)),
+                            theme.surface,
                             in: RoundedRectangle(cornerRadius: 16)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(canAffordJetons ? Color.yellow.opacity(0.3) : Color.gray.opacity(0.15), lineWidth: 1)
+                                .stroke(canAffordJetons ? Color.yellow.opacity(0.4) : Color.gray.opacity(0.2), lineWidth: 1)
                         )
+                        .opacity(canAffordJetons ? 1 : 0.55)
                     }
                     .buttonStyle(ScaleButtonStyle())
                     .disabled(!canAffordJetons)
-                    
+
                     // Decline
                     Button(action: onDecline) {
                         Text("Vazgeç")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(mutedColor)
                             .padding(.vertical, 8)
                     }
                 }
                 .padding(.horizontal, 20)
             }
             .padding(.vertical, 30)
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.12, green: 0.08, blue: 0.28),
-                        Color(red: 0.08, green: 0.06, blue: 0.20)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: 28, style: .continuous)
-            )
+            .background(theme.surface, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .strokeBorder(theme.accent.opacity(0.35), lineWidth: 1)
+                    .strokeBorder(theme.accent.opacity(0.30), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .shadow(color: .black.opacity(0.3), radius: 24, y: 8)
             .padding(.horizontal, 24)
             .scaleEffect(appear ? 1.0 : 0.85)
             .opacity(appear ? 1.0 : 0.0)

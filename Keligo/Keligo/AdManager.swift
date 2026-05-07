@@ -66,6 +66,8 @@ final class AdManager: ObservableObject {
     private var appOpenAd: AppOpenAd?
     /// Rewarded ad delegate — retained for the duration of ad presentation
     private var rewardDelegate: RewardedAdDelegateHandler?
+    /// Rewarded ad şu an gösteriliyorsa true — App Open Ad'ın üste binmesini önler
+    private var isShowingRewardedAd = false
 
     private init() {
         // Preload'lar MobileAds başladıktan sonra startPreloading() ile tetiklenir.
@@ -130,7 +132,11 @@ final class AdManager: ObservableObject {
             log.info("📺 App Open Ad — reklamlar kaldırılmış, atlanıyor")
             return
         }
-        // Rewarded ad izlendikten hemen sonra App Open Ad gösterme (çift reklam önlemi)
+        // Rewarded ad şu an gösteriliyorsa veya yakın zamanda izlendiyse atla
+        guard !isShowingRewardedAd else {
+            log.info("📺 App Open Ad — rewarded gösterimde, atlanıyor")
+            return
+        }
         if let lastRewarded = UserDefaults.standard.object(forKey: kLastRewardedAt) as? Date,
            Date().timeIntervalSince(lastRewarded) < 60 {
             log.info("📺 App Open Ad — rewarded yakın zamanda izlendi, atlanıyor")
@@ -253,10 +259,12 @@ final class AdManager: ObservableObject {
             return false
         }
 
-        return await withCheckedContinuation { continuation in
+        isShowingRewardedAd = true
+        rewardedAd = nil
+
+        let result = await withCheckedContinuation { continuation in
             var didResume = false
 
-            // Delegate: handles dismiss (no reward) and presentation failures
             let delegate = RewardedAdDelegateHandler {
                 guard !didResume else { return }
                 didResume = true
@@ -270,7 +278,6 @@ final class AdManager: ObservableObject {
                     if !didResume { didResume = true; continuation.resume(returning: false) }
                     return
                 }
-                // User earned reward — resume before delegate fires dismiss
                 didResume = true
                 let day = self.todayKey()
                 let key = self.kRewardedUsed(kind, day: day)
@@ -282,6 +289,8 @@ final class AdManager: ObservableObject {
                 continuation.resume(returning: true)
             }
         }
+        isShowingRewardedAd = false
+        return result
     }
 
     // MARK: - Helpers
