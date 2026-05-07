@@ -371,11 +371,63 @@ struct MainMenuView: View {
                     Text("\(stats.currentStreak) galibiyet serisi!")
                         .font(.caption.weight(.bold))
                         .foregroundColor(t.primaryText)
+                    if stats.shieldActive {
+                        Image(systemName: "shield.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.cyan)
+                    }
                 }
                 .padding(.horizontal, 16).padding(.vertical, 8)
                 .background(t.cardFill, in: Capsule())
-                .overlay(Capsule().stroke(Color.orange.opacity(t.isDark ? 0.12 : 0.25), lineWidth: 1))
+                .overlay(Capsule().stroke(
+                    stats.shieldActive
+                        ? Color.cyan.opacity(0.40)
+                        : Color.orange.opacity(t.isDark ? 0.12 : 0.25),
+                    lineWidth: 1))
                 .padding(.top, 4)
+            }
+
+            // Kalkan satın al / aktif göster
+            if stats.currentStreak >= 1 {
+                if stats.shieldActive {
+                    HStack(spacing: 5) {
+                        Image(systemName: "shield.fill").foregroundColor(.cyan)
+                        Text("Kalkan Aktif — Serin korunuyor")
+                            .font(.caption.weight(.bold)).foregroundColor(.cyan)
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 6)
+                    .background(Color.cyan.opacity(0.12), in: Capsule())
+                    .overlay(Capsule().stroke(Color.cyan.opacity(0.35), lineWidth: 1))
+                    .padding(.top, 2)
+                } else {
+                    Button {
+                        withAnimation(.spring(response: 0.3)) { _ = stats.activateShield() }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "shield")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(jetons.canAfford(JetonManager.costShield) ? .cyan : t.secondaryText)
+                            Text("Kalkan Al")
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(t.primaryText)
+                            HStack(spacing: 2) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 7)).foregroundColor(.yellow)
+                                Text("\(JetonManager.costShield)")
+                                    .font(.caption.weight(.bold)).foregroundColor(.yellow)
+                            }
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(t.cardFill, in: Capsule())
+                        .overlay(Capsule().stroke(
+                            Color.cyan.opacity(jetons.canAfford(JetonManager.costShield) ? 0.30 : 0.10),
+                            lineWidth: 1))
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .disabled(!jetons.canAfford(JetonManager.costShield))
+                    .opacity(jetons.canAfford(JetonManager.costShield) ? 1.0 : 0.45)
+                    .padding(.top, 2)
+                }
             }
 
             // Jeton + Can pill'leri yan yana

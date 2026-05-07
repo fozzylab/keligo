@@ -190,6 +190,39 @@ class StatsManager: ObservableObject {
         return true
     }
 
+    // MARK: - Shield (Kalkan)
+
+    /// Oyun başlamadan önce satın alınan tek kullanımlık kalkan.
+    /// Aktifken bir kayıp olursa streak SIFIRLANMAZ, kalkan tükenir.
+    @Published var shieldActive: Bool {
+        didSet { UserDefaults.standard.set(shieldActive, forKey: "shieldActive") }
+    }
+
+    /// 150 jeton harcayarak kalkanı aktif eder.
+    @discardableResult
+    func activateShield() -> Bool {
+        guard JetonManager.shared.spend(JetonManager.costShield) else { return false }
+        shieldActive = true
+        return true
+    }
+
+    /// Kaybedilince çağrılır. Kalkan aktifse emer (true döner → streak korunur).
+    /// Kalkan yoksa false döner → normal recordLoss() çağrılmalı.
+    func consumeShieldIfActive() -> Bool {
+        guard shieldActive else { return false }
+        shieldActive = false
+        return true
+    }
+
+    /// Kalkan emdiğinde: streak sıfırlanmadan istatistik kaydeder.
+    func recordShieldedLoss(category: String = "") {
+        totalGames += 1
+        updateDayStats(won: false)
+        if !category.isEmpty { categoryGames[category, default: 0] += 1 }
+        xp += 5
+        syncToiCloud()
+    }
+
     // MARK: - iCloud
 
     var iCloudEnabled: Bool { UserDefaults.standard.bool(forKey: "iCloudSync") }
@@ -262,6 +295,7 @@ class StatsManager: ObservableObject {
         categoryWins  = (try? JSONDecoder().decode([String: Int].self, from: ud.data(forKey: "categoryWins")  ?? Data())) ?? [:]
         categoryGames = (try? JSONDecoder().decode([String: Int].self, from: ud.data(forKey: "categoryGames") ?? Data())) ?? [:]
         gameHistory   = (try? JSONDecoder().decode([GameHistoryEntry].self, from: ud.data(forKey: "gameHistory") ?? Data())) ?? []
+        shieldActive  = ud.bool(forKey: "shieldActive")
 
         observeCloudChanges()
         loadFromiCloud()

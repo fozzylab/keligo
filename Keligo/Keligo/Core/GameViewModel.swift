@@ -18,6 +18,8 @@ class GameViewModel: ObservableObject {
     @Published var guessHistory: [(letter: Character, wasCorrect: Bool)] = []
     /// Kelime ipucu — 50 jeton ile açılır, oyun boyunca saklı kalır
     @Published var wordHintRevealed: Bool = false
+    /// Kademeli ipucu seviyesi: 0=yok, 1=metin gösterildi (ücretsiz), 2=1 harf açıldı, 3=tamamlandı
+    @Published var tieredHintLevel: Int = 0
 
     private let settings: SettingsViewModel
     let stats: StatsManager
@@ -48,8 +50,29 @@ class GameViewModel: ObservableObject {
     /// Kelime için ipucu metni (varsa). nil ise bu kelimede ipucu yok.
     var wordHintText: String? { WordList.hint(for: currentWord) }
 
-    /// İpucu butonu gösterilsin mi?
+    /// İpucu butonu gösterilsin mi? (eski sistem — hint text'i olmayan kelimeler için)
     var canBuyHint: Bool { wordHintText != nil && !wordHintRevealed && gameState == .playing }
+
+    /// Kademeli ipucu: bir sonraki adım mevcut mu?
+    var canUseTieredHint: Bool {
+        guard gameState == .playing, wordHintText != nil else { return false }
+        switch tieredHintLevel {
+        case 0: return true                         // Metin göster — ücretsiz
+        case 1: return !unguessedPool().isEmpty     // 1 harf aç
+        case 2: return !unguessedPool().isEmpty     // 2 harf daha aç
+        default: return false
+        }
+    }
+
+    /// Kademeli ipucu sonraki adımın jeton maliyeti (0 = ücretsiz)
+    var tieredHintNextCost: Int {
+        switch tieredHintLevel {
+        case 0: return 0
+        case 1: return JetonManager.costTieredHint1
+        case 2: return JetonManager.costTieredHint2
+        default: return 0
+        }
+    }
 
     // MARK: - Init
 
@@ -112,6 +135,55 @@ class GameViewModel: ObservableObject {
         return true
     }
 
+    // MARK: - Tiered hint (3 kademeli ipucu)
+
+    /// Tier 0 → Ücretsiz: hint metnini gösterir.
+    /// Tier 1 → 1 jeton: 1 harf açar.
+    /// Tier 2 → 2 jeton: 2 harf daha açar.
+    @discardableResult
+    func useTieredHint() -> Bool {
+        guard canUseTieredHint else { return false }
+        switch tieredHintLevel {
+        case 0:
+            // Ücretsiz — hint metnini aç
+            hintUsed = true
+            wordHintRevealed = true
+            tieredHintLevel = 1
+            syncSound(); sound.playHint()
+            return true
+        case 1:
+            // 1 jeton — 1 harf aç
+            guard JetonManager.shared.spend(JetonManager.costTieredHint1) else { return false }
+            let pool = unguessedPool()
+            guard let letter = pool.randomElement() else {
+                JetonManager.shared.earn(JetonManager.costTieredHint1); return false
+            }
+            hintUsed = true
+            tieredHintLevel = 2
+            syncSound(); sound.playHint()
+            performGuess(letter, playFeedback: false)
+            Task { @MainActor in AppPromptManager.shared.notifyHintSpent(amount: JetonManager.costTieredHint1) }
+            return true
+        case 2:
+            // 2 jeton — 2 harf daha aç
+            guard JetonManager.shared.spend(JetonManager.costTieredHint2) else { return false }
+            let pool = unguessedPool()
+            guard !pool.isEmpty else {
+                JetonManager.shared.earn(JetonManager.costTieredHint2); return false
+            }
+            hintUsed = true
+            tieredHintLevel = 3
+            syncSound(); sound.playHint()
+            for letter in pool.shuffled().prefix(2) {
+                if gameState == .playing { performGuess(letter, playFeedback: false) }
+            }
+            Task { @MainActor in AppPromptManager.shared.notifyHintSpent(amount: JetonManager.costTieredHint2) }
+            return true
+        default:
+            return false
+        }
+    }
+
     @discardableResult
     func buyVowel() -> Bool {
         let unrevealed = Set(currentWord.filter { turkishVowels.contains($0) && !guessedLetters.contains($0) })
@@ -165,6 +237,7 @@ class GameViewModel: ObservableObject {
         lastCorrectLetter = nil
         hintUsed        = false
         wordHintRevealed = false
+        tieredHintLevel  = 0
 
         var initial: Set<Character> = []
         if currentWord.contains(" ") { initial.insert(" ") }
@@ -264,7 +337,12 @@ class GameViewModel: ObservableObject {
             if wrongGuesses >= maxWrongGuesses {
                 gameState = .lost
                 sound.playLose()
-                stats.recordLoss()
+                if stats.consumeShieldIfActive() {
+                    // Kalkan aktifti: streak korunur, sadece oyun kaydedilir
+                    stats.recordShieldedLoss(category: category)
+                } else {
+                    stats.recordLoss()
+                }
                 if kidsMode { stats.recordKidsPlay() }
                 recordHistory(mode: "Sonsuz")
                 settings.recordAdaptiveResult(won: false)

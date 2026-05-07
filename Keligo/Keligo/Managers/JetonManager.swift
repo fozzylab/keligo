@@ -30,6 +30,13 @@ class JetonManager: ObservableObject {
     static let costHint             = 50
     static let costContinueAfterLoss = 100 // new: keep playing after max wrong guesses
 
+    // Kademeli ipucu katmanları
+    static let costTieredHint1    = 1    // Tier 2: 1 harf aç
+    static let costTieredHint2    = 2    // Tier 3: 2 harf daha aç
+
+    // Kalkan: bir sonraki kaybı emip seriyi korur
+    static let costShield         = 150
+
     // MARK: - Actions
 
     func earn(_ amount: Int) {

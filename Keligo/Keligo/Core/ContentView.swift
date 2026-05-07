@@ -726,69 +726,87 @@ struct GameBoardView<Overlay: View>: View {
 
     // MARK: - Word hint card
 
-    /// Kelime ipucu — 50 🟡 ile açılır, açıldıktan sonra gösterilir.
+    /// Kademeli ipucu bölümü — 3 adım: ücretsiz metin → 1j 1 harf → 2j 2 harf daha.
+    /// Kelimenin hint text'i yoksa gizlenir (eski useHint sistemi devreye girer).
     @ViewBuilder
     private var wordHintCard: some View {
-        if vm.wordHintRevealed, let hint = vm.wordHintText {
-            // Revealed: show hint text
-            HStack(spacing: 10) {
-                Image(systemName: "lightbulb.fill")
-                    .font(.subheadline)
-                    .foregroundColor(.yellow)
-                Text(hint)
-                    .font(.subheadline)
-                    .foregroundColor(theme.primaryText)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(3)
-            }
-            .padding(.horizontal, 14).padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.yellow.opacity(0.30), lineWidth: 1))
-            .padding(.horizontal, 16)
-            .padding(.bottom, 6)
-            .transition(.scale(scale: 0.92).combined(with: .opacity))
-        } else if vm.canBuyHint {
-            // Not revealed: show buy button
-            Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                    _ = vm.buyHint()
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "lightbulb")
-                        .font(.subheadline.weight(.semibold))
-                    Text("İpucu Al")
-                        .font(.subheadline.weight(.semibold))
-                    Spacer()
-                    HStack(spacing: 2) {
-                        Image(systemName: "circle.fill")
-                            .font(.system(size: 7))
+        if vm.wordHintText != nil {
+            VStack(spacing: 6) {
+                // Tier 1 sonrası: hint metnini göster
+                if vm.wordHintRevealed, let hint = vm.wordHintText {
+                    HStack(spacing: 10) {
+                        Image(systemName: "lightbulb.fill")
+                            .font(.subheadline)
                             .foregroundColor(.yellow)
-                        Text("\(JetonManager.costHint)")
-                            .font(.caption.weight(.bold))
-                            .foregroundColor(.yellow)
+                        Text(hint)
+                            .font(.subheadline)
+                            .foregroundColor(theme.primaryText)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(3)
                     }
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(
-                        jetons.canAfford(JetonManager.costHint)
-                            ? AnyShapeStyle(Color.yellow.opacity(0.20))
-                            : AnyShapeStyle(theme.cardFill),
-                        in: Capsule()
-                    )
+                    .padding(.horizontal, 14).padding(.vertical, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.yellow.opacity(0.30), lineWidth: 1))
+                    .transition(.scale(scale: 0.92).combined(with: .opacity))
                 }
-                .foregroundColor(jetons.canAfford(JetonManager.costHint)
-                    ? theme.primaryText : theme.secondaryText)
-                .padding(.horizontal, 14).padding(.vertical, 9)
-                .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(
-                    Color.yellow.opacity(jetons.canAfford(JetonManager.costHint) ? 0.30 : 0.10),
-                    lineWidth: 1))
+
+                // Kademeli ilerleme butonu
+                if vm.canUseTieredHint {
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                            _ = vm.useTieredHint()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: vm.tieredHintLevel == 0 ? "lightbulb" : "character.textbox")
+                                .font(.subheadline.weight(.semibold))
+                            Text(vm.tieredHintLevel == 0 ? "İpucu Al" :
+                                 vm.tieredHintLevel == 1 ? "Bir Harf Aç" : "2 Harf Daha")
+                                .font(.subheadline.weight(.semibold))
+                            Spacer()
+                            if vm.tieredHintLevel == 0 {
+                                Text("ÜCRETSİZ")
+                                    .font(.system(size: 10, weight: .black))
+                                    .foregroundColor(.green)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(Color.green.opacity(0.18), in: Capsule())
+                            } else {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 7))
+                                        .foregroundColor(.yellow)
+                                    Text("\(vm.tieredHintNextCost)")
+                                        .font(.caption.weight(.bold))
+                                        .foregroundColor(.yellow)
+                                }
+                                .padding(.horizontal, 8).padding(.vertical, 3)
+                                .background(
+                                    jetons.canAfford(vm.tieredHintNextCost)
+                                        ? AnyShapeStyle(Color.yellow.opacity(0.20))
+                                        : AnyShapeStyle(theme.cardFill),
+                                    in: Capsule()
+                                )
+                            }
+                        }
+                        .foregroundColor(vm.tieredHintLevel == 0 ? theme.primaryText :
+                            jetons.canAfford(vm.tieredHintNextCost) ? theme.primaryText : theme.secondaryText)
+                        .padding(.horizontal, 14).padding(.vertical, 9)
+                        .background(theme.cardFill, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(
+                            vm.tieredHintLevel == 0
+                                ? Color.green.opacity(0.35)
+                                : Color.yellow.opacity(jetons.canAfford(vm.tieredHintNextCost) ? 0.30 : 0.10),
+                            lineWidth: 1))
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .disabled(vm.tieredHintLevel > 0 && !jetons.canAfford(vm.tieredHintNextCost))
+                }
             }
-            .buttonStyle(ScaleButtonStyle())
-            .disabled(!jetons.canAfford(JetonManager.costHint))
             .padding(.horizontal, 16)
             .padding(.bottom, 6)
+            .animation(.spring(response: 0.4, dampingFraction: 0.75), value: vm.tieredHintLevel)
+            .animation(.spring(response: 0.4, dampingFraction: 0.75), value: vm.wordHintRevealed)
         }
     }
 
@@ -882,23 +900,27 @@ struct GameBoardView<Overlay: View>: View {
                         .background(theme.cardFill, in: Capsule())
                 }
             }
-            Button { vm.useHint() } label: {
-                HStack(spacing: 5) {
-                    Image(systemName: "lightbulb.fill")
-                    Text("\(vm.hintsRemaining)")
+            // Hint text'i olan kelimelerde kademeli sistem wordHintCard'da görünür;
+            // hint text'i olmayan kelimelerde klasik "ücretsiz harf aç" butonu göster.
+            if vm.wordHintText == nil {
+                Button { vm.useHint() } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "lightbulb.fill")
+                        Text("\(vm.hintsRemaining)")
+                    }
+                    .font(.caption.weight(.bold))
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(
+                        vm.hintsRemaining > 0 && vm.gameState == .playing
+                            ? AnyShapeStyle(theme.accent.opacity(0.2))
+                            : AnyShapeStyle(theme.cardFill),
+                        in: Capsule()
+                    )
+                    .foregroundColor(vm.hintsRemaining > 0 && vm.gameState == .playing
+                        ? theme.accent : theme.secondaryText)
                 }
-                .font(.caption.weight(.bold))
-                .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(
-                    vm.hintsRemaining > 0 && vm.gameState == .playing
-                        ? AnyShapeStyle(theme.accent.opacity(0.2))
-                        : AnyShapeStyle(theme.cardFill),
-                    in: Capsule()
-                )
-                .foregroundColor(vm.hintsRemaining > 0 && vm.gameState == .playing
-                    ? theme.accent : theme.secondaryText)
+                .disabled(vm.hintsRemaining == 0 || vm.gameState != .playing)
             }
-            .disabled(vm.hintsRemaining == 0 || vm.gameState != .playing)
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 6)
@@ -1113,8 +1135,9 @@ struct InfiniteGameOverView: View {
     @EnvironmentObject var jetons: JetonManager
     @StateObject private var lives = LivesManager.shared
 
-    @State private var showOutOfLives  = false
-    @State private var showWordReport  = false
+    @State private var showOutOfLives    = false
+    @State private var showWordReport    = false
+    @State private var streakProtected   = false   // Seri bu oyunda kalkan/jeton ile korunduysa true
 
     private var isWon: Bool { vm.gameState == .won }
 
@@ -1136,6 +1159,80 @@ struct InfiniteGameOverView: View {
                         Text(vm.currentWord)
                             .font(.title2.bold()).foregroundColor(.yellow)
                             .tracking(2)
+                    }
+                }
+
+                // Kazanınca: streak rozeti
+                if isWon && stats.currentStreak > 1 {
+                    HStack(spacing: 5) {
+                        Image(systemName: "flame.fill").foregroundColor(.orange)
+                        Text("\(stats.currentStreak) galibiyet serisi 🔥")
+                            .font(.subheadline.weight(.bold)).foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 8)
+                    .background(Color.orange.opacity(0.20), in: Capsule())
+                }
+
+                // Kaybedince: streak koruma teklifi
+                if !isWon {
+                    if streakProtected {
+                        HStack(spacing: 6) {
+                            Image(systemName: "shield.fill").foregroundColor(.cyan)
+                            Text("Seri korundu! \(stats.currentStreak) gün")
+                                .font(.subheadline.weight(.bold)).foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 8)
+                        .background(Color.cyan.opacity(0.20), in: Capsule())
+                    } else if stats.canUseStreakProtection {
+                        VStack(spacing: 8) {
+                            // Jeton ile koru
+                            Button {
+                                if stats.useStreakProtection() {
+                                    withAnimation { streakProtected = true }
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "shield.fill").foregroundColor(.yellow)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Seriyi Koru! (\(stats.streakBeforeLoss) gün)")
+                                            .font(.subheadline.weight(.bold)).foregroundColor(.white)
+                                        HStack(spacing: 3) {
+                                            Image(systemName: "circle.fill")
+                                                .font(.system(size: 8)).foregroundColor(.yellow)
+                                            Text("\(JetonManager.costStreakProtection) jeton")
+                                                .font(.caption).foregroundColor(.yellow)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 18).padding(.vertical, 12)
+                                .background(Color.orange.opacity(0.22))
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.orange.opacity(0.50), lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .disabled(!jetons.canAfford(JetonManager.costStreakProtection))
+                            .opacity(jetons.canAfford(JetonManager.costStreakProtection) ? 1 : 0.45)
+
+                            // Reklam ile koru
+                            Button {
+                                Task {
+                                    let granted = await AdManager.shared.presentRewarded(.streakSave)
+                                    if granted {
+                                        stats.restoreStreakFromAd()
+                                        withAnimation { streakProtected = true }
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "play.rectangle.fill").foregroundColor(.yellow)
+                                    Text("Reklamla Seriyi Koru").font(.caption.weight(.semibold))
+                                        .foregroundColor(.white.opacity(0.80))
+                                }
+                                .padding(.horizontal, 14).padding(.vertical, 8)
+                                .background(Color.white.opacity(0.10), in: Capsule())
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                        }
                     }
                 }
 
@@ -1162,7 +1259,7 @@ struct InfiniteGameOverView: View {
 
                 // İkincil butonlar: Paylaş | Hata Bildir | Ana Menü
                 HStack(spacing: 12) {
-                    // Paylaş
+                    // Paylaş (emoji grid + kart görseli)
                     Button {
                         Task { @MainActor in
                             let data = GameShareData(
@@ -1174,11 +1271,17 @@ struct InfiniteGameOverView: View {
                                 won: isWon,
                                 streak: stats.currentStreak
                             )
-                            let items: [Any]
+                            let emojiGrid = buildEmojiGrid(
+                                history: vm.guessHistory,
+                                won: isWon,
+                                wrongCount: vm.wrongGuesses,
+                                maxWrong: vm.maxWrongGuesses,
+                                modeLabel: "Sonsuz Mod",
+                                streak: stats.currentStreak
+                            )
+                            var items: [Any] = [emojiGrid]
                             if let img = renderShareImage(GameShareCard(data: data)) {
-                                items = [img]
-                            } else {
-                                items = ["Keligo'da \(isWon ? "kazandım" : "kaybettim")! #Keligo"]
+                                items.insert(img, at: 0)
                             }
                             presentShareSheet(items)
                         }
