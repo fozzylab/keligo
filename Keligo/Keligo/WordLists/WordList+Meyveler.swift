@@ -1,0 +1,66 @@
+import Foundation
+
+extension WordList {
+
+    // MARK: - Words
+
+    static let meyvelerWords: [WordEntry] = [
+        WordEntry(word: "AHUDUDU", category: "Meyveler"),
+        WordEntry(word: "ANANAS", category: "Meyveler"),
+        WordEntry(word: "ARMUT", category: "Meyveler"),
+        WordEntry(word: "AVOKADO", category: "Meyveler"),
+        WordEntry(word: "AYVA", category: "Meyveler"),
+        WordEntry(word: "BÖĞÜRTLEN", category: "Meyveler"),
+        WordEntry(word: "ÇİLEK", category: "Meyveler"),
+        WordEntry(word: "ELMA", category: "Meyveler"),
+        WordEntry(word: "DUT", category: "Meyveler"),
+        WordEntry(word: "ERİK", category: "Meyveler"),
+        WordEntry(word: "GREYFURT", category: "Meyveler"),
+        WordEntry(word: "HURMA", category: "Meyveler"),
+        WordEntry(word: "İNCİR", category: "Meyveler"),
+        WordEntry(word: "KARPUZ", category: "Meyveler"),
+        WordEntry(word: "KAVUN", category: "Meyveler"),
+        WordEntry(word: "KAYISI", category: "Meyveler"),
+        WordEntry(word: "KESTANE", category: "Meyveler"),
+        WordEntry(word: "KİRAZ", category: "Meyveler"),
+        WordEntry(word: "KİVİ", category: "Meyveler"),
+        WordEntry(word: "LİMON", category: "Meyveler"),
+        WordEntry(word: "MANDALİNA", category: "Meyveler"),
+        WordEntry(word: "MANGO", category: "Meyveler"),
+        WordEntry(word: "MUŞMULA", category: "Meyveler"),
+        WordEntry(word: "MUZ", category: "Meyveler"),
+        WordEntry(word: "NAR", category: "Meyveler"),
+        WordEntry(word: "NEKTARİN", category: "Meyveler"),
+        WordEntry(word: "PAPAYA", category: "Meyveler"),
+        WordEntry(word: "PORTAKAL", category: "Meyveler"),
+        WordEntry(word: "ŞEFTALİ", category: "Meyveler"),
+        WordEntry(word: "ÜZÜM", category: "Meyveler"),
+        WordEntry(word: "VİŞNE", category: "Meyveler"),
+        WordEntry(word: "YENİDÜNYA", category: "Meyveler"),
+        WordEntry(word: "ZEYTİN", category: "Meyveler"),
+    ]
+
+    // MARK: - Hints
+
+    static let meyvelerHints: [String: String] = [
+        "ANANAS":       "Taç gibi yaprağı olan, tropik tatlı-ekşi meyve.",
+        "AVOKADO":      "Yeşil kabuklu, kremalı bir dokuya sahip tropik meyve.",
+        "ELMA":         "Kırmızı veya yeşil renkli, sulu ve tatlı bir meyve.",
+        "FRAMBUAZ":     "Küçük, kırmızı, böğürtlene benzer orman meyvesi.",
+        "HURMA":        "Çöl bölgelerinde yetişen, tatlı ve besleyici palmiye meyvesi.",
+        "İNCİR":        "Türkiye'nin Ege bölgesinde yetişen, tatlı ve besleyici meyve.",
+        "KİRAZ":        "Dal dalında büyüyen, kırmızı küçük tatlı meyve.",
+        "KİVİ":         "Kahverengi tüylü kabuğu altında yeşil etli Yeni Zelanda meyvesi.",
+        "LİMON":        "Sarı renkli, ekşi, C vitamini açısından zengin narenciye.",
+        "MANGO":        "Sarı-turuncu etli, çekirdekli tropik meyve.",
+        "MUZ":          "Sarı kabuklu, yumuşak ve tatlı tropikal meyve.",
+        "PAPAYA":       "Turuncu etli, büyük tohumlu tropikal meyve.",
+        "PORTAKAL":     "Turuncu renkli, sulu ve vitaminli narenciye.",
+        "ŞEFTALİ":      "Tüylü kabuklu, tatlı ve sulu, yazın bol bulunan meyve.",
+        "ÜZÜM":         "Salkım halinde büyüyen, siyah veya yeşil tatlı meyve.",
+        "VİŞNE":        "Kirazdan daha ekşi, koyu kırmızı, reçelde kullanılan meyve.",
+        "ARMUT":        "Konik şekli ve yumuşak dokusuyla bahar meyvesi.",
+        "ÇİLEK":        "Küçük, kırmızı, reçel ve tatlılarda vazgeçilmez yaz meyvesi.",
+        "KAYISI":       "Malatya'nın simgesi, tatlı ve besleyici sarı-turuncu meyve.",
+    ]
+}

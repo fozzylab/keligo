@@ -1,0 +1,73 @@
+import Foundation
+
+extension WordList {
+
+    // MARK: - Words
+
+    static let tarihPlusWords: [WordEntry] = [
+        WordEntry(word: "OSMANLI",         category: "Tarih+"),
+        WordEntry(word: "BİZANS",          category: "Tarih+"),
+        WordEntry(word: "SELÇUKLU",        category: "Tarih+"),
+        WordEntry(word: "FATİH",           category: "Tarih+"),
+        WordEntry(word: "KANUNİ",          category: "Tarih+"),
+        WordEntry(word: "ATATÜRK",         category: "Tarih+"),
+        WordEntry(word: "KURTULUŞ",        category: "Tarih+"),
+        WordEntry(word: "CUMHURİYET",      category: "Tarih+"),
+        WordEntry(word: "İSTİKLAL",        category: "Tarih+"),
+        WordEntry(word: "GALİPOLİ",        category: "Tarih+"),
+        WordEntry(word: "ÇANAKKALE",       category: "Tarih+"),
+        WordEntry(word: "İNEBOLU",         category: "Tarih+"),
+        WordEntry(word: "DUMLUPINAR",      category: "Tarih+"),
+        WordEntry(word: "MALAZGİRT",       category: "Tarih+"),
+        WordEntry(word: "MOHAÇ",           category: "Tarih+"),
+        WordEntry(word: "VİYANA",          category: "Tarih+"),
+        WordEntry(word: "ANKARA",          category: "Tarih+"),
+        WordEntry(word: "SAMSUN",          category: "Tarih+"),
+        WordEntry(word: "ERZURUM",         category: "Tarih+"),
+        WordEntry(word: "SİVAS",           category: "Tarih+"),
+        WordEntry(word: "İNÖNÜ",           category: "Tarih+"),
+        WordEntry(word: "SAKARYA",         category: "Tarih+"),
+        WordEntry(word: "LOZAN",           category: "Tarih+"),
+        WordEntry(word: "MUDANYA",         category: "Tarih+"),
+        WordEntry(word: "SEVR",            category: "Tarih+"),
+        WordEntry(word: "DEVLETÇİLİK",     category: "Tarih+"),
+        WordEntry(word: "MİLLİYETÇİLİK",   category: "Tarih+"),
+        WordEntry(word: "LAİKLİK",         category: "Tarih+"),
+        WordEntry(word: "İNKILAP",         category: "Tarih+"),
+        WordEntry(word: "TANZİMAT",        category: "Tarih+"),
+        WordEntry(word: "MEŞRUTİYET",      category: "Tarih+"),
+        WordEntry(word: "PADİŞAH",         category: "Tarih+"),
+        WordEntry(word: "VEZİR",           category: "Tarih+"),
+        WordEntry(word: "DİVAN",           category: "Tarih+"),
+        WordEntry(word: "TUĞRA",           category: "Tarih+"),
+        WordEntry(word: "MİMARSİNAN",      category: "Tarih+"),
+        WordEntry(word: "BARBAROS",        category: "Tarih+"),
+        WordEntry(word: "PİRİREİS",        category: "Tarih+"),
+        WordEntry(word: "EVLİYAÇELEBİ",    category: "Tarih+"),
+        WordEntry(word: "KATİPÇELEBİ",     category: "Tarih+"),
+        WordEntry(word: "FARABİ",          category: "Tarih+"),
+        WordEntry(word: "İBNİSİNA",        category: "Tarih+"),
+        WordEntry(word: "ULUĞBEY",         category: "Tarih+"),
+        WordEntry(word: "MEVLANA",         category: "Tarih+"),
+        WordEntry(word: "YUNUS",           category: "Tarih+"),
+        WordEntry(word: "HACIBEKTAŞ",      category: "Tarih+"),
+        WordEntry(word: "PİRİSULTAN",      category: "Tarih+"),
+        WordEntry(word: "ŞEYHEDEBALI",     category: "Tarih+"),
+        WordEntry(word: "ALPARSLAN",       category: "Tarih+"),
+        WordEntry(word: "TOPRAKAĞA",       category: "Tarih+"),
+        WordEntry(word: "AYASOFYA",        category: "Tarih+"),
+        WordEntry(word: "TOPKAPI",         category: "Tarih+"),
+        WordEntry(word: "DOLMABAHÇE",      category: "Tarih+"),
+        WordEntry(word: "KAPADOKYA",       category: "Tarih+"),
+        WordEntry(word: "ANITKABİR",       category: "Tarih+"),
+        WordEntry(word: "GAZİ",            category: "Tarih+"),
+        WordEntry(word: "ŞEHİT",           category: "Tarih+"),
+        WordEntry(word: "MEHTERAN",        category: "Tarih+"),
+        WordEntry(word: "YENİÇERİ",        category: "Tarih+"),
+        WordEntry(word: "KIRIM",           category: "Tarih+"),
+    ]
+
+    // MARK: - Hints
+
+    static let tarihPlusHints: [String: String] = [:]
+}

@@ -1,0 +1,70 @@
+import Foundation
+
+extension WordList {
+
+    // MARK: - Words
+
+    static let sinemaPlusWords: [WordEntry] = [
+        WordEntry(word: "YÖNETMEN",    category: "Sinema"),
+        WordEntry(word: "SENARYO",     category: "Sinema"),
+        WordEntry(word: "OYUNCU",      category: "Sinema"),
+        WordEntry(word: "AKTÖR",       category: "Sinema"),
+        WordEntry(word: "AKTRİS",      category: "Sinema"),
+        WordEntry(word: "KOSTÜM",      category: "Sinema"),
+        WordEntry(word: "PRODÜKSYON",  category: "Sinema"),
+        WordEntry(word: "FRAGMAN",     category: "Sinema"),
+        WordEntry(word: "JENERİK",     category: "Sinema"),
+        WordEntry(word: "DUBLAJ",      category: "Sinema"),
+        WordEntry(word: "ÇEKİM",       category: "Sinema"),
+        WordEntry(word: "DEKOR",       category: "Sinema"),
+        WordEntry(word: "PLATFORM",    category: "Sinema"),
+        WordEntry(word: "FESTİVAL",    category: "Sinema"),
+        WordEntry(word: "BELGESEL",    category: "Sinema"),
+        WordEntry(word: "ANİMASYON",   category: "Sinema"),
+        WordEntry(word: "GİŞE",        category: "Sinema"),
+        WordEntry(word: "RÖPORTAJ",    category: "Sinema"),
+        WordEntry(word: "KOLEKSİYON",  category: "Sinema"),
+        WordEntry(word: "KARAKTER",    category: "Sinema"),
+        WordEntry(word: "KORKU",       category: "Sinema"),
+        WordEntry(word: "DRAM",        category: "Sinema"),
+        WordEntry(word: "KOMEDİ",      category: "Sinema"),
+        WordEntry(word: "AKSİYON",     category: "Sinema"),
+        WordEntry(word: "GERİLİM",     category: "Sinema"),
+        WordEntry(word: "KAMERA",      category: "Sinema"),
+        WordEntry(word: "OYUNCULUK",   category: "Sinema"),
+        WordEntry(word: "OSCAR",       category: "Sinema"),
+        WordEntry(word: "PALME",       category: "Sinema"),
+        WordEntry(word: "REMAKE",      category: "Sinema"),
+        WordEntry(word: "SEQUEL",      category: "Sinema"),
+        WordEntry(word: "PROLOG",      category: "Sinema"),
+        WordEntry(word: "EPİLOG",      category: "Sinema"),
+        WordEntry(word: "KURGU",       category: "Sinema"),
+        WordEntry(word: "MONTAJ",      category: "Sinema"),
+        WordEntry(word: "SET",         category: "Sinema"),
+        WordEntry(word: "STÜDYO",      category: "Sinema"),
+        WordEntry(word: "REPLİK",      category: "Sinema"),
+        WordEntry(word: "FLAŞBEK",     category: "Sinema"),
+        WordEntry(word: "MAKYAJ",      category: "Sinema"),
+        WordEntry(word: "EFEKT",       category: "Sinema"),
+        WordEntry(word: "SAHNE",       category: "Sinema"),
+        WordEntry(word: "KADRO",       category: "Sinema"),
+        WordEntry(word: "SEZON",       category: "Sinema"),
+        WordEntry(word: "SERİ",        category: "Sinema"),
+        WordEntry(word: "BÖLÜM",       category: "Sinema"),
+        WordEntry(word: "MİZANSEN",    category: "Sinema"),
+        WordEntry(word: "JANR",        category: "Sinema"),
+        WordEntry(word: "YAPIMCI",     category: "Sinema"),
+        WordEntry(word: "TRAJEDİ",     category: "Sinema"),
+        WordEntry(word: "DESTAN",      category: "Sinema"),
+        WordEntry(word: "MONOLOG",     category: "Sinema"),
+        WordEntry(word: "DİYALOG",     category: "Sinema"),
+        WordEntry(word: "ROMAN",       category: "Sinema"),
+        WordEntry(word: "ALTYAZI",     category: "Sinema"),
+        WordEntry(word: "BİYOGRAFİ",   category: "Sinema"),
+        WordEntry(word: "GÖSTERİM",    category: "Sinema"),
+    ]
+
+    // MARK: - Hints
+
+    static let sinemaPlusHints: [String: String] = [:]
+}

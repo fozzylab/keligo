@@ -1,0 +1,73 @@
+import Foundation
+
+extension WordList {
+
+    // MARK: - Words
+
+    static let muzikPlusWords: [WordEntry] = [
+        WordEntry(word: "SENFONİ",         category: "Müzik+"),
+        WordEntry(word: "ORKESTRA",        category: "Müzik+"),
+        WordEntry(word: "MAESTRO",         category: "Müzik+"),
+        WordEntry(word: "SOLO",            category: "Müzik+"),
+        WordEntry(word: "DÜETO",           category: "Müzik+"),
+        WordEntry(word: "ARYA",            category: "Müzik+"),
+        WordEntry(word: "OPERA",           category: "Müzik+"),
+        WordEntry(word: "BALAD",           category: "Müzik+"),
+        WordEntry(word: "RİTM",            category: "Müzik+"),
+        WordEntry(word: "TEMPO",           category: "Müzik+"),
+        WordEntry(word: "AKORD",           category: "Müzik+"),
+        WordEntry(word: "NOTA",            category: "Müzik+"),
+        WordEntry(word: "ENSTRÜMAN",       category: "Müzik+"),
+        WordEntry(word: "PİYANO",          category: "Müzik+"),
+        WordEntry(word: "GİTAR",           category: "Müzik+"),
+        WordEntry(word: "BATERİ",          category: "Müzik+"),
+        WordEntry(word: "SAKSOFON",        category: "Müzik+"),
+        WordEntry(word: "TROMPET",         category: "Müzik+"),
+        WordEntry(word: "KEMAN",           category: "Müzik+"),
+        WordEntry(word: "VİYOLONSEL",      category: "Müzik+"),
+        WordEntry(word: "ARP",             category: "Müzik+"),
+        WordEntry(word: "FLÜT",            category: "Müzik+"),
+        WordEntry(word: "KLARNET",         category: "Müzik+"),
+        WordEntry(word: "AKKORDION",       category: "Müzik+"),
+        WordEntry(word: "BAĞLAMA",         category: "Müzik+"),
+        WordEntry(word: "KANUN",           category: "Müzik+"),
+        WordEntry(word: "UD",              category: "Müzik+"),
+        WordEntry(word: "ZURNA",           category: "Müzik+"),
+        WordEntry(word: "DAVUL",           category: "Müzik+"),
+        WordEntry(word: "TANBUR",          category: "Müzik+"),
+        WordEntry(word: "DEF",             category: "Müzik+"),
+        WordEntry(word: "MAKAM",           category: "Müzik+"),
+        WordEntry(word: "USUL",            category: "Müzik+"),
+        WordEntry(word: "TÜRKÜ",           category: "Müzik+"),
+        WordEntry(word: "ARABESK",         category: "Müzik+"),
+        WordEntry(word: "POP",             category: "Müzik+"),
+        WordEntry(word: "ROCK",            category: "Müzik+"),
+        WordEntry(word: "JAZZ",            category: "Müzik+"),
+        WordEntry(word: "BLUES",           category: "Müzik+"),
+        WordEntry(word: "REGGAE",          category: "Müzik+"),
+        WordEntry(word: "RAP",             category: "Müzik+"),
+        WordEntry(word: "HIPHOP",          category: "Müzik+"),
+        WordEntry(word: "ELEKTRO",         category: "Müzik+"),
+        WordEntry(word: "TECHNO",          category: "Müzik+"),
+        WordEntry(word: "ALBÜM",           category: "Müzik+"),
+        WordEntry(word: "STÜDYO",          category: "Müzik+"),
+        WordEntry(word: "PRODÜKTÖR",       category: "Müzik+"),
+        WordEntry(word: "KONSERT",         category: "Müzik+"),
+        WordEntry(word: "FESTİVAL",        category: "Müzik+"),
+        WordEntry(word: "TURNE",           category: "Müzik+"),
+        WordEntry(word: "BANDO",           category: "Müzik+"),
+        WordEntry(word: "KORO",            category: "Müzik+"),
+        WordEntry(word: "ŞARKI",           category: "Müzik+"),
+        WordEntry(word: "MELODİ",          category: "Müzik+"),
+        WordEntry(word: "ARMONİ",          category: "Müzik+"),
+        WordEntry(word: "BESTECİ",         category: "Müzik+"),
+        WordEntry(word: "GİTARİST",        category: "Müzik+"),
+        WordEntry(word: "BATERİSTLER",     category: "Müzik+"),
+        WordEntry(word: "VOKAL",           category: "Müzik+"),
+        WordEntry(word: "MİKROFON",        category: "Müzik+"),
+    ]
+
+    // MARK: - Hints
+
+    static let muzikPlusHints: [String: String] = [:]
+}

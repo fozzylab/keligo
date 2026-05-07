@@ -1,0 +1,73 @@
+import Foundation
+
+extension WordList {
+
+    // MARK: - Words
+
+    static let bilimPlusWords: [WordEntry] = [
+        WordEntry(word: "ALGORİTMA",   category: "Bilim+"),
+        WordEntry(word: "AŞIRELİTAY",  category: "Bilim+"),
+        WordEntry(word: "ANTİBİYOTİK", category: "Bilim+"),
+        WordEntry(word: "ATOM",        category: "Bilim+"),
+        WordEntry(word: "BAKTERİ",     category: "Bilim+"),
+        WordEntry(word: "BİLİŞİM",     category: "Bilim+"),
+        WordEntry(word: "BİYOLOJİ",    category: "Bilim+"),
+        WordEntry(word: "BLOKZİNCİR",  category: "Bilim+"),
+        WordEntry(word: "BULUT",       category: "Bilim+"),
+        WordEntry(word: "DENKLEM",     category: "Bilim+"),
+        WordEntry(word: "DERİÖĞRENME", category: "Bilim+"),
+        WordEntry(word: "DEVRE",       category: "Bilim+"),
+        WordEntry(word: "DNA",         category: "Bilim+"),
+        WordEntry(word: "ELEKTRON",    category: "Bilim+"),
+        WordEntry(word: "ENZİM",       category: "Bilim+"),
+        WordEntry(word: "EVRİM",       category: "Bilim+"),
+        WordEntry(word: "FİZİK",       category: "Bilim+"),
+        WordEntry(word: "FOTON",       category: "Bilim+"),
+        WordEntry(word: "GENETİK",     category: "Bilim+"),
+        WordEntry(word: "GRAVİTON",    category: "Bilim+"),
+        WordEntry(word: "HİDROJEN",    category: "Bilim+"),
+        WordEntry(word: "HİPOTEZ",     category: "Bilim+"),
+        WordEntry(word: "HUBBLE",      category: "Bilim+"),
+        WordEntry(word: "İSTATİSTİK",  category: "Bilim+"),
+        WordEntry(word: "KAOS",        category: "Bilim+"),
+        WordEntry(word: "KİMYA",       category: "Bilim+"),
+        WordEntry(word: "KLON",        category: "Bilim+"),
+        WordEntry(word: "KROMOZOM",    category: "Bilim+"),
+        WordEntry(word: "KUANTUM",     category: "Bilim+"),
+        WordEntry(word: "LABORATUVAR", category: "Bilim+"),
+        WordEntry(word: "LİTYUM",      category: "Bilim+"),
+        WordEntry(word: "MATEMATİK",   category: "Bilim+"),
+        WordEntry(word: "MİKROSKOP",   category: "Bilim+"),
+        WordEntry(word: "MOLEKÜL",     category: "Bilim+"),
+        WordEntry(word: "NANOTEKNOLOJİ", category: "Bilim+"),
+        WordEntry(word: "NEBULA",      category: "Bilim+"),
+        WordEntry(word: "NÖROZON",     category: "Bilim+"),
+        WordEntry(word: "OKSİJEN",     category: "Bilim+"),
+        WordEntry(word: "ORBİTAL",     category: "Bilim+"),
+        WordEntry(word: "PANDEMİ",     category: "Bilim+"),
+        WordEntry(word: "PARÇACIK",    category: "Bilim+"),
+        WordEntry(word: "PROTON",      category: "Bilim+"),
+        WordEntry(word: "RADYASYON",   category: "Bilim+"),
+        WordEntry(word: "REAKTÖR",     category: "Bilim+"),
+        WordEntry(word: "ROBOT",       category: "Bilim+"),
+        WordEntry(word: "SİNAPS",      category: "Bilim+"),
+        WordEntry(word: "SİSTEM",      category: "Bilim+"),
+        WordEntry(word: "SUPERNOVA",   category: "Bilim+"),
+        WordEntry(word: "TEORİ",       category: "Bilim+"),
+        WordEntry(word: "TERMODİNAMİK", category: "Bilim+"),
+        WordEntry(word: "TESLA",       category: "Bilim+"),
+        WordEntry(word: "TİTAN",       category: "Bilim+"),
+        WordEntry(word: "TÜRBİN",      category: "Bilim+"),
+        WordEntry(word: "VAKUM",       category: "Bilim+"),
+        WordEntry(word: "VİRÜS",       category: "Bilim+"),
+        WordEntry(word: "YERÇEKİMİ",   category: "Bilim+"),
+        WordEntry(word: "YAPAYZEKA",   category: "Bilim+"),
+        WordEntry(word: "ZAMAN",       category: "Bilim+"),
+        WordEntry(word: "ZEKA",        category: "Bilim+"),
+        WordEntry(word: "ZİNCİR",      category: "Bilim+"),
+    ]
+
+    // MARK: - Hints
+
+    static let bilimPlusHints: [String: String] = [:]
+}

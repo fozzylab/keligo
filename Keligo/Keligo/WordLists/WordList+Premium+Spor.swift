@@ -1,0 +1,73 @@
+import Foundation
+
+extension WordList {
+
+    // MARK: - Words
+
+    static let sporPlusWords: [WordEntry] = [
+        WordEntry(word: "FENERBAHÇE",      category: "Spor+"),
+        WordEntry(word: "GALATASARAY",     category: "Spor+"),
+        WordEntry(word: "BEŞİKTAŞ",        category: "Spor+"),
+        WordEntry(word: "TRABZONSPOR",     category: "Spor+"),
+        WordEntry(word: "BURSASPOR",       category: "Spor+"),
+        WordEntry(word: "BAŞAKŞEHİR",      category: "Spor+"),
+        WordEntry(word: "ŞAMPİYONLAR",     category: "Spor+"),
+        WordEntry(word: "AVRUPA",          category: "Spor+"),
+        WordEntry(word: "DÜNYAKUPASI",     category: "Spor+"),
+        WordEntry(word: "OLİMPİYAT",       category: "Spor+"),
+        WordEntry(word: "FORMULA",         category: "Spor+"),
+        WordEntry(word: "WIMBLEDON",       category: "Spor+"),
+        WordEntry(word: "MARATON",         category: "Spor+"),
+        WordEntry(word: "PENALTİ",         category: "Spor+"),
+        WordEntry(word: "FAVORİ",          category: "Spor+"),
+        WordEntry(word: "VAR",             category: "Spor+"),
+        WordEntry(word: "OFFSAYT",         category: "Spor+"),
+        WordEntry(word: "FORVET",          category: "Spor+"),
+        WordEntry(word: "STOPER",          category: "Spor+"),
+        WordEntry(word: "KALECİ",          category: "Spor+"),
+        WordEntry(word: "TEKNİKDİREKTÖR",  category: "Spor+"),
+        WordEntry(word: "TRANSFER",        category: "Spor+"),
+        WordEntry(word: "TURNUVA",         category: "Spor+"),
+        WordEntry(word: "STADYUM",         category: "Spor+"),
+        WordEntry(word: "TARAFTAR",        category: "Spor+"),
+        WordEntry(word: "DERBİ",           category: "Spor+"),
+        WordEntry(word: "ASİST",           category: "Spor+"),
+        WordEntry(word: "HATTRİCK",        category: "Spor+"),
+        WordEntry(word: "KORNER",          category: "Spor+"),
+        WordEntry(word: "FRİKİK",          category: "Spor+"),
+        WordEntry(word: "OFANSİF",         category: "Spor+"),
+        WordEntry(word: "DEFANSİF",        category: "Spor+"),
+        WordEntry(word: "KRAMP",           category: "Spor+"),
+        WordEntry(word: "ANTRENMAN",       category: "Spor+"),
+        WordEntry(word: "KONDİSYON",       category: "Spor+"),
+        WordEntry(word: "REFERANS",        category: "Spor+"),
+        WordEntry(word: "VOLEYBOL",        category: "Spor+"),
+        WordEntry(word: "BASKETBOL",       category: "Spor+"),
+        WordEntry(word: "HENTBOL",         category: "Spor+"),
+        WordEntry(word: "GÜREŞ",           category: "Spor+"),
+        WordEntry(word: "BOKS",            category: "Spor+"),
+        WordEntry(word: "JUDO",            category: "Spor+"),
+        WordEntry(word: "TEKVANDO",        category: "Spor+"),
+        WordEntry(word: "EFES",            category: "Spor+"),
+        WordEntry(word: "ANADOLU",         category: "Spor+"),
+        WordEntry(word: "PİVOT",           category: "Spor+"),
+        WordEntry(word: "PASLAŞMA",        category: "Spor+"),
+        WordEntry(word: "RAKET",           category: "Spor+"),
+        WordEntry(word: "FİLE",            category: "Spor+"),
+        WordEntry(word: "JOKEY",           category: "Spor+"),
+        WordEntry(word: "ATLET",           category: "Spor+"),
+        WordEntry(word: "MEDALYA",         category: "Spor+"),
+        WordEntry(word: "REKOR",           category: "Spor+"),
+        WordEntry(word: "ZAFER",           category: "Spor+"),
+        WordEntry(word: "TURBO",           category: "Spor+"),
+        WordEntry(word: "PİT",             category: "Spor+"),
+        WordEntry(word: "PODYUM",          category: "Spor+"),
+        WordEntry(word: "SAMPDORIA",       category: "Spor+"),
+        WordEntry(word: "BARÇA",           category: "Spor+"),
+        WordEntry(word: "MADRİD",          category: "Spor+"),
+    ]
+
+    // MARK: - Hints
+
+    static let sporPlusHints: [String: String] = [:]
+}
