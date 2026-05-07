@@ -64,6 +64,8 @@ final class AdManager: ObservableObject {
     private var interstitialAd: InterstitialAd?
     private var rewardedAd: RewardedAd?
     private var appOpenAd: AppOpenAd?
+    /// Rewarded ad delegate — retained for the duration of ad presentation
+    private var rewardDelegate: RewardedAdDelegateHandler?
 
     private init() {
         // Preload'lar MobileAds başladıktan sonra startPreloading() ile tetiklenir.
@@ -246,14 +248,30 @@ final class AdManager: ObservableObject {
         }
 
         return await withCheckedContinuation { continuation in
+            var didResume = false
+
+            // Delegate: handles dismiss (no reward) and presentation failures
+            let delegate = RewardedAdDelegateHandler {
+                guard !didResume else { return }
+                didResume = true
+                continuation.resume(returning: false)
+            }
+            self.rewardDelegate = delegate
+            ad.fullScreenContentDelegate = delegate
+
             ad.present(from: rootVC) { [weak self] in
-                guard let self else { continuation.resume(returning: false); return }
+                guard let self else {
+                    if !didResume { didResume = true; continuation.resume(returning: false) }
+                    return
+                }
+                // User earned reward — resume before delegate fires dismiss
+                didResume = true
                 let day = self.todayKey()
                 let key = self.kRewardedUsed(kind, day: day)
                 UserDefaults.standard.set(UserDefaults.standard.integer(forKey: key) + 1, forKey: key)
                 UserDefaults.standard.set(Date(), forKey: self.kLastRewardedAt)
                 self.log.info("📺 Rewarded \(kind.rawValue) — kalan: \(self.remaining(kind))")
-                self.rewardedAd = nil
+                self.rewardDelegate = nil
                 self.preloadRewarded()
                 continuation.resume(returning: true)
             }
@@ -283,5 +301,26 @@ final class AdManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: kLastInterstitialAt)
         UserDefaults.standard.removeObject(forKey: kLastRewardedAt)
         UserDefaults.standard.set(0, forKey: kGamesSinceLastInter)
+    }
+}
+
+// MARK: - Rewarded Ad Delegate
+
+/// Handles rewarded ad dismiss / failure so the async continuation is always resumed.
+final class RewardedAdDelegateHandler: NSObject, FullScreenContentDelegate {
+    private let onDismiss: () -> Void
+
+    init(onDismiss: @escaping () -> Void) {
+        self.onDismiss = onDismiss
+    }
+
+    /// Called when ad closes (after reward callback if reward was earned, or alone if dismissed early)
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        onDismiss()
+    }
+
+    /// Called when ad fails to present (e.g. already presenting another ad)
+    func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        onDismiss()
     }
 }
