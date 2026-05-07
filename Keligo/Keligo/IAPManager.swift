@@ -233,10 +233,27 @@ class IAPManager: ObservableObject {
     }
 
     func refreshPurchases() async {
+        // StoreKit 2'yi kaynak-doğrusu olarak kullan:
+        // Önce yerel durumu sıfırla, sonra gerçek entitlement'larla yeniden doldur.
+        clearLocalPurchaseState()
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result else { continue }
             await handleTransaction(transaction, awardJetons: false)
         }
+    }
+
+    private func clearLocalPurchaseState() {
+        purchasedProductIDs = []
+        let ud = UserDefaults.standard
+        ud.removeObject(forKey: "adsRemoved")
+        ud.removeObject(forKey: "pack_sinema_unlocked")
+        ud.removeObject(forKey: "pack_bilim_unlocked")
+        ud.removeObject(forKey: "pack_unlimited_lives_unlocked")
+        ud.removeObject(forKey: "pack_theme_premium_unlocked")
+        ud.removeObject(forKey: "pack_tarih_plus_unlocked")
+        ud.removeObject(forKey: "pack_spor_yildizlari_unlocked")
+        ud.removeObject(forKey: "pack_muzik_pro_unlocked")
+        ud.removeObject(forKey: "pack_premium_bundle_unlocked")
     }
 
     private func handleTransaction(_ transaction: StoreKit.Transaction, awardJetons: Bool = true) async {
