@@ -116,7 +116,12 @@ struct KeligoApp: App {
                     #if DEBUG
                     MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ["ec83e2b236748a7044a22abd065b23e7"]
                     #endif
-                    MobileAds.shared.start { _ in }
+                    MobileAds.shared.start { _ in
+                        // MobileAds hazır — şimdi preload başlat ve ilk App Open Ad'ı göster
+                        Task { @MainActor in
+                            AdManager.shared.startPreloadingAndShowOpenAd()
+                        }
+                    }
                 }
             }
         }

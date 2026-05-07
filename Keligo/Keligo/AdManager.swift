@@ -66,9 +66,18 @@ final class AdManager: ObservableObject {
     private var appOpenAd: AppOpenAd?
 
     private init() {
+        // Preload'lar MobileAds başladıktan sonra startPreloading() ile tetiklenir.
+        // init()'te çağrılmaz — SDK henüz hazır değil.
+    }
+
+    /// MobileAds.shared.start tamamlandıktan hemen sonra çağır.
+    /// İlk açılışta App Open Ad'ı yükler ve hazır olur olmaz gösterir.
+    func startPreloadingAndShowOpenAd() {
         preloadInterstitial()
         preloadRewarded()
-        preloadAppOpenAd()
+        Task {
+            await loadAndPresentAppOpenAd()
+        }
     }
 
     // MARK: - Preloading
@@ -112,8 +121,8 @@ final class AdManager: ObservableObject {
         }
     }
 
-    /// Uygulama açılışında veya ön plana gelince çağır.
-    /// Reklamlar satın alınmışsa veya ad henüz hazır değilse sessizce geçer.
+    /// Ön plana her gelişte çağır (scenePhase .active).
+    /// Önceden yüklenmiş reklam varsa gösterir, yoksa sessizce geçer.
     func presentAppOpenAd() async {
         guard !IAPManager.shared.isAdsRemoved else {
             log.info("📺 App Open Ad — reklamlar kaldırılmış, atlanıyor")
@@ -128,6 +137,27 @@ final class AdManager: ObservableObject {
         ad.present(from: rootVC)
         preloadAppOpenAd()
         log.info("📺 App Open Ad gösterildi")
+    }
+
+    /// İlk açılışta: reklamı yükle ve hazır olunca hemen göster.
+    private func loadAndPresentAppOpenAd() async {
+        guard !IAPManager.shared.isAdsRemoved else {
+            log.info("📺 App Open Ad — reklamlar kaldırılmış, atlanıyor")
+            preloadAppOpenAd()
+            return
+        }
+        guard let rootVC = rootViewController else {
+            preloadAppOpenAd()
+            return
+        }
+        do {
+            let ad = try await AppOpenAd.load(with: appOpenAdUnitID, request: Request())
+            log.info("📺 App Open Ad yüklendi, gösteriliyor")
+            ad.present(from: rootVC)
+            preloadAppOpenAd()
+        } catch {
+            log.error("📺 App Open Ad yüklenemedi: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Public API
