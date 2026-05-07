@@ -47,31 +47,31 @@ struct OutOfLivesSheet: View {
                 .padding(.bottom, 24)
             }
 
-            // Reward toast (reklam izlendikten sonra)
+            // Reward toast (reklam / jeton sonrası)
             if let toast = rewardToast {
                 VStack {
                     Spacer()
                     Text(toast)
-                        .font(.headline.weight(.bold))
+                        .font(.title3.weight(.black))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 20).padding(.vertical, 14)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 28).padding(.vertical, 18)
                         .background(
                             LinearGradient(colors: [.green, Color(red: 0.1, green: 0.7, blue: 0.4)],
                                            startPoint: .leading, endPoint: .trailing),
-                            in: Capsule()
+                            in: RoundedRectangle(cornerRadius: 20)
                         )
-                        .shadow(color: .green.opacity(0.45), radius: 14, y: 4)
-                        .padding(.bottom, 60)
+                        .shadow(color: .green.opacity(0.5), radius: 20, y: 6)
+                        .padding(.horizontal, 40)
+                    Spacer()
                 }
                 .zIndex(50)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(.scale(scale: 0.8).combined(with: .opacity))
             }
         }
         .onReceive(timer) { _ in
             now = Date()
-            // Yenilenme oldu mu kontrol
             lives.recomputeRegen()
-            if lives.current > 0 { dismiss() }
         }
         .alert("Reklam izle, +1 can kazan", isPresented: $showAdConfirm) {
             Button("İzle") {
@@ -83,9 +83,8 @@ struct OutOfLivesSheet: View {
                     rewardedShowing = false
                     if ok {
                         withAnimation(.spring()) { rewardToast = "❤️ +1 Can kazandın!" }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                             withAnimation { rewardToast = nil }
-                            dismiss()
                         }
                     }
                 }
@@ -187,8 +186,10 @@ struct OutOfLivesSheet: View {
                 primary: false
             ) {
                 if lives.buyOne() {
-                    withAnimation(.spring()) { rewardToast = "❤️ +1 Can!" }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) { dismiss() }
+                    withAnimation(.spring()) { rewardToast = "❤️ +1 Can kazandın!" }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        withAnimation { rewardToast = nil }
+                    }
                 }
             }
 
@@ -203,7 +204,9 @@ struct OutOfLivesSheet: View {
             ) {
                 if lives.buyAll() {
                     withAnimation(.spring()) { rewardToast = "❤️❤️❤️❤️❤️ Tam dolum!" }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) { dismiss() }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        withAnimation { rewardToast = nil }
+                    }
                 }
             }
         }

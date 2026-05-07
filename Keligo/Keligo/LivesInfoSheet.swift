@@ -126,8 +126,8 @@ struct LivesInfoSheet: View {
                         enabled: jetons.canAfford(lives.currentRefillCost)
                     ) {
                         if lives.buyOne() {
-                            rewardToast = "❤️ +1 Can!"
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { onDismiss() }
+                            rewardToast = "❤️ +1 Can kazandın!"
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { rewardToast = nil }
                         }
                     }
 
@@ -141,7 +141,7 @@ struct LivesInfoSheet: View {
                     ) {
                         if lives.buyAll() {
                             rewardToast = "❤️❤️❤️❤️❤️ Tam dolum!"
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { onDismiss() }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { rewardToast = nil }
                         }
                     }
                 }
@@ -184,15 +184,25 @@ struct LivesInfoSheet: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 34)
 
-            // Toast overlay
+            // Toast overlay — ekran ortasında büyük göster
             if let toast = rewardToast {
-                Text(toast)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 18).padding(.vertical, 12)
-                    .background(Color.green, in: Capsule())
-                    .frame(maxWidth: .infinity)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                VStack {
+                    Spacer()
+                    Text(toast)
+                        .font(.title3.weight(.black))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 28).padding(.vertical, 18)
+                        .background(
+                            LinearGradient(colors: [.green, Color(red: 0.1, green: 0.7, blue: 0.4)],
+                                           startPoint: .leading, endPoint: .trailing),
+                            in: RoundedRectangle(cornerRadius: 20)
+                        )
+                        .shadow(color: .green.opacity(0.5), radius: 20, y: 6)
+                        .padding(.horizontal, 40)
+                    Spacer()
+                }
+                .transition(.scale(scale: 0.8).combined(with: .opacity))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -214,7 +224,7 @@ struct LivesInfoSheet: View {
                     rewardedShowing = false
                     if ok {
                         rewardToast = "❤️ +1 Can kazandın!"
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { onDismiss() }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { rewardToast = nil }
                     }
                 }
             }
