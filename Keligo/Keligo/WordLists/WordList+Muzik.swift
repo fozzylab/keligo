@@ -108,5 +108,9 @@ extension WordList {
         "VİYOLA":       "Kemandan biraz büyük, daha kalın tonda yay çalgısı.",
         "ZURNA":        "Düğünlerde davulla birlikte çalınan ince dilli nefes çalgısı.",
         "ELEKTRO GİTAR":"Manyetik pikap yardımıyla sesi yükseltilen, rock müziğin simgesi.",
+        "BAS":          "Müziğin en derin ve kalın sesi; hem enstrüman hem de ses türü olarak kullanılır.",
+        "SAHNE":        "Sanatçıların müzik, dans veya tiyatro sergilediği performans platformu.",
+        "SOLO":         "Tek bir icracının, diğerlerinden bağımsız olarak tek başına çaldığı ya da söylediği bölüm.",
+        "SOLİST":       "Bir eseri veya bölümü tek başına icra eden, öne çıkan sanatçı.",
     ]
 }
