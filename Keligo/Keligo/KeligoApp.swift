@@ -114,7 +114,7 @@ struct KeligoApp: App {
             ATTrackingManager.requestTrackingAuthorization { _ in
                 DispatchQueue.main.async {
                     #if DEBUG
-                    MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ["6952f6e51be7767bd785e44aea6c0bf7"]
+                    MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ["ec83e2b236748a7044a22abd065b23e7"]
                     #endif
                     MobileAds.shared.start { _ in }
                 }
