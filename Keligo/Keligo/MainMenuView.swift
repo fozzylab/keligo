@@ -243,7 +243,7 @@ struct MainMenuView: View {
             )
             .environmentObject(settings)
             .environmentObject(jetons)
-            .presentationDetents([.medium])
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
         .alert("Reklam izle, +\(JetonManager.rewardJetonAdBonus) jeton kazan", isPresented: $showBonusAdConfirm) {

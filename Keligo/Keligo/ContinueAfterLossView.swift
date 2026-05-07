@@ -114,12 +114,19 @@ struct ContinueAfterLossView: View {
             }
             .padding(.vertical, 30)
             .background(
-                Color(white: 0.10).opacity(0.97),
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.12, green: 0.08, blue: 0.28),
+                        Color(red: 0.08, green: 0.06, blue: 0.20)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
                 in: RoundedRectangle(cornerRadius: 28, style: .continuous)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .strokeBorder(theme.accent.opacity(0.30), lineWidth: 1)
+                    .strokeBorder(theme.accent.opacity(0.35), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
             .padding(.horizontal, 24)

@@ -122,16 +122,20 @@ struct OutOfLivesSheet: View {
     private var header: some View {
         VStack(spacing: 10) {
             HStack(spacing: 6) {
-                ForEach(0..<LivesManager.maxLives, id: \.self) { _ in
-                    Image(systemName: "heart")
+                ForEach(0..<LivesManager.maxLives, id: \.self) { i in
+                    Image(systemName: i < lives.current ? "heart.fill" : "heart")
                         .font(.title2)
-                        .foregroundColor(t.secondaryText.opacity(0.4))
+                        .foregroundColor(i < lives.current ? .red : t.secondaryText.opacity(0.4))
+                        .animation(.spring(response: 0.4), value: lives.current)
                 }
             }
-            Text("Canların Bitti!")
+            Text(lives.current > 0 ? "\(lives.current) Canın Var!" : "Canların Bitti!")
                 .font(.title.weight(.black))
-                .foregroundColor(t.primaryText)
-            Text("Devam etmek için bekle, reklam izle ya da jeton harca.")
+                .foregroundColor(lives.current > 0 ? .red : t.primaryText)
+                .animation(.spring(response: 0.3), value: lives.current)
+            Text(lives.current > 0
+                 ? "Oyuna dönebilirsin."
+                 : "Devam etmek için bekle, reklam izle ya da jeton harca.")
                 .font(.subheadline)
                 .foregroundColor(t.secondaryText)
                 .multilineTextAlignment(.center)

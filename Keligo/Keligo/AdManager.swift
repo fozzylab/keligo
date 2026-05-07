@@ -130,6 +130,12 @@ final class AdManager: ObservableObject {
             log.info("📺 App Open Ad — reklamlar kaldırılmış, atlanıyor")
             return
         }
+        // Rewarded ad izlendikten hemen sonra App Open Ad gösterme (çift reklam önlemi)
+        if let lastRewarded = UserDefaults.standard.object(forKey: kLastRewardedAt) as? Date,
+           Date().timeIntervalSince(lastRewarded) < 60 {
+            log.info("📺 App Open Ad — rewarded yakın zamanda izlendi, atlanıyor")
+            return
+        }
         guard let rootVC = rootViewController else { return }
         guard let ad = appOpenAd else {
             preloadAppOpenAd()
