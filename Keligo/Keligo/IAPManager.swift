@@ -75,6 +75,14 @@ class IAPManager: ObservableObject {
     @Published var purchasingProductID: String? = nil
     @Published var isLoadingProducts = false
     @Published var errorMessage: String? = nil
+    /// Ürün bazlı hata/durum mesajları — sadece ilgili satırda gösterilir
+    @Published var productMessages: [String: ProductMessage] = [:]
+
+    struct ProductMessage {
+        enum Kind { case error, pending }
+        let kind: Kind
+        let text: String
+    }
 
     var isAdsRemoved: Bool {
         purchasedProductIDs.contains(IAPProduct.removeAds.rawValue)
@@ -154,13 +162,13 @@ class IAPManager: ObservableObject {
     func purchase(_ product: Product) async {
         isPurchasing = true
         purchasingProductID = product.id
-        errorMessage = nil
+        productMessages.removeValue(forKey: product.id)
         do {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
                 guard case .verified(let transaction) = verification else {
-                    errorMessage = "İşlem doğrulanamadı."
+                    productMessages[product.id] = ProductMessage(kind: .error, text: "İşlem doğrulanamadı.")
                     break
                 }
                 await handleTransaction(transaction)
@@ -169,12 +177,15 @@ class IAPManager: ObservableObject {
             case .userCancelled:
                 break
             case .pending:
-                errorMessage = "Satın alma beklemede."
+                productMessages[product.id] = ProductMessage(
+                    kind: .pending,
+                    text: "İşlem onay bekliyor, tamamlandığında hesabınıza yansıyacak."
+                )
             @unknown default:
                 break
             }
         } catch {
-            errorMessage = "Satın alma başarısız: \(error.localizedDescription)"
+            productMessages[product.id] = ProductMessage(kind: .error, text: "Satın alma başarısız: \(error.localizedDescription)")
         }
         isPurchasing = false
         purchasingProductID = nil
@@ -230,6 +241,8 @@ class IAPManager: ObservableObject {
 
     private func handleTransaction(_ transaction: StoreKit.Transaction, awardJetons: Bool = true) async {
         purchasedProductIDs.insert(transaction.productID)
+        // Clear any pending/error message for this product now that it's confirmed
+        productMessages.removeValue(forKey: transaction.productID)
         // Award jetons only on first purchase, not on every launch restore
         if awardJetons, let product = IAPProduct(rawValue: transaction.productID), product.jetonAmount > 0 {
             JetonManager.shared.earn(product.jetonAmount)
@@ -402,13 +415,6 @@ struct IAPStoreView: View {
                             .padding(.horizontal)
                         }
 
-                        if let err = iap.errorMessage, !iap.products.isEmpty {
-                            Text(err)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.horizontal)
-                        }
-
                         // MARK: Kelime Paketleri bölümü
                         VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 8) {
@@ -430,50 +436,66 @@ struct IAPStoreView: View {
                             ForEach(packs, id: \.id) { pack in
                                 let isUnlocked = iap.isPackUnlocked(pack.id)
                                 let product = iap.products.first(where: { $0.id == pack.productId })
-                                HStack(spacing: 14) {
-                                    Text(pack.icon)
-                                        .font(.system(size: 30))
-                                        .frame(width: 52, height: 52)
-                                        .background(t.surface, in: RoundedRectangle(cornerRadius: 12))
-                                    VStack(alignment: .leading, spacing: 3) {
-                                        HStack(spacing: 6) {
-                                            Text(pack.name)
-                                                .font(.subheadline.weight(.semibold))
-                                                .foregroundColor(t.primaryText)
-                                            if isUnlocked {
-                                                Image(systemName: "checkmark.seal.fill")
-                                                    .font(.caption)
-                                                    .foregroundColor(t.correct)
+                                let packMsg = product.flatMap { iap.productMessages[$0.id] }
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 14) {
+                                        Text(pack.icon)
+                                            .font(.system(size: 30))
+                                            .frame(width: 52, height: 52)
+                                            .background(t.surface, in: RoundedRectangle(cornerRadius: 12))
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            HStack(spacing: 6) {
+                                                Text(pack.name)
+                                                    .font(.subheadline.weight(.semibold))
+                                                    .foregroundColor(t.primaryText)
+                                                if isUnlocked {
+                                                    Image(systemName: "checkmark.seal.fill")
+                                                        .font(.caption)
+                                                        .foregroundColor(t.correct)
+                                                }
                                             }
+                                            Text(pack.desc)
+                                                .font(.caption)
+                                                .foregroundColor(t.secondaryText)
                                         }
-                                        Text(pack.desc)
-                                            .font(.caption)
-                                            .foregroundColor(t.secondaryText)
-                                    }
-                                    Spacer()
-                                    if isUnlocked {
-                                        Image(systemName: "lock.open.fill")
-                                            .foregroundColor(t.correct)
-                                    } else if let product {
-                                        if iap.purchasingProductID == product.id {
-                                            ProgressView().scaleEffect(0.85).frame(width: 60)
+                                        Spacer()
+                                        if isUnlocked {
+                                            Image(systemName: "lock.open.fill")
+                                                .foregroundColor(t.correct)
+                                        } else if let product {
+                                            if iap.purchasingProductID == product.id {
+                                                ProgressView().scaleEffect(0.85).frame(width: 60)
+                                            } else {
+                                                Button {
+                                                    Task { await iap.purchase(product) }
+                                                } label: {
+                                                    Text(product.displayPrice)
+                                                        .font(.subheadline.weight(.bold))
+                                                        .padding(.horizontal, 14).padding(.vertical, 8)
+                                                        .background(t.accentGradient, in: Capsule())
+                                                        .foregroundColor(.white)
+                                                }
+                                                .buttonStyle(ScaleButtonStyle())
+                                                .disabled(iap.isPurchasing)
+                                            }
                                         } else {
-                                            Button {
-                                                Task { await iap.purchase(product) }
-                                            } label: {
-                                                Text(product.displayPrice)
-                                                    .font(.subheadline.weight(.bold))
-                                                    .padding(.horizontal, 14).padding(.vertical, 8)
-                                                    .background(t.accentGradient, in: Capsule())
-                                                    .foregroundColor(.white)
-                                            }
-                                            .buttonStyle(ScaleButtonStyle())
-                                            .disabled(iap.isPurchasing)
+                                            ProgressView().scaleEffect(0.8)
                                         }
-                                    } else {
-                                        ProgressView().scaleEffect(0.8)
+                                    }
+                                    if let packMsg {
+                                        HStack(spacing: 5) {
+                                            Image(systemName: packMsg.kind == .error ? "exclamationmark.circle.fill" : "clock.fill")
+                                                .font(.caption2)
+                                            Text(packMsg.text)
+                                                .font(.caption)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
+                                        .foregroundColor(packMsg.kind == .error ? .red : t.secondaryText)
+                                        .padding(.horizontal, 4)
+                                        .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .topLeading)))
                                     }
                                 }
+                                .animation(.easeInOut(duration: 0.2), value: packMsg?.text)
                                 .padding(14)
                                 .background(t.surface, in: RoundedRectangle(cornerRadius: 16))
                                 .overlay(RoundedRectangle(cornerRadius: 16).stroke(isUnlocked ? t.correct.opacity(0.35) : Color.clear, lineWidth: 1))
@@ -571,51 +593,69 @@ struct IAPProductRow: View {
     private var isThisProductBuying: Bool { iap.purchasingProductID == product.id }
 
     var body: some View {
-        HStack(spacing: 14) {
-            Text(emoji)
-                .font(.title2)
-                .frame(width: 48, height: 48)
-                .background(theme.surface, in: RoundedRectangle(cornerRadius: 12))
+        let msg = iap.productMessages[product.id]
 
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 5) {
-                    Text(iapProduct?.displayName ?? product.displayName)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(theme.primaryText)
-                    if owned {
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.caption)
-                            .foregroundColor(theme.correct)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 14) {
+                Text(emoji)
+                    .font(.title2)
+                    .frame(width: 48, height: 48)
+                    .background(theme.surface, in: RoundedRectangle(cornerRadius: 12))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 5) {
+                        Text(iapProduct?.displayName ?? product.displayName)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(theme.primaryText)
+                        if owned {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.caption)
+                                .foregroundColor(theme.correct)
+                        }
+                    }
+                    let amount = iapProduct?.jetonAmount ?? 0
+                    if amount > 0 {
+                        Text("\(amount) jeton hesabına eklenir")
+                            .font(.caption).foregroundColor(theme.secondaryText)
                     }
                 }
-                let amount = iapProduct?.jetonAmount ?? 0
-                if amount > 0 {
-                    Text("\(amount) jeton hesabına eklenir")
-                        .font(.caption).foregroundColor(theme.secondaryText)
+
+                Spacer()
+
+                if owned {
+                    Image(systemName: "lock.open.fill")
+                        .foregroundColor(theme.correct)
+                } else if isThisProductBuying {
+                    ProgressView().scaleEffect(0.85).frame(width: 60)
+                } else {
+                    Button {
+                        Task { await iap.purchase(product) }
+                    } label: {
+                        Text(product.displayPrice)
+                            .font(.subheadline.weight(.bold))
+                            .padding(.horizontal, 16).padding(.vertical, 8)
+                            .background(theme.accentGradient, in: Capsule())
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .disabled(iap.isPurchasing)
                 }
             }
 
-            Spacer()
-
-            if owned {
-                Image(systemName: "lock.open.fill")
-                    .foregroundColor(theme.correct)
-            } else if isThisProductBuying {
-                ProgressView().scaleEffect(0.85).frame(width: 60)
-            } else {
-                Button {
-                    Task { await iap.purchase(product) }
-                } label: {
-                    Text(product.displayPrice)
-                        .font(.subheadline.weight(.bold))
-                        .padding(.horizontal, 16).padding(.vertical, 8)
-                        .background(theme.accentGradient, in: Capsule())
-                        .foregroundColor(.white)
+            if let msg {
+                HStack(spacing: 5) {
+                    Image(systemName: msg.kind == .error ? "exclamationmark.circle.fill" : "clock.fill")
+                        .font(.caption2)
+                    Text(msg.text)
+                        .font(.caption)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .buttonStyle(ScaleButtonStyle())
-                .disabled(iap.isPurchasing)
+                .foregroundColor(msg.kind == .error ? .red : theme.secondaryText)
+                .padding(.horizontal, 4)
+                .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .topLeading)))
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: msg?.text)
         .padding(14)
         .background(theme.surface, in: RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(owned ? theme.correct.opacity(0.35) : Color.clear, lineWidth: 1))
