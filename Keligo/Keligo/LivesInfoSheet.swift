@@ -13,6 +13,7 @@ struct LivesInfoSheet: View {
     @State private var rewardedShowing = false
     @State private var showAdConfirm = false
     @State private var rewardToast: String? = nil
+    @State private var showIAPStore = false
 
     private let ad = AdManager.shared
     var t: AppTheme { settings.theme }
@@ -153,22 +154,20 @@ struct LivesInfoSheet: View {
 
             // Alt butonlar
             VStack(spacing: 10) {
-                if !lives.isFull && !lives.hasInfinite {
-                    // Jeton ile doldur (OutOfLivesSheet'e yönlendir)
-                    Button {
-                        onDismiss()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onRefill() }
-                    } label: {
+                if !lives.hasInfinite {
+                    // Sınırsız can için mağazaya yönlendir
+                    Button { showIAPStore = true } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "bolt.heart.fill")
-                            Text("Daha Fazla Seçenek")
+                            Image(systemName: "infinity.circle.fill")
+                                .foregroundColor(t.accent)
+                            Text("Sınırsız Can Al")
+                                .foregroundColor(t.accent)
                         }
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(t.secondaryText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(t.cardFill, in: RoundedRectangle(cornerRadius: 14))
-                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(t.cardStroke, lineWidth: 1))
+                        .background(t.accent.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(t.accent.opacity(0.30), lineWidth: 1))
                     }
                     .buttonStyle(ScaleButtonStyle())
                 }
@@ -231,6 +230,11 @@ struct LivesInfoSheet: View {
             Button("İptal", role: .cancel) {}
         } message: {
             Text("Kısa bir reklam sonrası 1 canın yenilenir.")
+        }
+        .sheet(isPresented: $showIAPStore) {
+            IAPStoreView()
+                .environmentObject(settings)
+                .environmentObject(jetons)
         }
     }
 

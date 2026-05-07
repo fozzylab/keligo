@@ -83,8 +83,8 @@ struct OutOfLivesSheet: View {
                     rewardedShowing = false
                     if ok {
                         withAnimation(.spring()) { rewardToast = "❤️ +1 Can kazandın!" }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            withAnimation { rewardToast = nil }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            withAnimation { dismiss() }
                         }
                     }
                 }

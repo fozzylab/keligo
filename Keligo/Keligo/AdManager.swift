@@ -37,14 +37,15 @@ final class AdManager: ObservableObject {
     static let capStreakSave   = 1
 
     enum RewardKind: String {
-        case letter, life, jetonBonus, streakSave
+        case letter, life, jetonBonus, streakSave, continueGame
 
         var dailyCap: Int {
             switch self {
-            case .letter:     return AdManager.capLetterReveal
-            case .life:       return AdManager.capLifeRefill
-            case .jetonBonus: return AdManager.capJetonBonus
-            case .streakSave: return AdManager.capStreakSave
+            case .letter:       return AdManager.capLetterReveal
+            case .life:         return AdManager.capLifeRefill
+            case .jetonBonus:   return AdManager.capJetonBonus
+            case .streakSave:   return AdManager.capStreakSave
+            case .continueGame: return 999  // pratikte sınırsız
             }
         }
     }
