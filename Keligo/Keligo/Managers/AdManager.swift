@@ -80,12 +80,16 @@ final class AdManager: ObservableObject {
     /// MobileAds.shared.start tamamlandıktan hemen sonra çağır.
     /// İlk açılışta App Open Ad'ı yükler ve hazır olur olmaz gösterir.
     func startPreloadingAndShowOpenAd() {
+        // Rewarded her zaman preload edilir — "Remove Ads" satın alımı sadece
+        // zorla gösterilen reklamları (interstitial, app open) kaldırır;
+        // kullanıcının kendi isteğiyle izlediği rewarded reklamları kaldırmaz.
+        preloadRewarded()
+
         guard !IAPManager.shared.isAdsRemoved else {
-            log.info("📺 Preload atlandı — reklamlar kaldırılmış")
+            log.info("📺 Interstitial/AppOpen preload atlandı — reklamlar kaldırılmış")
             return
         }
         preloadInterstitial()
-        preloadRewarded()
         Task {
             await loadAndPresentAppOpenAd()
         }
