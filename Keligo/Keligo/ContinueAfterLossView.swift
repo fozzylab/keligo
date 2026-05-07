@@ -113,7 +113,15 @@ struct ContinueAfterLossView: View {
                 .padding(.horizontal, 20)
             }
             .padding(.vertical, 30)
-            .modifier(GlassSurface(cornerRadius: 28, intensity: 0.8, borderGlow: theme.accent, innerGlow: true))
+            .background(
+                Color(white: 0.10).opacity(0.97),
+                in: RoundedRectangle(cornerRadius: 28, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .strokeBorder(theme.accent.opacity(0.30), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
             .padding(.horizontal, 24)
             .scaleEffect(appear ? 1.0 : 0.85)
             .opacity(appear ? 1.0 : 0.0)

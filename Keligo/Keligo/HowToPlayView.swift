@@ -73,11 +73,11 @@ struct HowToPlayView: View {
                             items: [
                                 "Kategori her zaman görünür — ipucu olarak kullan.",
                                 "Harf sayısı çizgilerle gösterilir.",
-                                "İpucu: kelimeyi anlatan kısa cümle (50 🪙)",
-                                "Sesli Harf Al: tüm sesli harfleri açar (200 🪙)",
-                                "Harf Al: rastgele doğru harf (100 🪙)",
-                                "Geri Al: son tahmini geri al (75 🪙)",
-                                "Pas: kelimeyi atla (50 🪙)"
+                                "İpucu: kelimeyi anlatan kısa cümle (50 🟡)",
+                                "Sesli Harf Al: tüm sesli harfleri açar (200 🟡)",
+                                "Harf Al: rastgele doğru harf (100 🟡)",
+                                "Geri Al: son tahmini geri al (75 🟡)",
+                                "Pas: kelimeyi atla (50 🟡)"
                             ]
                         )
 
@@ -116,7 +116,7 @@ struct HowToPlayView: View {
                                 "Günlük Kelime: +25 Jeton bonus",
                                 "Az hatayla bitirince: bonus XP",
                                 "Her 5 galibiyet serisi: +50 Jeton",
-                                "Streak milestones: 3→30, 7→100, 14→250, 30→600, 50→1000, 100→2000 🪙",
+                                "Streak milestones: 3→30, 7→100, 14→250, 30→600, 50→1000, 100→2000 🟡",
                                 "Kaybetsen bile: +5 XP"
                             ]
                         )
@@ -128,7 +128,7 @@ struct HowToPlayView: View {
                             items: [
                                 "Her kazandığında serisi artar.",
                                 "Kaybedersen seri sıfırlanır.",
-                                "Seri Koruma (75 🪙) ile günde 1 kez serini kurtar!",
+                                "Seri Koruma (75 🟡) ile günde 1 kez serini kurtar!",
                                 "Reklamla seri kurtarma — ücretsiz alternatif (1/gün).",
                                 "Günlük login serisi: 1-7. günler arası artan jeton ödülü."
                             ]
@@ -144,7 +144,7 @@ struct HowToPlayView: View {
                                 "📖 Bölüm Modu — sıralı bölümler, yıldız kazan",
                                 "⚡️ Hız Modu — 30/60/90 sn'de kaç kelime?",
                                 "🧒 Çocuk Modu — kısa ve kolay kelimeler",
-                                "📆 Haftalık Meydan Okuma — 7 gün, 400 🪙 ödül",
+                                "📆 Haftalık Meydan Okuma — 7 gün, 400 🟡 ödül",
                                 "👥 Arkadaşa Sor — kod paylaş, tahmin ettir"
                             ]
                         )

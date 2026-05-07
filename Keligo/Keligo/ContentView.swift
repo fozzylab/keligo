@@ -136,7 +136,7 @@ private struct DailyRewardToast: View {
 
                 // Reward amount
                 HStack(spacing: 6) {
-                    Text("+\(jetons) 🪙")
+                    Text("+\(jetons) 🟡")
                         .font(.title2.weight(.black))
                         .foregroundColor(.yellow)
                     Text("jeton kazandın!")
@@ -724,7 +724,7 @@ struct GameBoardView<Overlay: View>: View {
 
     // MARK: - Word hint card
 
-    /// Kelime ipucu — 50 🪙 ile açılır, açıldıktan sonra gösterilir.
+    /// Kelime ipucu — 50 🟡 ile açılır, açıldıktan sonra gösterilir.
     @ViewBuilder
     private var wordHintCard: some View {
         if vm.wordHintRevealed, let hint = vm.wordHintText {
@@ -1213,7 +1213,7 @@ struct InfiniteGameOverView: View {
         Image(systemName: icon)
             .font(.headline)
             .padding(14)
-            .background(settings.theme.cardFill)
+            .background(Color.white.opacity(0.15))
             .foregroundColor(tint)
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
@@ -1518,7 +1518,7 @@ struct InsufficientJetonSheet: View {
                                 .foregroundColor(t.secondaryText)
                         }
                         Spacer()
-                        Text("+🪙")
+                        Text("+🟡")
                             .font(.caption.weight(.black))
                             .foregroundColor(.purple)
                             .padding(.horizontal, 10).padding(.vertical, 5)

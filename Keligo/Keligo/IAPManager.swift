@@ -401,10 +401,10 @@ struct IAPStoreView: View {
                                 let jetons = featureProducts.filter { jetonIds.contains($0.id) }
                                 let premiumFeatures = featureProducts.filter { !jetonIds.contains($0.id) }
 
-                                // MARK: 🪙 Jetons
+                                // MARK: 🟡 Jetons
                                 VStack(alignment: .leading, spacing: 10) {
                                     HStack(spacing: 8) {
-                                        Text("🪙")
+                                        Text("🟡")
                                             .font(.title3)
                                         Text("Jetonlar")
                                             .font(.headline.weight(.bold))
@@ -604,7 +604,7 @@ struct IAPProductRow: View {
         case .sporYildizlariPack:  return "🏅"
         case .muzikProPack:        return "🎼"
         case .premiumBundle:       return "👑"
-        case nil:                  return "🪙"
+        case nil:                  return "🟡"
         }
     }
 

@@ -1716,7 +1716,7 @@ enum WordList {
     }
 
     // MARK: - Hint Dictionary
-    // Kelime → kısa ipucu cümlesi (50 🪙 ile açılır)
+    // Kelime → kısa ipucu cümlesi (50 🟡 ile açılır)
 
     static func hint(for word: String) -> String? {
         hints[word.uppercased()]

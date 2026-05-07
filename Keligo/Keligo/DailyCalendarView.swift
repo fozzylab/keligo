@@ -57,7 +57,7 @@ struct DailyCalendarView: View {
                     }
                 }
                 .alert("Geçmiş Gün Oyna", isPresented: $showJetonAlert, presenting: pendingDate) { date in
-                    Button("Oyna (\(DailyWordManager.costPastDay) 🪙)") {
+                    Button("Oyna (\(DailyWordManager.costPastDay) 🟡)") {
                         if jetons.spend(DailyWordManager.costPastDay) {
                             withAnimation(.easeInOut) { showGameForDate = date }
                         }
@@ -68,7 +68,7 @@ struct DailyCalendarView: View {
                     Text("\(dateLabel(date)) tarihini oynamak \(DailyWordManager.costPastDay) jeton harcar.\nBakiye: \(jetons.balance) jeton")
                 }
                 .alert("Tekrar Dene!", isPresented: $showRetryLossAlert, presenting: pendingDate) { date in
-                    Button("Tekrar Oyna (\(DailyWordManager.costPastDay) 🪙)") {
+                    Button("Tekrar Oyna (\(DailyWordManager.costPastDay) 🟡)") {
                         if jetons.spend(DailyWordManager.costPastDay) {
                             withAnimation(.easeInOut) { showGameForDate = date }
                         }
@@ -339,7 +339,7 @@ struct DailyCalendarView: View {
             legendItem("✅", "Kazandın")
             legendItem("❌", "Kaybettin")
             legendItem("🔒", "Kilitli")
-            legendItem("🪙", "Ücretli")
+            legendItem("🟡", "Ücretli")
         }
         .padding(.horizontal, 24)
         .padding(.top, 8)
@@ -450,7 +450,7 @@ private struct DayCell: View {
                     Text(r.won ? "✅" : "❌")
                         .font(.system(size: 12))
                 } else if daily.isPast(date) {
-                    Text("\(DailyWordManager.costPastDay)🪙")
+                    Text("\(DailyWordManager.costPastDay)🟡")
                         .font(.system(size: 8, weight: .medium))
                         .foregroundColor(theme.secondaryText)
                 } else {

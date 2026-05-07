@@ -914,7 +914,7 @@ struct DavetView: View {
                                     .foregroundColor(t.secondaryText)
                             }
                             Spacer()
-                            Text("+50 🪙")
+                            Text("+50 🟡")
                                 .font(.subheadline.weight(.bold))
                                 .foregroundColor(.yellow)
                                 .opacity(canEarnToday ? 1 : 0.4)

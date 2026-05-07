@@ -34,7 +34,7 @@ final class AppPromptManager: ObservableObject {
             case .allChaptersDone: return "Tüm bölümleri bitirdin! 🎉"
             case .heavyHintUser:   return "İpucu kullanırken jetonun mu eridi?"
             case .lowOnLives:      return "Son Canın Kaldı! ❤️"
-            case .lowOnJetons:     return "Jetonların Azalıyor 🪙"
+            case .lowOnJetons:     return "Jetonların Azalıyor 🟡"
             case .streakAtRisk:    return "Serin Tehlikede! 🔥"
             case .firstPurchaseOffer: return "Yeni Oyuncu Özel! 🎁"
             }

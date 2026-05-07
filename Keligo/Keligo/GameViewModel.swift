@@ -99,7 +99,7 @@ class GameViewModel: ObservableObject {
 
     // MARK: - Jeton purchases
 
-    /// Kelime ipucunu açar (50 🪙). Kelimede ipucu yoksa false döner.
+    /// Kelime ipucunu açar (50 🟡). Kelimede ipucu yoksa false döner.
     @discardableResult
     func buyHint() -> Bool {
         guard wordHintText != nil, !wordHintRevealed, gameState == .playing else { return false }

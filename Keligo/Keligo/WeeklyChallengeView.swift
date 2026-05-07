@@ -171,14 +171,14 @@ struct WeeklyChallengeView: View {
                     Text("Haftalık Ödül")
                         .font(.headline.weight(.bold))
                         .foregroundColor(complete ? .white : t.primaryText)
-                    Text("Tüm 7 günü tamamla, \(WeeklyChallengeManager.bonusJetons) 🪙 kazan!")
+                    Text("Tüm 7 günü tamamla, \(WeeklyChallengeManager.bonusJetons) 🟡 kazan!")
                         .font(.caption)
                         .foregroundColor(complete ? .white.opacity(0.82) : t.secondaryText)
                 }
 
                 Spacer()
 
-                Text("\(WeeklyChallengeManager.bonusJetons) 🪙")
+                Text("\(WeeklyChallengeManager.bonusJetons) 🟡")
                     .font(.subheadline.weight(.black))
                     .foregroundColor(complete ? .white : t.secondaryText)
             }

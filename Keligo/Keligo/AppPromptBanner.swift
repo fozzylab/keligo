@@ -63,7 +63,7 @@ struct AppPromptBanner: View {
         case .allChaptersDone:    return "🏆"
         case .heavyHintUser:      return "💎"
         case .lowOnLives:         return "❤️"
-        case .lowOnJetons:        return "🪙"
+        case .lowOnJetons:        return "🟡"
         case .streakAtRisk:       return "🔥"
         case .firstPurchaseOffer: return "🎁"
         }
