@@ -246,6 +246,8 @@ struct GameBoardView<Overlay: View>: View {
 
     // 2026: Word Lore sheet
     @State private var showWordLore = false
+    @State private var loreWord: String = ""
+    @State private var loreCategory: String = ""
 
     // "Son şansın!" — oyun başına 1 kez göster
     @State private var showLastChanceBanner = false
@@ -375,7 +377,7 @@ struct GameBoardView<Overlay: View>: View {
                 .environmentObject(settings)
         }
         .sheet(isPresented: $showWordLore) {
-            WordLoreSheet(word: vm.currentWord, category: vm.category, theme: theme)
+            WordLoreSheet(word: loreWord, category: loreCategory, theme: theme)
         }
         .sheet(isPresented: $showLivesInfo) {
             LivesInfoSheet(
@@ -612,6 +614,9 @@ struct GameBoardView<Overlay: View>: View {
             CinematicHaptics.shared.play(state == .won ? .win : .loss)
         }
         if state == .won {
+            // Kelimeyi şimdi yakala — 1.2s sonra vm.currentWord değişmiş olabilir
+            loreWord = vm.currentWord
+            loreCategory = vm.category
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { showWordLore = true }
         }
     }

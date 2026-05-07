@@ -767,13 +767,13 @@ struct AchievementToast: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Başarım Açıldı!")
                     .font(.caption.weight(.black))
-                    .foregroundColor(.yellow)
+                    .foregroundColor(theme.isDark ? .yellow : Color(red: 0.75, green: 0.55, blue: 0.00))
                 Text(achievement.title)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.primaryText)
                 Text(achievement.description)
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(theme.secondaryText)
             }
             Spacer()
         }

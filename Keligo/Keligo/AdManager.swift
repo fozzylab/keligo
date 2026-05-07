@@ -78,6 +78,10 @@ final class AdManager: ObservableObject {
     /// MobileAds.shared.start tamamlandıktan hemen sonra çağır.
     /// İlk açılışta App Open Ad'ı yükler ve hazır olur olmaz gösterir.
     func startPreloadingAndShowOpenAd() {
+        guard !IAPManager.shared.isAdsRemoved else {
+            log.info("📺 Preload atlandı — reklamlar kaldırılmış")
+            return
+        }
         preloadInterstitial()
         preloadRewarded()
         Task {
