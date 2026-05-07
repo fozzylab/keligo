@@ -61,6 +61,8 @@ struct KeligoApp: App {
                 .onChange(of: scenePhase) { _, newPhase in
                     if newPhase == .active {
                         LivesManager.shared.recomputeRegen()
+                        // App Open Ad — her ön plana gelişte göster (reklam yoksa atlar)
+                        Task { await AdManager.shared.presentAppOpenAd() }
                     }
                 }
                 .onChange(of: adManager.errorMessage) { _, newError in

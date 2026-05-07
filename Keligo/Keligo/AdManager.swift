@@ -10,8 +10,18 @@ final class AdManager: ObservableObject {
     static let shared = AdManager()
 
     // MARK: - Ad Unit IDs
-    private let interstitialAdUnitID = "ca-app-pub-2301774166987825/6849458927"
-    private let rewardedAdUnitID     = "ca-app-pub-2301774166987825/8162540596"
+    // ⚠️ TEST IDs — Google demo birimleri (review için)
+    // Yayın öncesi aşağıdaki PRODUCTION satırlarını aktif et, TEST satırlarını comment'e al.
+    //
+    // PRODUCTION:
+    // private let interstitialAdUnitID = "ca-app-pub-2301774166987825/6849458927"
+    // private let rewardedAdUnitID     = "ca-app-pub-2301774166987825/8162540596"
+    // private let appOpenAdUnitID      = "YOUR_APP_OPEN_AD_UNIT_ID" // AdMob'dan oluştur
+    //
+    // TEST:
+    private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
+    private let rewardedAdUnitID     = "ca-app-pub-3940256099942544/1712485313"
+    private let appOpenAdUnitID      = "ca-app-pub-3940256099942544/5575463023"
 
     @Published var errorMessage: String?
 
@@ -53,10 +63,12 @@ final class AdManager: ObservableObject {
     // MARK: - Loaded ads
     private var interstitialAd: InterstitialAd?
     private var rewardedAd: RewardedAd?
+    private var appOpenAd: AppOpenAd?
 
     private init() {
         preloadInterstitial()
         preloadRewarded()
+        preloadAppOpenAd()
     }
 
     // MARK: - Preloading
@@ -85,6 +97,37 @@ final class AdManager: ObservableObject {
                 log.error("📺 Rewarded preload failed: \(error.localizedDescription)")
             }
         }
+    }
+
+    private func preloadAppOpenAd() {
+        Task {
+            do {
+                appOpenAd = try await AppOpenAd.load(
+                    with: appOpenAdUnitID, request: Request()
+                )
+                log.info("📺 App Open Ad preloaded")
+            } catch {
+                log.error("📺 App Open Ad preload failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Uygulama açılışında veya ön plana gelince çağır.
+    /// Reklamlar satın alınmışsa veya ad henüz hazır değilse sessizce geçer.
+    func presentAppOpenAd() async {
+        guard !IAPManager.shared.isAdsRemoved else {
+            log.info("📺 App Open Ad — reklamlar kaldırılmış, atlanıyor")
+            return
+        }
+        guard let rootVC = rootViewController else { return }
+        guard let ad = appOpenAd else {
+            preloadAppOpenAd()
+            return
+        }
+        appOpenAd = nil
+        ad.present(from: rootVC)
+        preloadAppOpenAd()
+        log.info("📺 App Open Ad gösterildi")
     }
 
     // MARK: - Public API
