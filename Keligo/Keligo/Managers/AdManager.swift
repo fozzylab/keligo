@@ -69,6 +69,8 @@ final class AdManager: ObservableObject {
     private var rewardDelegate: RewardedAdDelegateHandler?
     /// Rewarded ad şu an gösteriliyorsa true — App Open Ad'ın üste binmesini önler
     private var isShowingRewardedAd = false
+    /// Rewarded ad yükleme işlemi devam ediyorsa true — çift yüklemeyi önler
+    private var isLoadingRewarded = false
 
     private init() {
         // Preload'lar MobileAds başladıktan sonra startPreloading() ile tetiklenir.
@@ -105,6 +107,8 @@ final class AdManager: ObservableObject {
     }
 
     private func preloadRewarded() {
+        guard !isLoadingRewarded else { return }
+        isLoadingRewarded = true
         Task {
             do {
                 rewardedAd = try await RewardedAd.load(
@@ -114,7 +118,21 @@ final class AdManager: ObservableObject {
             } catch {
                 log.error("📺 Rewarded preload failed: \(error.localizedDescription)")
             }
+            isLoadingRewarded = false
         }
+    }
+
+    /// Rewarded ad'ı döndürür: önce preload'u dener, yoksa anında yükler.
+    private func loadRewardedAdIfNeeded() async throws -> RewardedAd {
+        if let ad = rewardedAd {
+            rewardedAd = nil
+            return ad
+        }
+        // Preload henüz hazır değil — hemen yükle (kullanıcıyı beklet)
+        isLoadingRewarded = false  // mevcut preload task'ını geçersiz say
+        log.info("📺 Rewarded on-demand yükleniyor...")
+        let ad = try await RewardedAd.load(with: rewardedAdUnitID, request: Request())
+        return ad
     }
 
     private func preloadAppOpenAd() {
@@ -257,15 +275,18 @@ final class AdManager: ObservableObject {
             return false
         }
 
-        guard let ad = rewardedAd else {
-            log.info("📺 Rewarded henüz yüklenmedi, preload başlatılıyor")
-            errorMessage = "Reklam şu an hazır değil. Lütfen daha sonra deneyin."
+        // Preload hazırsa hemen kullan, değilse on-demand yükle
+        let ad: RewardedAd
+        do {
+            ad = try await loadRewardedAdIfNeeded()
+        } catch {
+            log.error("📺 Rewarded yüklenemedi: \(error.localizedDescription)")
+            errorMessage = "Reklam yüklenemedi. İnternet bağlantınızı kontrol edin."
             preloadRewarded()
             return false
         }
 
         isShowingRewardedAd = true
-        rewardedAd = nil
 
         let result = await withCheckedContinuation { continuation in
             var didResume = false
