@@ -25,6 +25,7 @@ struct MainMenuView: View {
     @StateObject private var iap = IAPManager.shared
     @StateObject private var prompts = AppPromptManager.shared
     @StateObject private var deal = DailyDealManager.shared
+    @StateObject private var piggy = PiggyBankManager.shared
     @State private var showSettings = false
     @State private var showStats = false
     @State private var showWordStats = false
@@ -42,6 +43,10 @@ struct MainMenuView: View {
     @State private var showDavet = false
     @State private var showHowToPlay = false
     @State private var selectedCategory: String? = nil
+
+    // MARK: - Piggy bank state
+    @State private var piggyCollectToast: String? = nil
+    @State private var showPiggyAdConfirm = false
 
     // MARK: - Easter egg state
     @State private var eggTapCount = 0
@@ -134,6 +139,26 @@ struct MainMenuView: View {
                 .zIndex(99)
                 .transition(.move(edge: .top).combined(with: .opacity))
                 .animation(.spring(response: 0.4, dampingFraction: 0.7), value: achievements.pendingToast?.id)
+            }
+
+            // Kumbara toplandı toast'u
+            if let piggyText = piggyCollectToast {
+                VStack {
+                    Spacer()
+                    Text(piggyText)
+                        .font(.subheadline.weight(.black))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 20).padding(.vertical, 12)
+                        .background(
+                            LinearGradient(colors: [.yellow, .orange], startPoint: .leading, endPoint: .trailing),
+                            in: Capsule()
+                        )
+                        .shadow(color: .orange.opacity(0.5), radius: 14, y: 4)
+                        .padding(.bottom, 120)
+                }
+                .zIndex(96)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: piggyCollectToast)
             }
 
             // Easter egg toast
@@ -245,6 +270,26 @@ struct MainMenuView: View {
             .environmentObject(jetons)
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
+        }
+        // Kumbara: reklam izle → birikimi topla
+        .alert("🐷 Kumbaranı Aç!", isPresented: $showPiggyAdConfirm) {
+            Button("Reklamı İzle") {
+                Task {
+                    let ok = await AdManager.shared.presentRewarded(.jetonBonus)
+                    if ok {
+                        let earned = piggy.collect()
+                        withAnimation(.spring()) {
+                            piggyCollectToast = "+\(earned) 🟡 kumbara açıldı!"
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+                            withAnimation { piggyCollectToast = nil }
+                        }
+                    }
+                }
+            }
+            Button("Sonra", role: .cancel) {}
+        } message: {
+            Text("Kısa bir reklam izledikten sonra kumbaranızdaki \(piggy.balance) jeton hesabınıza aktarılır.")
         }
         .alert("Reklam izle, +\(JetonManager.rewardJetonAdBonus) jeton kazan", isPresented: $showBonusAdConfirm) {
             Button("İzle") {
@@ -428,6 +473,49 @@ struct MainMenuView: View {
                     .opacity(jetons.canAfford(JetonManager.costShield) ? 1.0 : 0.45)
                     .padding(.top, 2)
                 }
+            }
+
+            // Kumbara butonu (eğer birikim varsa)
+            if !piggy.isEmpty {
+                Button {
+                    showPiggyAdConfirm = true
+                } label: {
+                    HStack(spacing: 7) {
+                        Text(piggy.isFull ? "🐷" : "🐖")
+                            .font(.system(size: 16))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("\(piggy.balance) jeton birikti!")
+                                .font(.caption.weight(.black))
+                                .foregroundColor(piggy.isFull ? .yellow : t.primaryText)
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    Capsule().fill(Color.white.opacity(0.12))
+                                    Capsule()
+                                        .fill(piggy.isFull
+                                              ? LinearGradient(colors: [.yellow, .orange], startPoint: .leading, endPoint: .trailing)
+                                              : LinearGradient(colors: [t.accent, t.accent.opacity(0.6)], startPoint: .leading, endPoint: .trailing))
+                                        .frame(width: geo.size.width * piggy.progress)
+                                        .animation(.spring(response: 0.5), value: piggy.progress)
+                                }
+                            }
+                            .frame(height: 4)
+                        }
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(t.secondaryText)
+                    }
+                    .padding(.horizontal, 12).padding(.vertical, 7)
+                    .background(
+                        piggy.isFull
+                            ? AnyShapeStyle(Color.yellow.opacity(0.18))
+                            : AnyShapeStyle(t.cardFill),
+                        in: RoundedRectangle(cornerRadius: 14)
+                    )
+                    .overlay(RoundedRectangle(cornerRadius: 14)
+                        .stroke(piggy.isFull ? Color.yellow.opacity(0.50) : t.cardStroke, lineWidth: 1))
+                }
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.top, 4)
             }
 
             // Jeton + Can pill'leri yan yana

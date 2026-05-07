@@ -96,7 +96,7 @@ struct DailyGameView: View {
         _initiallyPlayed = State(initialValue: DailyWordManager.shared.hasPlayed(date))
 
         if Calendar.current.isDateInToday(date) {
-            DailyWordManager.shared.syncWidget(entry: entry)
+            DailyWordManager.shared.syncWidget(entry: entry, streak: stats.currentStreak)
         }
     }
 
@@ -132,6 +132,10 @@ struct DailyGameView: View {
                 .onChange(of: vm.gameState) { _, state in
                     if state != .playing {
                         daily.markPlayed(date: date, won: state == .won, wrongCount: vm.wrongGuesses)
+                        // Widget'ı kazanma durumu ve güncel streak ile güncelle
+                        if daily.isToday(date) {
+                            daily.syncWidget(entry: daily.word(for: date), streak: stats.currentStreak)
+                        }
                         if #available(iOS 16.1, *), daily.isToday(date) {
                             KeligoLiveActivityManager.shared.end(won: state == .won)
                         }

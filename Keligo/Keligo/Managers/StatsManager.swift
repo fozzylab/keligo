@@ -314,6 +314,7 @@ class StatsManager: ObservableObject {
 
         // Jeton rewards
         JetonManager.shared.earn(JetonManager.rewardWin)
+        PiggyBankManager.shared.earnOnWin()   // Kumbara birikimi
         if currentStreak > 0 && currentStreak % 5 == 0 {
             JetonManager.shared.earn(JetonManager.rewardStreak)
         }

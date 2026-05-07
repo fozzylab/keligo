@@ -253,6 +253,9 @@ struct GameBoardView<Overlay: View>: View {
     @State private var showLastChanceBanner = false
     @State private var lastChanceBannerShown = false
 
+    // Undo prompt — yanlış tahminden hemen sonra 3.5 sn görünür
+    @State private var showUndoPrompt = false
+
     var isIPad: Bool { sizeClass == .regular }
 
     // True when 1 wrong guess remaining
@@ -328,6 +331,51 @@ struct GameBoardView<Overlay: View>: View {
             if vm.gameState != .playing && !(vm.gameState == .lost && showContinueAfterLoss && !hasUsedContinue) {
                 gameOverOverlay()
                 if vm.gameState == .won { ConfettiView() }
+            }
+
+            // Undo prompt — yanlış tahminden sonra 3.5s kayan pill
+            if showUndoPrompt && vm.gameState == .playing {
+                VStack {
+                    Spacer()
+                    Button {
+                        withAnimation { showUndoPrompt = false }
+                        _ = vm.undo()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.uturn.backward.circle.fill")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                            Text("Geri Al?")
+                                .font(.subheadline.weight(.black))
+                                .foregroundColor(.white)
+                            HStack(spacing: 3) {
+                                Image(systemName: "circle.fill")
+                                    .font(.system(size: 7)).foregroundColor(.yellow)
+                                Text("\(JetonManager.costUndo)")
+                                    .font(.caption.weight(.bold)).foregroundColor(.yellow)
+                            }
+                            .padding(.horizontal, 7).padding(.vertical, 3)
+                            .background(Color.black.opacity(0.25), in: Capsule())
+                        }
+                        .padding(.horizontal, 18).padding(.vertical, 11)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(red: 0.85, green: 0.20, blue: 0.20),
+                                         Color(red: 0.65, green: 0.10, blue: 0.10)],
+                                startPoint: .leading, endPoint: .trailing
+                            ),
+                            in: Capsule()
+                        )
+                        .shadow(color: .red.opacity(0.45), radius: 12, y: 4)
+                        .disabled(!jetons.canAfford(JetonManager.costUndo))
+                        .opacity(jetons.canAfford(JetonManager.costUndo) ? 1.0 : 0.55)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .padding(.bottom, 230)
+                }
+                .zIndex(45)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(response: 0.35, dampingFraction: 0.7), value: showUndoPrompt)
             }
 
             // Reward toast (rewarded ad sonrası)
@@ -444,6 +492,13 @@ struct GameBoardView<Overlay: View>: View {
             // 2026: Rich cinematic haptics
             if settings.hapticEnabled {
                 CinematicHaptics.shared.play(isLastChance ? .lastChance : .wrong)
+            }
+            // Undo prompt: yanlış tahminden hemen sonra 3.5s göster
+            if vm.gameState == .playing && vm.canUndo {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { showUndoPrompt = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                    withAnimation(.easeOut(duration: 0.4)) { showUndoPrompt = false }
+                }
             }
             // Last-chance pulse
             if isLastChance {

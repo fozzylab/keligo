@@ -72,17 +72,19 @@ class DailyWordManager: ObservableObject {
 
         guard Calendar.current.isDateInToday(date) else { return }
         sharedDefaults.set(true, forKey: "widget_hasPlayedToday")
+        sharedDefaults.set(won,  forKey: "widget_hasWonToday")   // widget için kazanma durumu
         WidgetCenter.shared.reloadTimelines(ofKind: "KeligoDailyWidget")
         WidgetCenter.shared.reloadTimelines(ofKind: "KeligoMediumWidget")
         JetonManager.shared.earn(JetonManager.rewardDaily)
     }
 
-    /// Syncs widget with today's hint (call on DailyGameView appear or after StatsManager updates streak).
+    /// Syncs widget with today's hint + streak + result (call on DailyGameView appear or state change).
     func syncWidget(entry: WordEntry, streak: Int = 0) {
-        sharedDefaults.set(entry.category,                   forKey: "widget_category")
+        sharedDefaults.set(entry.category,                        forKey: "widget_category")
         sharedDefaults.set(entry.word.filter { $0 != " " }.count, forKey: "widget_letterCount")
-        sharedDefaults.set(hasPlayedToday,                   forKey: "widget_hasPlayedToday")
-        sharedDefaults.set(streak,                           forKey: "widget_streak")
+        sharedDefaults.set(hasPlayedToday,                        forKey: "widget_hasPlayedToday")
+        sharedDefaults.set(todayResult?.won ?? false,             forKey: "widget_hasWonToday")
+        sharedDefaults.set(streak,                                forKey: "widget_streak")
         WidgetCenter.shared.reloadTimelines(ofKind: "KeligoDailyWidget")
         WidgetCenter.shared.reloadTimelines(ofKind: "KeligoMediumWidget")
     }
