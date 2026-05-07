@@ -199,13 +199,15 @@ class IAPManager: ObservableObject {
         restoreMessage = nil
         errorMessage = nil
         do {
-            let beforeCount = purchasedProductIDs.count
+            let beforeIDs = purchasedProductIDs
             try await AppStore.sync()
             await refreshPurchases()
-            let afterCount = purchasedProductIDs.count
-            let restored = afterCount - beforeCount
-            if restored > 0 {
-                restoreMessage = "✅ \(restored) satın alma geri yüklendi."
+            let afterIDs = purchasedProductIDs
+            let newlyRestored = afterIDs.subtracting(beforeIDs).count
+            if newlyRestored > 0 {
+                restoreMessage = "✅ \(newlyRestored) satın alma geri yüklendi."
+            } else if !afterIDs.isEmpty {
+                restoreMessage = "✅ Tüm satın almalar zaten yüklü."
             } else {
                 restoreMessage = "ℹ️ Geri yüklenecek satın alma bulunamadı."
             }
