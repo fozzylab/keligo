@@ -77,6 +77,8 @@ struct OutOfLivesSheet: View {
             Button("İzle") {
                 Task {
                     rewardedShowing = true
+                    // Alert animasyonu kapanmadan ad sunmaya çalışmamak için kısa bekleme
+                    try? await Task.sleep(nanoseconds: 400_000_000)
                     let ok = await lives.adRefill()
                     rewardedShowing = false
                     if ok {

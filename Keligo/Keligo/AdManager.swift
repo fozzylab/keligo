@@ -281,11 +281,19 @@ final class AdManager: ObservableObject {
     // MARK: - Helpers
 
     private var rootViewController: UIViewController? {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
+        guard let root = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
             .first?.windows
             .first(where: \.isKeyWindow)?
-            .rootViewController
+            .rootViewController else { return nil }
+        // Traverse up to the topmost presented VC.
+        // Ads must be presented from the VC that currently owns the screen;
+        // presenting from root fails when a sheet or alert is already on top.
+        var top = root
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        return top
     }
 
     private func todayKey() -> String {

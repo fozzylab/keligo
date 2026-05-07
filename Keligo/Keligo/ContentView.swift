@@ -295,9 +295,10 @@ struct GameBoardView<Overlay: View>: View {
                     canAffordJetons: jetons.canAfford(JetonManager.costContinueAfterLoss)
                 ) {
                     // Watch ad
-                    if AdManager.shared.canShowRewarded(.letter) {
+                    if AdManager.shared.canShowRewarded(.streakSave) {
                         Task {
-                            let ok = await AdManager.shared.presentRewarded(.letter)
+                            try? await Task.sleep(nanoseconds: 400_000_000)
+                            let ok = await AdManager.shared.presentRewarded(.streakSave)
                             if ok {
                                 vm.continueAfterLoss()
                                 hasUsedContinue = true
