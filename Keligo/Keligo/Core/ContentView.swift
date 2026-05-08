@@ -339,7 +339,7 @@ struct GameBoardView<Overlay: View>: View {
                     Spacer()
                     Button {
                         withAnimation { showUndoPrompt = false }
-                        _ = vm.undo()
+                        vm.undo()
                     } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "arrow.uturn.backward.circle.fill")
