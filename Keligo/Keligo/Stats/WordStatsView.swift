@@ -130,8 +130,8 @@ struct WordStatsView: View {
                         subtitle: "\(best.word) · \(best.wrongCount) hata · \(best.category)"
                     )
                 }
-                if let easy = easiestCategory {
-                    let item = sortedCategories.first { $0.category == easy }!
+                if let easy = easiestCategory,
+                   let item = sortedCategories.first(where: { $0.category == easy }) {
                     highlightRow(
                         icon: "face.smiling.fill",
                         color: .green,
@@ -139,8 +139,8 @@ struct WordStatsView: View {
                         subtitle: "\(easy) · %\(Int(winRate(item) * 100)) kazanma"
                     )
                 }
-                if let hard = hardestCategory {
-                    let item = sortedCategories.first { $0.category == hard }!
+                if let hard = hardestCategory,
+                   let item = sortedCategories.first(where: { $0.category == hard }) {
                     highlightRow(
                         icon: "exclamationmark.triangle.fill",
                         color: .red,

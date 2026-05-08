@@ -7,7 +7,7 @@ class NotificationManager {
 
     private let dailyID = "keligo_daily_reminder"
     private let lastScheduledKey = "notifLastScheduled"
-    private let appGroupID = "group.com.fozzylabs.keligo"
+    private let appGroupID = Constants.appGroupID
 
     // MARK: - Permission
 
@@ -69,7 +69,7 @@ class NotificationManager {
             ("Keligo 📅", "Yeni gün, yeni kelime! Bugünkü ipucu: \(category), \(letterCount) harf.\(streakSuffix)"),
         ]
 
-        let picked = messages.randomElement()!
+        guard let picked = messages.randomElement() else { return }
         let content = UNMutableNotificationContent()
         content.title = picked.title
         content.body = picked.body

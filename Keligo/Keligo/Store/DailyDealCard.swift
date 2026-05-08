@@ -89,7 +89,7 @@ class DailyDealManager: ObservableObject {
     
     static func randomDeal() -> DealType {
         let all: [DealType] = [.jetonDiscount, .hintBundle, .themeDiscount, .wordPackBundle]
-        return all.randomElement()!
+        return all.randomElement() ?? .jetonDiscount
     }
     
     static func restoreDeal() -> DealType {

@@ -47,6 +47,7 @@ struct MainMenuView: View {
     // MARK: - Piggy bank state
     @State private var piggyCollectToast: String? = nil
     @State private var showPiggyAdConfirm = false
+    @State private var showPiggyFullSheet = false
 
     // MARK: - Easter egg state
     @State private var eggTapCount = 0
@@ -291,6 +292,35 @@ struct MainMenuView: View {
         } message: {
             Text("Kısa bir reklam izledikten sonra kumbaranızdaki \(piggy.balance) jeton hesabınıza aktarılır.")
         }
+        // Kumbara dolu: normal topla veya 2x kazan
+        .confirmationDialog("🐷 Kumbara Doldu!", isPresented: $showPiggyFullSheet, titleVisibility: .visible) {
+            Button("2x Kazan — \(piggy.balance * 2) 🟡 (Reklam İzle)") {
+                Task {
+                    let ok = await AdManager.shared.presentRewarded(.jetonBonus)
+                    if ok {
+                        let earned = piggy.collectDouble()
+                        withAnimation(.spring()) {
+                            piggyCollectToast = "+\(earned) 🟡 2x kumbara bonusu!"
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+                            withAnimation { piggyCollectToast = nil }
+                        }
+                    }
+                }
+            }
+            Button("Normal Topla — \(piggy.balance) 🟡") {
+                let earned = piggy.collect()
+                withAnimation(.spring()) {
+                    piggyCollectToast = "+\(earned) 🟡 kumbara açıldı!"
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+                    withAnimation { piggyCollectToast = nil }
+                }
+            }
+            Button("Sonra", role: .cancel) {}
+        } message: {
+            Text("Kumbaranız doldu! Reklam izleyerek \(piggy.balance * 2) jeton (2x) kazanabilirsiniz.")
+        }
         .alert("Reklam izle, +\(JetonManager.rewardJetonAdBonus) jeton kazan", isPresented: $showBonusAdConfirm) {
             Button("İzle") {
                 Task {
@@ -478,7 +508,11 @@ struct MainMenuView: View {
             // Kumbara butonu (eğer birikim varsa)
             if !piggy.isEmpty {
                 Button {
-                    showPiggyAdConfirm = true
+                    if piggy.isFull {
+                        showPiggyFullSheet = true
+                    } else {
+                        showPiggyAdConfirm = true
+                    }
                 } label: {
                     HStack(spacing: 7) {
                         Text(piggy.isFull ? "🐷" : "🐖")

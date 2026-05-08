@@ -10,18 +10,15 @@ final class AdManager: ObservableObject {
     static let shared = AdManager()
 
     // MARK: - Ad Unit IDs
-    // ⚠️ TEST IDs — Google demo birimleri (review için)
-    // Yayın öncesi aşağıdaki PRODUCTION satırlarını aktif et, TEST satırlarını comment'e al.
-    //
-    // PRODUCTION:
-    // private let interstitialAdUnitID = "ca-app-pub-2301774166987825/6849458927"
-    // private let rewardedAdUnitID     = "ca-app-pub-2301774166987825/8162540596"
-    // private let appOpenAdUnitID      = "YOUR_APP_OPEN_AD_UNIT_ID" // AdMob'dan oluştur
-    //
-    // TEST:
+    #if DEBUG
     private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
     private let rewardedAdUnitID     = "ca-app-pub-3940256099942544/1712485313"
     private let appOpenAdUnitID      = "ca-app-pub-3940256099942544/5575463023"
+    #else
+    private let interstitialAdUnitID = "ca-app-pub-2301774166987825/6849458927"
+    private let rewardedAdUnitID     = "ca-app-pub-2301774166987825/8162540596"
+    private let appOpenAdUnitID      = "ca-app-pub-2301774166987825/5575463023"
+    #endif
 
     @Published var errorMessage: String?
 

@@ -104,7 +104,7 @@ struct ScrambleText: View {
                     } else if char == " " {
                         result.append(" ")
                     } else {
-                        result.append(chars.randomElement()!)
+                        result.append(chars.randomElement() ?? "?")
                     }
                 }
                 displayText = result

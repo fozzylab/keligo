@@ -45,8 +45,8 @@ struct CalendarDay: Identifiable {
 // MARK: - StatsManager
 
 class StatsManager: ObservableObject {
-    @Published var totalGames: Int      { didSet { save("totalGames", totalGames) } }
-    @Published var wins: Int            { didSet { save("wins", wins) } }
+    @Published var totalGames: Int      { didSet { save("totalGames", totalGames); sharedSave("totalGames", totalGames) } }
+    @Published var wins: Int            { didSet { save("wins", wins); sharedSave("wins", wins) } }
     @Published var currentStreak: Int   { didSet { save("currentStreak", currentStreak); sharedSave("currentStreak", currentStreak) } }
     @Published var bestStreak: Int      { didSet { save("bestStreak", bestStreak) } }
     @Published var speedHighScore: Int  { didSet { save("speedHighScore", speedHighScore) } }
@@ -62,7 +62,7 @@ class StatsManager: ObservableObject {
     }
 
     // MARK: - New: XP & level
-    @Published var xp: Int { didSet { save("xp", xp) } }
+    @Published var xp: Int { didSet { save("xp", xp); sharedSave("xp", xp) } }
 
     // MARK: - New: Best word tracking
     @Published var bestWordText: String  { didSet { UserDefaults.standard.set(bestWordText, forKey: "bestWordText") } }
@@ -447,7 +447,7 @@ class StatsManager: ObservableObject {
     }
 
     private func sharedSave(_ key: String, _ value: Int) {
-        let shared = UserDefaults(suiteName: "group.com.fozzylabs.keligo") ?? .standard
+        let shared = Constants.sharedDefaults
         shared.set(value, forKey: key)
     }
 }

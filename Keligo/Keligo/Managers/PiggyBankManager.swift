@@ -51,4 +51,14 @@ class PiggyBankManager: ObservableObject {
         JetonManager.shared.earn(amount)
         return amount
     }
+
+    /// Kasa doluyken reklam izlenerek çağrılır — 2x jeton verir.
+    @discardableResult
+    func collectDouble() -> Int {
+        let amount = balance * 2
+        guard balance > 0 else { return 0 }
+        balance = 0
+        JetonManager.shared.earn(amount)
+        return amount
+    }
 }

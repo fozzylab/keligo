@@ -56,7 +56,7 @@ struct ConfettiView: View {
                 pieces = (0..<60).map { _ in
                     Piece(
                         x: CGFloat.random(in: 20...(geo.size.width - 20)),
-                        color: colors.randomElement()!,
+                        color: colors.randomElement() ?? .red,
                         size: CGFloat.random(in: 6...14),
                         delay: Double.random(in: 0...0.6),
                         rotation: Double.random(in: 0...360),

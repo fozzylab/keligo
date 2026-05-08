@@ -57,10 +57,10 @@ extension WordList {
     static func random(for difficulty: Difficulty = .normal, category: String? = nil) -> WordEntry {
         if let cat = category {
             let pool = _catDiffIndex[cat]?[difficulty.rawValue] ?? _byCategory[cat] ?? words
-            return pool.randomElement()!
+            return pool.randomElement() ?? words.first ?? WordEntry(word: "ELMA", category: "Meyveler", hint: nil)
         }
         let pool = _difficultyIndex[difficulty.rawValue] ?? words
-        return pool.randomElement()!
+        return pool.randomElement() ?? words.first ?? WordEntry(word: "ELMA", category: "Meyveler", hint: nil)
     }
 
     static func random(
@@ -105,7 +105,7 @@ extension WordList {
             pool = filtered.isEmpty ? pool : filtered
         }
 
-        return pool.randomElement() ?? words.randomElement()!
+        return pool.randomElement() ?? words.first ?? WordEntry(word: "ELMA", category: "Meyveler", hint: nil)
     }
 
     // MARK: - Hint lookup

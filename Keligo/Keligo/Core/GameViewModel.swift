@@ -212,7 +212,8 @@ class GameViewModel: ObservableObject {
         hintUsed = true
         syncSound()
         sound.playHint()
-        performGuess(pool.randomElement()!, playFeedback: false)
+        guard let letter = pool.randomElement() else { return false }
+        performGuess(letter, playFeedback: false)
         Task { @MainActor in AppPromptManager.shared.notifyHintSpent(amount: JetonManager.costLetter) }
         return true
     }

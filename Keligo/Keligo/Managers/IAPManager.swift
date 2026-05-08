@@ -122,10 +122,11 @@ class IAPManager: ObservableObject {
     }
 
     private var updatesTask: Task<Void, Never>?
+    private var loadTask: Task<Void, Never>?
 
     private init() {
         updatesTask = Task { await listenForTransactionUpdates() }
-        Task {
+        loadTask = Task {
             await loadProducts()
             await refreshPurchases()
         }

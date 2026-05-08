@@ -3,9 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>GADApplicationIdentifier</key>
-	<!-- PRODUCTION: ca-app-pub-2301774166987825~7257592383 -->
-	<!-- TEST:       ca-app-pub-3940256099942544~1458002511  -->
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-2301774166987825~7257592383</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Daha iyi bir deneyim sunmak için reklamları kişiselleştirmekte kullanılır.</string>
 	<key>SKAdNetworkItems</key>

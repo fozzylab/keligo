@@ -4,8 +4,7 @@ import WidgetKit
 
 // MARK: - App Group shared store
 
-private let appGroupID     = "group.com.fozzylabs.keligo"
-private let sharedDefaults = UserDefaults(suiteName: appGroupID) ?? .standard
+private let sharedDefaults = Constants.sharedDefaults
 
 struct SeededRNG: RandomNumberGenerator {
     private var state: UInt64
@@ -27,9 +26,12 @@ class DailyWordManager: ObservableObject {
 
     func word(for date: Date) -> WordEntry {
         let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
-        let seed = UInt64(c.year! * 10000 + c.month! * 100 + c.day!)
+        guard let year = c.year, let month = c.month, let day = c.day else {
+            return WordList.words.first ?? WordEntry(word: "ELMA", category: "Meyveler", hint: nil)
+        }
+        let seed = UInt64(year * 10000 + month * 100 + day)
         var rng = SeededRNG(seed: seed)
-        return WordList.words.randomElement(using: &rng)!
+        return WordList.words.randomElement(using: &rng) ?? WordList.words[0]
     }
 
     var todayWord: WordEntry { word(for: Date()) }
@@ -114,8 +116,8 @@ class DailyWordManager: ObservableObject {
 
     /// Returns an array of optional Dates for a month grid (Mon-based, nil = leading empty cell).
     func calendarDates(for month: Date) -> [Date?] {
-        let start    = cal.date(from: cal.dateComponents([.year, .month], from: month))!
-        let dayCount = cal.range(of: .day, in: .month, for: month)!.count
+        guard let start = cal.date(from: cal.dateComponents([.year, .month], from: month)),
+              let dayCount = cal.range(of: .day, in: .month, for: month)?.count else { return [] }
 
         // weekday offset: Monday = 0 … Sunday = 6
         var offset = cal.component(.weekday, from: start) - 2
