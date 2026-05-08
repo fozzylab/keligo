@@ -257,6 +257,11 @@ struct CreateChallengeView: View {
                     Button("Kapat") { dismiss() }.foregroundColor(t.accent)
                 }
             }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+                    wordFocused = true
+                }
+            }
         }
     }
 
@@ -283,6 +288,7 @@ struct PlayChallengeView: View {
     @State private var error = ""
     @State private var vm: GameViewModel? = nil
     @State private var showGame = false
+    @FocusState private var codeFocused: Bool
 
     var t: AppTheme { settings.theme }
 
@@ -332,6 +338,7 @@ struct PlayChallengeView: View {
                                 .multilineTextAlignment(.center)
                                 .textInputAutocapitalization(.characters)
                                 .autocorrectionDisabled()
+                                .focused($codeFocused)
                                 .padding(16)
                                 .background(t.surface, in: RoundedRectangle(cornerRadius: 12))
                                 .onChange(of: codeInput) { _, _ in error = "" }
@@ -368,6 +375,11 @@ struct PlayChallengeView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Kapat") { dismiss() }.foregroundColor(t.accent)
+                }
+            }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+                    codeFocused = true
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: showGame)
