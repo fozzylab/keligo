@@ -17,7 +17,7 @@ final class AdManager: ObservableObject {
     #else
     private let interstitialAdUnitID = "ca-app-pub-2301774166987825/6849458927"
     private let rewardedAdUnitID     = "ca-app-pub-2301774166987825/8162540596"
-    private let appOpenAdUnitID      = "ca-app-pub-2301774166987825/5575463023"
+    private let appOpenAdUnitID      = "ca-app-pub-2301774166987825/2243809555"
     #endif
 
     @Published var errorMessage: String?

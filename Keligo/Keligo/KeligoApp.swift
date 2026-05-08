@@ -1,9 +1,16 @@
 import SwiftUI
 import GoogleMobileAds
 import AppTrackingTransparency
+// Firebase paketleri SPM ile eklendikten sonra aşağıdaki iki satırın başındaki // kaldır:
+// import Firebase
+// import FirebaseCrashlytics
 
 @main
 struct KeligoApp: App {
+
+    init() {
+        // FirebaseApp.configure()   // ← Firebase SPM eklenince bu satırı aç
+    }
     @StateObject private var settings     = SettingsViewModel()
     @StateObject private var stats        = StatsManager()
     @StateObject private var achievements = AchievementManager.shared
