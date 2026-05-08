@@ -138,7 +138,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .chalk:   return Color(red: 0.94, green: 0.94, blue: 0.90)
         case .pastel:  return Color(red: 0.22, green: 0.10, blue: 0.32)
         case .vintage: return Color(red: 0.22, green: 0.14, blue: 0.06)
-        case .classic: return Color(red: 0.08, green: 0.08, blue: 0.16) // dark blue-gray for light mode
+        case .classic: return Color(.label)  // sistem dark/light moduna otomatik uyum
         default:       return isDark ? .white : Color(red: 0.10, green: 0.10, blue: 0.12)
         }
     }
@@ -148,14 +148,18 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .chalk:   return Color(red: 0.94, green: 0.94, blue: 0.90).opacity(0.72)
         case .pastel:  return Color(red: 0.22, green: 0.10, blue: 0.32).opacity(0.65)
         case .vintage: return Color(red: 0.22, green: 0.14, blue: 0.06).opacity(0.65)
-        case .classic: return Color(red: 0.08, green: 0.08, blue: 0.16).opacity(0.65)
+        case .classic: return Color(.secondaryLabel)  // sistem dark/light moduna otomatik uyum
         default:       return isDark ? Color.white.opacity(0.72) : Color(red: 0.10, green: 0.10, blue: 0.12).opacity(0.60)
         }
     }
 
-    /// Kart kenarlık rengi — dark temalar için ince beyaz, light'ta ince siyah
+    /// Kart kenarlık rengi — dark temalar için ince beyaz, light'ta ince siyah.
+    /// Classic tema için sistem separator rengi kullanılır (dark/light otomatik uyum).
     var cardStroke: Color {
-        isDark ? .white.opacity(0.13) : .black.opacity(0.07)
+        switch self {
+        case .classic: return Color(.separator).opacity(0.5)  // dark modda görünür, light'ta hafif
+        default:       return isDark ? .white.opacity(0.13) : .black.opacity(0.07)
+        }
     }
 
     /// Kart gölgesi
