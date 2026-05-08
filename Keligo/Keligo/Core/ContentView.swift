@@ -789,15 +789,17 @@ struct GameBoardView<Overlay: View>: View {
             VStack(spacing: 6) {
                 // Tier 1 sonrası: hint metnini göster
                 if vm.wordHintRevealed, let hint = vm.wordHintText {
-                    HStack(spacing: 10) {
+                    HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "lightbulb.fill")
                             .font(.subheadline)
                             .foregroundColor(.yellow)
+                            .padding(.top, 1)
                         Text(hint)
                             .font(.subheadline)
                             .foregroundColor(theme.primaryText)
                             .multilineTextAlignment(.leading)
                             .lineLimit(3)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.horizontal, 14).padding(.vertical, 10)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -888,10 +890,12 @@ struct GameBoardView<Overlay: View>: View {
 
     private func singleWordDisplay(_ items: [(offset: Int, char: Character)]) -> some View {
         GeometryReader { geo in
-            ScrollView(.horizontal, showsIndicators: false) {
-                wordTileRow(items)
-                    .frame(minWidth: geo.size.width, alignment: .center)
-            }
+            let tileW: CGFloat = isIPad ? 50 : 42  // tile + yatay padding
+            let totalW = CGFloat(items.count) * tileW + 32
+            let scale  = min(1.0, geo.size.width / totalW)
+            wordTileRow(items)
+                .scaleEffect(scale, anchor: .center)
+                .frame(width: geo.size.width, height: isIPad ? 72 : 58)
         }
         .frame(height: isIPad ? 72 : 58)
         .modifier(ShakeEffect(animatableData: shakeCount))
