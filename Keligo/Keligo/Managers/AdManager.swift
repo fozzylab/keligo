@@ -66,6 +66,10 @@ final class AdManager: ObservableObject {
     private var rewardDelegate: RewardedAdDelegateHandler?
     /// Rewarded ad şu an gösteriliyorsa true — App Open Ad'ın üste binmesini önler
     private var isShowingRewardedAd = false
+    /// App Open Ad en son ne zaman gösterildi — Apple Guideline 4: soğuk açılışta gösterim yasak
+    private let kLastAppOpenAt = "ad_lastAppOpenAt"
+    /// App Open Ad'ın aralarındaki minimum süre (saniye) — Apple gözlemcisi 3 dk içinde görmemeli
+    private let appOpenMinInterval: TimeInterval = 180
     /// Rewarded ad yükleme işlemi devam ediyorsa true — çift yüklemeyi önler
     private var isLoadingRewarded = false
 
@@ -75,7 +79,8 @@ final class AdManager: ObservableObject {
     }
 
     /// MobileAds.shared.start tamamlandıktan hemen sonra çağır.
-    /// İlk açılışta App Open Ad'ı yükler ve hazır olur olmaz gösterir.
+    /// Rewarded + Interstitial preload'larını başlatır.
+    /// App Open Ad soğuk açılışta gösterilmez (Apple Guideline 4).
     func startPreloadingAndShowOpenAd() {
         // Rewarded her zaman preload edilir — "Remove Ads" satın alımı sadece
         // zorla gösterilen reklamları (interstitial, app open) kaldırır;
@@ -87,9 +92,9 @@ final class AdManager: ObservableObject {
             return
         }
         preloadInterstitial()
-        Task {
-            await loadAndPresentAppOpenAd()
-        }
+        // Soğuk açılışta App Open Ad gösterilmez — sadece background→foreground geçişinde.
+        // Apple Guideline 4: kullanıcı uygulamayı kullanmadan önce reklam görmemeli.
+        preloadAppOpenAd()
     }
 
     // MARK: - Preloading
@@ -166,6 +171,12 @@ final class AdManager: ObservableObject {
             log.info("📺 App Open Ad — rewarded yakın zamanda izlendi, atlanıyor")
             return
         }
+        // Apple Guideline 4: Son gösterimden bu yana minimum süre geçmeli
+        if let lastShown = UserDefaults.standard.object(forKey: kLastAppOpenAt) as? Date,
+           Date().timeIntervalSince(lastShown) < appOpenMinInterval {
+            log.info("📺 App Open Ad — minimum süre dolmadı, atlanıyor")
+            return
+        }
         guard let rootVC = rootViewController else { return }
         guard let ad = appOpenAd else {
             preloadAppOpenAd()
@@ -173,29 +184,9 @@ final class AdManager: ObservableObject {
         }
         appOpenAd = nil
         ad.present(from: rootVC)
+        UserDefaults.standard.set(Date(), forKey: kLastAppOpenAt)
         preloadAppOpenAd()
         log.info("📺 App Open Ad gösterildi")
-    }
-
-    /// İlk açılışta: reklamı yükle ve hazır olunca hemen göster.
-    private func loadAndPresentAppOpenAd() async {
-        guard !IAPManager.shared.isAdsRemoved else {
-            log.info("📺 App Open Ad — reklamlar kaldırılmış, atlanıyor")
-            preloadAppOpenAd()
-            return
-        }
-        guard let rootVC = rootViewController else {
-            preloadAppOpenAd()
-            return
-        }
-        do {
-            let ad = try await AppOpenAd.load(with: appOpenAdUnitID, request: Request())
-            log.info("📺 App Open Ad yüklendi, gösteriliyor")
-            ad.present(from: rootVC)
-            preloadAppOpenAd()
-        } catch {
-            log.error("📺 App Open Ad yüklenemedi: \(error.localizedDescription)")
-        }
     }
 
     // MARK: - Public API

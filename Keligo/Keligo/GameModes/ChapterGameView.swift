@@ -19,9 +19,9 @@ struct ChapterGameView: View {
         self.settings = settings
         self.stats = stats
         self.onBack = onBack
-        // Rotate seed so each new session gives different words
-        ChapterManager.shared.incrementPlayCount(for: chapter.id)
-        let w = ChapterManager.shared.words(for: chapter)
+        // Compute words with next playCount without mutating @Published in init (causes SwiftUI warning)
+        let nextPlayCount = (ChapterManager.shared.playCounts[chapter.id] ?? 0) + 1
+        let w = ChapterManager.shared.words(for: chapter, overridePlayCount: nextPlayCount)
         self.words = w
         _vm = StateObject(wrappedValue: GameViewModel(settings: settings, stats: stats, fixedEntry: w.first))
     }
@@ -50,6 +50,9 @@ struct ChapterGameView: View {
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showSummary)
+        .onAppear {
+            ChapterManager.shared.incrementPlayCount(for: chapter.id)
+        }
     }
 
     private func advanceWord() {

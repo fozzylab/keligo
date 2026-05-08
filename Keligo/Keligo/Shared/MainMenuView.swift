@@ -18,6 +18,8 @@ struct MainMenuView: View {
     @State private var showKids = false
     @State private var showCategoryPicker = false
     @State private var showOutOfLives = false
+    @State private var pendingInfiniteMode = false
+    @State private var pendingKidsMode = false
     @State private var bonusClaimAnim = false
     @State private var bonusJustClaimed = false
     @State private var showBonusAdConfirm = false
@@ -255,7 +257,17 @@ struct MainMenuView: View {
         .animation(.easeInOut(duration: 0.3), value: showKids)
         .animation(.easeInOut(duration: 0.3), value: showWeekly)
         .animation(.easeInOut(duration: 0.3), value: showDavet)
-        .sheet(isPresented: $showOutOfLives) {
+        .sheet(isPresented: $showOutOfLives, onDismiss: {
+            lives.recomputeRegen()
+            let hasLives = lives.current > 0 || lives.hasInfinite
+            if pendingInfiniteMode {
+                pendingInfiniteMode = false
+                if hasLives { showCategoryPicker = true }
+            } else if pendingKidsMode {
+                pendingKidsMode = false
+                if hasLives { showKids = true }
+            }
+        }) {
             OutOfLivesSheet()
                 .environmentObject(settings)
                 .environmentObject(jetons)
@@ -631,6 +643,7 @@ struct MainMenuView: View {
             if lives.current > 0 || lives.hasInfinite {
                 showCategoryPicker = true
             } else {
+                pendingInfiniteMode = true
                 showOutOfLives = true
             }
         }
@@ -672,10 +685,11 @@ struct MainMenuView: View {
             if lives.current > 0 || lives.hasInfinite {
                 showKids = true
             } else {
+                pendingKidsMode = true
                 showOutOfLives = true
             }
         }
-        
+
         GameModeCard(
             icon: "calendar.badge.exclamationmark",
             title: "Haftalık",

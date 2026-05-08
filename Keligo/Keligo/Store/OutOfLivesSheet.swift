@@ -191,8 +191,8 @@ struct OutOfLivesSheet: View {
             ) {
                 if lives.buyOne() {
                     withAnimation(.spring()) { rewardToast = "❤️ +1 Can kazandın!" }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        withAnimation { rewardToast = nil }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        withAnimation { dismiss() }
                     }
                 }
             }
@@ -208,8 +208,8 @@ struct OutOfLivesSheet: View {
             ) {
                 if lives.buyAll() {
                     withAnimation(.spring()) { rewardToast = "❤️❤️❤️❤️❤️ Tam dolum!" }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        withAnimation { rewardToast = nil }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        withAnimation { dismiss() }
                     }
                 }
             }

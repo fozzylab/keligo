@@ -65,8 +65,9 @@ class ChapterManager: ObservableObject {
     // MARK: - Word selection (rotating seed!)
 
     /// Her oynamada farklı kelimeler gelir — playCount seed'e dahil edilir.
-    func words(for chapter: Chapter) -> [WordEntry] {
-        let playCount = playCounts[chapter.id] ?? 0
+    /// `overridePlayCount` verilirse o değer kullanılır (init'ten güvenli çağrı için).
+    func words(for chapter: Chapter, overridePlayCount: Int? = nil) -> [WordEntry] {
+        let playCount = overridePlayCount ?? (playCounts[chapter.id] ?? 0)
 
         // Seed: chapterId * 9999 + playCount * 1337 + 42
         let seed = UInt64(chapter.id * 9999 + playCount * 1337 + 42)

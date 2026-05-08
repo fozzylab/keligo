@@ -257,11 +257,6 @@ struct CreateChallengeView: View {
                     Button("Kapat") { dismiss() }.foregroundColor(t.accent)
                 }
             }
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
-                    wordFocused = true
-                }
-            }
         }
     }
 
@@ -377,12 +372,12 @@ struct PlayChallengeView: View {
                     Button("Kapat") { dismiss() }.foregroundColor(t.accent)
                 }
             }
+            .animation(.easeInOut(duration: 0.3), value: showGame)
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
                     codeFocused = true
                 }
             }
-            .animation(.easeInOut(duration: 0.3), value: showGame)
         }
     }
 

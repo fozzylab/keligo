@@ -6,10 +6,10 @@ import FirebaseCrashlytics
 
 @main
 struct KeligoApp: App {
-
     init() {
         FirebaseApp.configure()
     }
+
     @StateObject private var settings     = SettingsViewModel()
     @StateObject private var stats        = StatsManager()
     @StateObject private var achievements = AchievementManager.shared
