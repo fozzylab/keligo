@@ -411,26 +411,26 @@ struct MainMenuView: View {
             // Keligo logo — floating 3D tiles with spatial depth
             ZStack {
                 Circle()
-                    .fill(t.accent.opacity(0.12))
-                    .frame(width: 150, height: 150)
-                    .blur(radius: 35)
-                    .breathe(intensity: 1.0, speed: 4.0)
-                
+                    .fill(t.accent.opacity(0.07))
+                    .frame(width: 140, height: 140)
+                    .blur(radius: 30)
+                    .breathe(intensity: 0.4, speed: 5.0)
+
                 VStack(spacing: 10) {
                     HStack(spacing: 8) {
                         ForEach(["K","E","L"], id: \.self) { letter in
                             HeroLetterTile(letter: letter, accent: t.accent)
-                                .spatialDepth(8, perspective: 0.3)
+                                .spatialDepth(4, perspective: 0.2)
                         }
                     }
                     HStack(spacing: 8) {
                         ForEach(["İ","G","O"], id: \.self) { letter in
                             HeroLetterTile(letter: letter, accent: t.accent)
-                                .spatialDepth(6, perspective: 0.3)
+                                .spatialDepth(3, perspective: 0.2)
                         }
                     }
                 }
-                .ambientGlow(t.accent, intensity: 0.4, radius: 20)
+                .ambientGlow(t.accent, intensity: 0.15, radius: 12)
                 .modifier(ShakeEffect(animatableData: eggShake))
                 .onTapGesture { handleEggTap() }
             }

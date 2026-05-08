@@ -1233,7 +1233,7 @@ struct InfiniteGameOverView: View {
                     if streakProtected {
                         HStack(spacing: 6) {
                             Image(systemName: "shield.fill").foregroundColor(.cyan)
-                            Text("Seri korundu! \(stats.currentStreak) gün")
+                            Text("Seri korundu! \(stats.currentStreak) galibiyet")
                                 .font(.subheadline.weight(.bold)).foregroundColor(.white)
                         }
                         .padding(.horizontal, 16).padding(.vertical, 8)
@@ -1249,7 +1249,7 @@ struct InfiniteGameOverView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "shield.fill").foregroundColor(.yellow)
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("Seriyi Koru! (\(stats.streakBeforeLoss) gün)")
+                                        Text("Seriyi Koru! (\(stats.streakBeforeLoss) galibiyet)")
                                             .font(.subheadline.weight(.bold)).foregroundColor(.white)
                                         HStack(spacing: 3) {
                                             Image(systemName: "circle.fill")
