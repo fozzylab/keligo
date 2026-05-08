@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		56A1B2C42FA5737A0013ABCD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 56A1B2C32FA5737A0013ABCD /* GoogleService-Info.plist */; };
 		569880652FA5737A0013676F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569880642FA5737A0013676F /* StoreKit.framework */; };
 		5698810A2FA944CF0013676F /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 569881092FA944CF0013676F /* GoogleMobileAds */; };
 		56F7FAB02FADCD390042FEC5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 56F7FAAF2FADCD390042FEC5 /* FirebaseAnalytics */; };
@@ -32,7 +31,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		56A1B2C32FA5737A0013ABCD /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Keligo/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		569880642FA5737A0013676F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		56F25FD82F99E44E000930EA /* Keligo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keligo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56F25FE52F99E450000930EA /* KeligoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeligoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,7 +113,6 @@
 				56F25FF22F99E450000930EA /* KeligoUITests */,
 				569880632FA5737A0013676F /* Frameworks */,
 				56F25FD92F99E44E000930EA /* Products */,
-				56A1B2C32FA5737A0013ABCD /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -256,7 +253,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				56A1B2C42FA5737A0013ABCD /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
