@@ -27,7 +27,7 @@ class DailyWordManager: ObservableObject {
     func word(for date: Date) -> WordEntry {
         let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
         guard let year = c.year, let month = c.month, let day = c.day else {
-            return WordList.words.first ?? WordEntry(word: "ELMA", category: "Meyveler", hint: nil)
+            return WordList.words.first ?? WordEntry(word: "ELMA", category: "Meyveler")
         }
         let seed = UInt64(year * 10000 + month * 100 + day)
         var rng = SeededRNG(seed: seed)

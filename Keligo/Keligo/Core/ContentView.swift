@@ -810,7 +810,7 @@ struct GameBoardView<Overlay: View>: View {
                 if vm.canUseTieredHint {
                     Button {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                            _ = vm.useTieredHint()
+                            vm.useTieredHint()
                         }
                     } label: {
                         HStack(spacing: 8) {
