@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		56A1B2C42FA5737A0013ABCD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 56A1B2C32FA5737A0013ABCD /* GoogleService-Info.plist */; };
 		569880652FA5737A0013676F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 569880642FA5737A0013676F /* StoreKit.framework */; };
 		5698810A2FA944CF0013676F /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 569881092FA944CF0013676F /* GoogleMobileAds */; };
+		56F7FAB02FADCD390042FEC5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 56F7FAAF2FADCD390042FEC5 /* FirebaseAnalytics */; };
+		56F7FAB22FADCD390042FEC5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 56F7FAB12FADCD390042FEC5 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		56A1B2C32FA5737A0013ABCD /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Keligo/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		569880642FA5737A0013676F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		56F25FD82F99E44E000930EA /* Keligo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keligo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56F25FE52F99E450000930EA /* KeligoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeligoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,7 +76,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				5698810A2FA944CF0013676F /* GoogleMobileAds in Frameworks */,
+				56F7FAB22FADCD390042FEC5 /* FirebaseCrashlytics in Frameworks */,
 				569880652FA5737A0013676F /* StoreKit.framework in Frameworks */,
+				56F7FAB02FADCD390042FEC5 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,6 +115,7 @@
 				56F25FF22F99E450000930EA /* KeligoUITests */,
 				569880632FA5737A0013676F /* Frameworks */,
 				56F25FD92F99E44E000930EA /* Products */,
+				56A1B2C32FA5737A0013ABCD /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -143,6 +150,8 @@
 			name = Keligo;
 			packageProductDependencies = (
 				569881092FA944CF0013676F /* GoogleMobileAds */,
+				56F7FAAF2FADCD390042FEC5 /* FirebaseAnalytics */,
+				56F7FAB12FADCD390042FEC5 /* FirebaseCrashlytics */,
 			);
 			productName = Keligo;
 			productReference = 56F25FD82F99E44E000930EA /* Keligo.app */;
@@ -228,6 +237,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5698806B2FA93FA60013676F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				56F7FAAE2FADCD390042FEC5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56F25FD92F99E44E000930EA /* Products */;
@@ -246,6 +256,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				56A1B2C42FA5737A0013ABCD /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -638,6 +649,14 @@
 				minimumVersion = 13.3.0;
 			};
 		};
+		56F7FAAE2FADCD390042FEC5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.13.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -645,6 +664,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5698806B2FA93FA60013676F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
 			productName = GoogleMobileAds;
+		};
+		56F7FAAF2FADCD390042FEC5 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56F7FAAE2FADCD390042FEC5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		56F7FAB12FADCD390042FEC5 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56F7FAAE2FADCD390042FEC5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
