@@ -5,76 +5,642 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keligo — Destek</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 720px; margin: 0 auto; padding: 32px 20px; color: #1a1a1a; line-height: 1.7; }
-        h1 { color: #3A90F7; }
-        h2 { color: #222; margin-top: 2em; }
-        p, li { color: #444; }
-        a { color: #3A90F7; }
-        .updated { color: #888; font-size: 0.9em; }
-        hr { border: none; border-top: 1px solid #eee; margin: 2em 0; }
-        .faq { background: #f8f9fa; border-radius: 12px; padding: 20px 24px; margin: 16px 0; }
-        .faq h3 { margin: 0 0 8px; color: #222; font-size: 1em; }
-        .faq p { margin: 0; color: #555; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --secondary: #8B5CF6;
+            --accent: #EC4899;
+            --bg: #0F172A;
+            --surface: #1E293B;
+            --surface-hover: #334155;
+            --text: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --text-muted: #94A3B8;
+            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(30, 41, 59, 0.6);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            top: -200px;
+            right: -100px;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent);
+            bottom: -100px;
+            left: -100px;
+        }
+
+        /* Navigation */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: opacity 0.3s;
+        }
+
+        .nav-brand:hover {
+            opacity: 0.8;
+        }
+
+        .nav-brand .logo-icon {
+            font-size: 1.4em;
+        }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--primary-light);
+        }
+
+        .nav-back svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Main content */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 48px 20px 80px;
+        }
+
+        /* Header section */
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .page-icon {
+            font-size: 3em;
+            margin-bottom: 16px;
+            display: inline-block;
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        h1 {
+            font-size: 2.2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--glass);
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+        }
+
+        .intro {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            margin-bottom: 48px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeIn 0.6s ease-out 0.1s both;
+        }
+
+        /* Section styling */
+        .section {
+            margin-bottom: 48px;
+            animation: fadeIn 0.6s ease-out both;
+        }
+
+        .section:nth-child(3) { animation-delay: 0.15s; }
+        .section:nth-child(4) { animation-delay: 0.25s; }
+
+        h2 {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        /* FAQ Accordion */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-item {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .faq-item.active {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 20px 24px;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1em;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            transition: background 0.3s;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .faq-question-text {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .faq-icon {
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+
+        .faq-chevron {
+            width: 24px;
+            height: 24px;
+            color: var(--text-muted);
+            transition: transform 0.3s ease, color 0.3s;
+            flex-shrink: 0;
+        }
+
+        .faq-item.active .faq-chevron {
+            transform: rotate(180deg);
+            color: var(--primary-light);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+        }
+
+        .faq-answer-inner {
+            padding: 0 24px 20px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .faq-answer-inner p {
+            margin-bottom: 12px;
+        }
+
+        .faq-answer-inner p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Contact section */
+        .contact-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .contact-section > p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .email-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 28px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+
+        .email-card:hover {
+            background: var(--surface-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-card .icon {
+            font-size: 1.3em;
+        }
+
+        .checklist {
+            list-style: none;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .checklist li {
+            color: var(--text-secondary);
+            padding: 8px 0;
+            padding-left: 32px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-light);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85em;
+            animation: fadeIn 0.6s ease-out 0.35s both;
+        }
+
+        .footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: var(--primary-light);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--surface-hover);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8em; }
+            .faq-question { padding: 16px 20px; font-size: 0.95em; }
+            .faq-answer-inner { padding: 0 20px 16px; }
+            .contact-section { padding: 24px; }
+            .email-card { font-size: 1em; padding: 14px 20px; }
+        }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>🔡 Keligo — Destek</h1>
-    <p class="updated">FozzyLabs tarafından geliştirilmiştir.</p>
+    <!-- Background blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
 
-    <p>Keligo'yu kullandığın için teşekkürler! Sorun mu yaşıyorsun, önerilerin mi var? Aşağıdaki sık sorulan sorulara göz at ya da bize e-posta gönder.</p>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-brand">
+                <span class="logo-icon">🔡</span>
+                <span>Keligo</span>
+            </a>
+            <a href="index.html" class="nav-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Geri Dön
+            </a>
+        </div>
+    </nav>
 
-    <hr>
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-header">
+            <div class="page-icon">🎧</div>
+            <h1>Destek Merkezi</h1>
+            <span class="subtitle">🏢 FozzyLabs tarafından geliştirilmiştir</span>
+        </div>
 
-    <h2>Sık Sorulan Sorular</h2>
+        <p class="intro">
+            Keligo'yu kullandığın için teşekkürler! Sorun mu yaşıyorsun, önerilerin mi var? Aşağıdaki sık sorulan sorulara göz at ya da bize e-posta gönder.
+        </p>
 
-    <div class="faq">
-        <h3>❤️ Canlarım neden azaldı?</h3>
-        <p>Sonsuz Mod, Hız Modu ve Çocuk Modunda bir oyun kaybedince 1 can azalır. 30 dakikada bir can otomatik dolar. Günlük Kelime ve Bölüm Modu can sistemi kapsamı dışındadır.</p>
+        <!-- FAQ Section -->
+        <div class="section">
+            <h2><span class="section-icon">❓</span> Sık Sorulan Sorular</h2>
+            
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-question-text">
+                            <span class="faq-icon">❤️</span>
+                            Canlarım neden azaldı?
+                        </span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Sonsuz Mod, Hız Modu ve Çocuk Modunda bir oyun kaybedince 1 can azalır. 30 dakikada bir can otomatik dolar. Günlük Kelime ve Bölüm Modu can sistemi kapsamı dışındadır.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-question-text">
+                            <span class="faq-icon">🪙</span>
+                            Jetonlarımı nasıl kazanabilirim?
+                        </span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Her galibiyet 15 jeton getirir. Günlük kelimeyi çözünce 25 jeton, login serisini devam ettirince ek ödüller kazanırsın. Ana menüdeki "Günlük Bonus" kartından günde 1 kez reklam izleyerek 25 jeton alabilirsin.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-question-text">
+                            <span class="faq-icon">📅</span>
+                            Günlük kelimeyi kaçırdım, oynayabilir miyim?
+                        </span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Evet! Günlük Takvim ekranında geçmiş günlere gidip 30 jeton karşılığında o günün kelimesini oynayabilirsin.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-question-text">
+                            <span class="faq-icon">🔡</span>
+                            Arkadaşa Sor nasıl çalışır?
+                        </span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Ana menüden "Arkadaşa Sor" modunu aç, bir kelime belirle, oluşan kodu arkadaşına paylaş. Arkadaşın kodu girerek senin seçtiğin kelimeyi tahmin etmeye çalışır.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-question-text">
+                            <span class="faq-icon">💎</span>
+                            Satın alma işlemimi nasıl geri yüklerim?
+                        </span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Premium Mağaza'ya gir → "Satın Almaları Geri Yükle" butonuna dokun. Apple hesabınla daha önce yaptığın tüm satın almalar otomatik geri gelir.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-question-text">
+                            <span class="faq-icon">🎮</span>
+                            Game Center'da görünmüyorum, neden?
+                        </span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>iPhone Ayarları → Gizlilik → Game Center'dan hesabının bağlı olduğunu kontrol et. Sonra Keligo'yu kapatıp yeniden aç.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span class="faq-question-text">
+                            <span class="faq-icon">🐛</span>
+                            Yanlış ya da hatalı bir kelime gördüm, ne yapmalıyım?
+                        </span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Oyun içindeyken 🚩 (hata bildir) ikonuna dokun; kelimeyi ve kategoriyi not edip bize iletebilirsin. Tüm bildirimleri değerlendiriyor, veritabanını düzenli güncelliyoruz.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="section">
+            <div class="contact-section">
+                <h2><span class="section-icon">✉️</span> Bize Ulaş</h2>
+                <p>Sorunun yukarıda yanıt bulamadıysa doğrudan e-posta gönder:</p>
+                
+                <a href="mailto:support@fozzylabs.com" class="email-card">
+                    <span class="icon">📧</span>
+                    support@fozzylabs.com
+                </a>
+
+                <p style="margin-bottom: 16px; color: var(--text-muted); font-size: 0.9em;">Mesajına şunları eklersen daha hızlı yardımcı olabiliriz:</p>
+                
+                <ul class="checklist">
+                    <li>iPhone modeli ve iOS sürümü</li>
+                    <li>Keligo sürüm numarası (Ayarlar ekranının altında bulabilirsin)</li>
+                    <li>Sorunun kısa açıklaması</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2026 FozzyLabs — Tüm hakları saklıdır. · <a href="privacy.html">Gizlilik Politikası</a></p>
+        </div>
     </div>
 
-    <div class="faq">
-        <h3>🪙 Jetonlarımı nasıl kazanabilirim?</h3>
-        <p>Her galibiyet 15 jeton getirir. Günlük kelimeyi çözünce 25 jeton, login serisini devam ettirince ek ödüller kazanırsın. Ana menüdeki "Günlük Bonus" kartından günde 1 kez reklam izleyerek 25 jeton alabilirsin.</p>
-    </div>
+    <script>
+        function toggleFaq(button) {
+            const item = button.parentElement;
+            const isActive = item.classList.contains('active');
+            
+            // Close all other items
+            document.querySelectorAll('.faq-item.active').forEach(activeItem => {
+                if (activeItem !== item) {
+                    activeItem.classList.remove('active');
+                }
+            });
+            
+            // Toggle current item
+            item.classList.toggle('active');
+        }
 
-    <div class="faq">
-        <h3>📅 Günlük kelimeyi kaçırdım, oynayabilir miyim?</h3>
-        <p>Evet! Günlük Takvim ekranında geçmiş günlere gidip 30 jeton karşılığında o günün kelimesini oynayabilirsin.</p>
-    </div>
-
-    <div class="faq">
-        <h3>🔡 Arkadaşa Sor nasıl çalışır?</h3>
-        <p>Ana menüden "Arkadaşa Sor" modunu aç, bir kelime belirle, oluşan kodu arkadaşına paylaş. Arkadaşın kodu girerek senin seçtiğin kelimeyi tahmin etmeye çalışır.</p>
-    </div>
-
-    <div class="faq">
-        <h3>💎 Satın alma işlemimi nasıl geri yüklerim?</h3>
-        <p>Premium Mağaza'ya gir → "Satın Almaları Geri Yükle" butonuna dokun. Apple hesabınla daha önce yaptığın tüm satın almalar otomatik geri gelir.</p>
-    </div>
-
-    <div class="faq">
-        <h3>🎮 Game Center'da görünmüyorum, neden?</h3>
-        <p>iPhone Ayarları → Gizlilik → Game Center'dan hesabının bağlı olduğunu kontrol et. Sonra Keligo'yu kapatıp yeniden aç.</p>
-    </div>
-
-    <div class="faq">
-        <h3>🐛 Yanlış ya da hatalı bir kelime gördüm, ne yapmalıyım?</h3>
-        <p>Oyun içindeyken 🚩 (hata bildir) ikonuna dokun; kelimeyi ve kategoriyi not edip bize iletebilirsin. Tüm bildirimleri değerlendiriyor, veritabanını düzenli güncelliyoruz.</p>
-    </div>
-
-    <hr>
-
-    <h2>Bize Ulaş</h2>
-    <p>Sorunun yukarıda yanıt bulamadıysa doğrudan e-posta gönder:<br>
-    📧 <a href="mailto:support@fozzylabs.com">support@fozzylabs.com</a></p>
-    <p>Mesajına şunları eklersen daha hızlı yardımcı olabiliriz:</p>
-    <ul>
-        <li>iPhone modeli ve iOS sürümü</li>
-        <li>Keligo sürüm numarası (Ayarlar ekranının altında bulabilirsin)</li>
-        <li>Sorunun kısa açıklaması</li>
-    </ul>
-
-    <hr>
-    <p style="color:#bbb; font-size:0.85em; text-align:center;">© 2026 FozzyLabs — Tüm hakları saklıdır. · <a href="privacy.html" style="color:#bbb;">Gizlilik Politikası</a></p>
+        // Open first FAQ by default
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstFaq = document.querySelector('.faq-item');
+            if (firstFaq) {
+                firstFaq.classList.add('active');
+            }
+        });
+    </script>
 </body>
 </html>
