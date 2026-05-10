@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keligo — Destek</title>
+    <link rel="icon" type="image/svg+xml" href="keligo-icon.svg">
     <style>
         * {
             margin: 0;
@@ -36,7 +37,6 @@
             overflow-x: hidden;
         }
 
-        /* Background blobs */
         .blob {
             position: fixed;
             border-radius: 50%;
@@ -62,7 +62,6 @@
             left: -100px;
         }
 
-        /* Navigation */
         .nav {
             position: sticky;
             top: 0;
@@ -97,7 +96,9 @@
         }
 
         .nav-brand .logo-icon {
-            font-size: 1.4em;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
         }
 
         .nav-back {
@@ -120,7 +121,6 @@
             height: 16px;
         }
 
-        /* Main content */
         .container {
             position: relative;
             z-index: 1;
@@ -129,7 +129,6 @@
             padding: 48px 20px 80px;
         }
 
-        /* Header section */
         .page-header {
             text-align: center;
             margin-bottom: 48px;
@@ -182,7 +181,6 @@
             animation: fadeIn 0.6s ease-out 0.1s both;
         }
 
-        /* Section styling */
         .section {
             margin-bottom: 48px;
             animation: fadeIn 0.6s ease-out both;
@@ -213,7 +211,6 @@
             flex-shrink: 0;
         }
 
-        /* FAQ Accordion */
         .faq-list {
             display: flex;
             flex-direction: column;
@@ -308,7 +305,6 @@
             margin-bottom: 0;
         }
 
-        /* Contact section */
         .contact-section {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
             border: 1px solid rgba(99, 102, 241, 0.2);
@@ -376,7 +372,6 @@
             font-size: 1.1em;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             margin-top: 48px;
@@ -397,13 +392,11 @@
             color: var(--primary-light);
         }
 
-        /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -421,7 +414,6 @@
             background: var(--surface-hover);
         }
 
-        /* Responsive */
         @media (max-width: 600px) {
             h1 { font-size: 1.8em; }
             .faq-question { padding: 16px 20px; font-size: 0.95em; }
@@ -433,15 +425,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Background blobs -->
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
 
-    <!-- Navigation -->
     <nav class="nav">
         <div class="nav-inner">
             <a href="index.html" class="nav-brand">
-                <span class="logo-icon">🔡</span>
+                <img src="keligo-icon.svg" alt="Keligo" class="logo-icon">
                 <span>Keligo</span>
             </a>
             <a href="index.html" class="nav-back">
@@ -453,7 +443,6 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <div class="container">
         <div class="page-header">
             <div class="page-icon">🎧</div>
@@ -465,7 +454,6 @@
             Keligo'yu kullandığın için teşekkürler! Sorun mu yaşıyorsun, önerilerin mi var? Aşağıdaki sık sorulan sorulara göz at ya da bize e-posta gönder.
         </p>
 
-        <!-- FAQ Section -->
         <div class="section">
             <h2><span class="section-icon">❓</span> Sık Sorulan Sorular</h2>
             
@@ -591,7 +579,6 @@
             </div>
         </div>
 
-        <!-- Contact Section -->
         <div class="section">
             <div class="contact-section">
                 <h2><span class="section-icon">✉️</span> Bize Ulaş</h2>
@@ -612,7 +599,6 @@
             </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             <p>© 2026 FozzyLabs — Tüm hakları saklıdır. · <a href="privacy.html">Gizlilik Politikası</a></p>
         </div>
@@ -623,18 +609,15 @@
             const item = button.parentElement;
             const isActive = item.classList.contains('active');
             
-            // Close all other items
             document.querySelectorAll('.faq-item.active').forEach(activeItem => {
                 if (activeItem !== item) {
                     activeItem.classList.remove('active');
                 }
             });
             
-            // Toggle current item
             item.classList.toggle('active');
         }
 
-        // Open first FAQ by default
         document.addEventListener('DOMContentLoaded', () => {
             const firstFaq = document.querySelector('.faq-item');
             if (firstFaq) {
